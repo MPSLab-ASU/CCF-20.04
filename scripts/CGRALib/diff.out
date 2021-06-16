@@ -1,0 +1,87 @@
+--- cgra.c	2021-05-27 00:52:43.926844403 -0700
++++ cgra_Arkan.c	2021-05-27 00:47:48.621098565 -0700
+@@ -192,9 +192,13 @@
+     pthread_mutex_unlock(&mutex);
+     while(1) {
+         pthread_mutex_lock(&mutex);
+-	printf("run: mutex lock\n");
+-        while(thread_cond_cgra != 1){ pthread_mutex_unlock(&mutex); pthread_mutex_lock(&mutex);}
+-	printf("run: thread_cond_cgra = 1\n");
++	    printf("run: mutex lock\n");
++        while(thread_cond_cgra != 1){ 
++            pthread_mutex_unlock(&mutex); 
++            printf("run: waiting\n");
++            pthread_mutex_lock(&mutex);
++        }
++	    printf("run: thread_cond_cgra = 1\n");
+         //if(thread_cond_cgra != 1) pthread_mutex_unlock(&mutex);
+ 	//pthread_mutex_lock(&mutex);
+ 	//printf("run: mutex lock\n");
+@@ -202,18 +206,19 @@
+             printf("Before DEACTIVE CGRA Instruciton\n");
+  	        asm("mov r11,%[value]" : :[value]"r" (deactivate_CGRA):); 
+             printf("After DEACTIVE CGRA Instruciton\n");
+-	    pthread_mutex_unlock(&mutex);
+-	    break; 
++	        pthread_mutex_unlock(&mutex);
++	        break; 
+         }
+ 	
+ 	    thread_cond_cgra = 0;
+         printf("Before Activate CGRA Instruciton\n");
+ 	    asm("mov r11,%[value]" : :[value]"r" (activate_CGRA):); 
+         printf("After Activate CGRA Instruciton\n");
+-	//usleep(1);
+-	for(int i=0; i<100; i++){}
+-	    thread_cond_cpu = 1;
+-	pthread_mutex_unlock(&mutex);
++        for(int i = 0; i < 1000; i++);
++	    thread_cond_cpu = 1; 
++        for(int i = 0; i < 1000; i++);
++        printf("run: thread_cond_cpu is %d\n", thread_cond_cpu);
++	    pthread_mutex_unlock(&mutex);
+     }
+   //printf("Entering cgra.c runOnCGRA\n");
+     //pthread_mutex_unlock(&mutex);
+@@ -241,7 +246,17 @@
+     //printf("Syscall clock_nano_sleep_time64: %u\n", __NR_clock_nanosleep_time64);
+     printf("acc: mutex unlock\n");
+     pthread_mutex_unlock(&mutex);
+-    while(thread_cond_cpu != 1) {printf("Waiting\n"); pthread_mutex_lock(&mutex); pthread_mutex_unlock(&mutex);}
++    while(thread_cond_cpu != 1) {
++        pthread_mutex_lock(&mutex);
++        if(thread_cond_cpu) {
++            printf("acc: thread_cond_cpu is %d\n", thread_cond_cpu);
++            pthread_mutex_unlock(&mutex);
++            break;
++        }
++        printf("acc out of if: thread_cond_cpu is %d\n", thread_cond_cpu);
++        printf("Waiting\n"); 
++        pthread_mutex_unlock(&mutex);
++    }
+     printf("acc: done cpu exec\n");
+     //if(thread_cond_cpu != 1)  pthread_mutex_unlock(&mutex);
+     
+@@ -250,14 +265,15 @@
+ 
+ void deleteCGRA()
+ {
+-  if(DEBUG) printf("deleting cgra\n");
+-
+-  thread_exit = 1;
+-  thread_cond_cgra = 1;
++    pthread_mutex_lock(&mutex);
++    if(DEBUG) printf("deleting cgra\n");
+ 
+-  printf("Main thread calling join w/ CGRA thread\n");
+-  pthread_join(pth, NULL); 
+-  if(DEBUG) printf("Exiting cgra.c deleteCGRA\n"); 
++    thread_exit = 1;
++    thread_cond_cgra = 1;
++    pthread_mutex_unlock(&mutex);
++    printf("Main thread calling join w/ CGRA thread\n");
++    pthread_join(pth, NULL); 
++    if(DEBUG) printf("Exiting cgra.c deleteCGRA\n"); 
+ }
+ 
+ 
