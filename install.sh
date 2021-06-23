@@ -2,7 +2,7 @@
 
 ccf_root=$(pwd)
 #Change this to the path you want and make sure it is a true path!
-install_path="" 
+install_path="/home/local/ASUAD/quoclon1/sw" 
 mapping_debug=1
 # ==============================================================================
 # Installing OpenSSL if necessary 
