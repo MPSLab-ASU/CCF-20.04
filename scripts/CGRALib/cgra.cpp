@@ -167,77 +167,77 @@ void checkTotalLoops( )
 
 }
 
-void* runOnCGRA(void* arg)
+void* runOnCGRA(void)
 {
-   //printf("Entering cgra.c runOnCGRA\n");
-    while(1) {
-        while(thread_cond_cgra != 1) usleep(1);
-	
-        if(thread_exit == 1) { 
- 	    asm("mov r11,%[value]" : :[value]"r" (deactivate_CGRA):); 
-	    break; 
-        }
-	
-	thread_cond_cgra = 0;
-	asm("mov r11,%[value]" : :[value]"r" (activate_CGRA):); 
-	usleep(1);
-	thread_cond_cpu = 1;
-    }
-  //printf("Entering cgra.c runOnCGRA\n");
-  return NULL;
+    printf("\n\nrunOnCGRA\n");
+    asm("mov r11,%[value]" : :[value]"r" (activate_CGRA):);
+    return NULL;
 }
 
 void accelerateOnCGRA(unsigned int loopNo)
 {
-    //printf("Entering cgra.c accelerateOnCGRA\n");
+    printf("\n\naccelerateOnCGRA\n");
     int result = 0; 
    
     int configure = configureCGRA(loopNo);
+    //if(DEBUG) printf("configure = %d, loopNo = %d\n", configure, loopNo);
     if(configure == -1)
     {
-      printf("Error in configuring CGRA:\n");
+      	printf("Error in configuring CGRA:\n");
     }
     printf("Core will execute loop %u on CGRA\n",loopNo); 
 
-    thread_cond_cpu = 0;
-    thread_cond_cgra = 1;
+    //    thread_cond_cpu = 0;
+    //thread_cond_cgra = 1;
 
-    while(thread_cond_cpu != 1) usleep(1);
-  
+    runOnCGRA();
+    //while(thread_cond_cpu != 1) {
+//	usleep(1);
+  //  }
+    
     //printf("Exiting Accelerate on CGRA\n"); 
 }
 
 void deleteCGRA()
 {
-  //printf("deleting cgra\n");
-
+  printf("\ndeleting cgra\n");
+  /*
   thread_exit = 1;
   thread_cond_cgra = 1;
 
   printf("Main thread calling join w/ CGRA thread\n");
-  pthread_join(pth, NULL); 
- // printf("Exiting cgra.c deleteCGRA\n"); 
+  //pthread_join(pth, NULL); 
+  //printf("Exiting cgra.c deleteCGRA\n"); */
 }
 
 
 void createCGRA()
 {
-  //printf("Entering cgra.c createCGRA\n");
+  if(DEBUG) printf("createCGRA\n");
   int result = 0;
   unsigned i=1;
 
   checkTotalLoops();
   initCGRA  = (int *)malloc(sizeof(int)*7*totalLoops);
-  prologPtr = (unsigned long long *)malloc(sizeof(unsigned long long)*totalLoops);
-  kernelPtr = (unsigned long long *)malloc(sizeof(unsigned long long)*totalLoops);
-  epilogPtr = (unsigned long long *)malloc(sizeof(unsigned long long)*totalLoops);
+  prologPtr = (int *)malloc(sizeof(int)*totalLoops);
+  kernelPtr = (int *)malloc(sizeof(int)*totalLoops);
+  epilogPtr = (int *)malloc(sizeof(int)*totalLoops);
 
+  //pthread_mutex_init(&mutex, NULL);
+  //pthread_mutex_lock(&mutex);
+  //result = pthread_create(&pth, NULL, (void*) &runOnCGRA, NULL);
 
   for(i = 1; i <= totalLoops; i++)
+  {
       initializeParameters(i);
-
+  }
+    
+  //pthread_mutex_init(&mutex, NULL);
   printf("Main thread calling CGRA thread...\n");
-  asm("mov r8,%[value]" : :[value]"r" (CPU_idle):);
-  result = pthread_create(&pth, NULL, runOnCGRA, NULL); 
-  //printf("Exiting cgra.c createCGRA\n");
+  //asm("mov r8,%[value]" : :[value]"r" (CPU_idle):);
+
+  //printf("ASM CPU_IDLE Instruction completed\n");
+  //result = pthread_create(&pth, NULL, (void*) &runOnCGRA, NULL); 
+  //printf("\n\nresult = %d\n\n", result);
+  //fflush(NULL);
 }

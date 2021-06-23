@@ -20,8 +20,6 @@ LIB="";
 
 zero=0
 
-echo cgracc
-
 #-fno-unroll-loops
 #Check if file exists
 if [ ! -f ./simplified.ll ]; then 
@@ -160,28 +158,12 @@ fi
 
 $ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
 
-echo "passed opt"
-
 llvm-dis CGRAGen.bc -o CGRAGen.ll
-
-if [ ! -f "CGRAGen.ll" ]; then
-	exit 1
-fi
-
-
-echo "passed dis"
 
 llc -march="arm" CGRAGen.ll
 
-if [ ! -f "CGRAGen.s" ]; then
-	exit 1
-fi
-
-echo "passed llc"
 #apply remaining optimizations here such as vectoirize
 clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -pthread -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
-
-echo "passed clang"
 
 #Delete temporary files
 rm *.s *.bc #*.ll
