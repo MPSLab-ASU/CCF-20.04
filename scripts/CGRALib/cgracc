@@ -28,6 +28,8 @@ if [ ! -f ./simplified.ll ]; then
 	llvm-dis -f simplified.bc -o simplified.ll
 fi
 
+cp simplified.ll combinedIR.ll
+
 j=1;
 for i in "$@"
 do
@@ -91,7 +93,7 @@ else
 	echo here
 	$srcIR
 
-	llvm-link temp.ll simplified.ll -S -o combinedIR.ll
+	llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
 	exit
 fi
 
@@ -129,7 +131,7 @@ then
 	    srcNew+=" $i"
             srcNew+=" -o temp.ll"
 	    $srcNew
-	    llvm-link temp.ll simplified.ll -S -o combinedIR.ll 
+	    llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
 	fi
     done
 else
@@ -157,6 +159,11 @@ else
 fi
 
 $ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
+
+if [ ! -d "CGRAExec" ]; then
+    echo "Loop was not compiled for CGRA"
+    exit 1
+fi
 
 llvm-dis CGRAGen.bc -o CGRAGen.ll
 
