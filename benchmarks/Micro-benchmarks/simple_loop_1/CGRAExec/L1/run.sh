@@ -103,10 +103,10 @@ fi
 #Instruction Generator
 echo Instruction Generator
 if [ $ALGO == "FalconCrimson" ]; then
-  echo running FalcomCrimson
+  echo running FalconCrimson
   $opcodegen1 $finalnode $edge $llvmnode $llvmedge $obj prolog.sch kernel.sch epilog.sch $X $Y $R $liveoutnode $liveoutedge > cgra_instructions.txt
 else
   echo Running something else 
-  #$opcodegen $finalnode $edge $llvmnode $llvmedge $obj prolog.sch kernel.sch epilog.sch $X $Y $R $liveoutnode $liveoutedge > cgra_instructions.txt
-  $opcodegen $finalnode $edge $llvmnode $llvmedge $obj prolog.sch kernel.sch epilog.sch $X $Y $R $liveoutnode $liveoutedge &> cgra_instructions.debug
+  $opcodegen $finalnode $edge $llvmnode $llvmedge $obj prolog.sch kernel.sch epilog.sch $X $Y $R $liveoutnode $liveoutedge > cgra_instructions.txt
+#  $opcodegen $finalnode $edge $llvmnode $llvmedge $obj prolog.sch kernel.sch epilog.sch $X $Y $R $liveoutnode $liveoutedge &> cgra_instructions.debug
 fi

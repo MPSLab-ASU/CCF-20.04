@@ -56,8 +56,8 @@ int CGRA_RegisterFile::Read(int address)
 			DPRINTF(CGRA_Detailed,"Requested Register is: %d\n",address);
   		throw new CGRAException("Register access out of range");
   	}
-    DPRINTF(CGRA_Detailed,"\nIN READ REGFILE R0 = %d\n",data_RF[0]);
-    DPRINTF(CGRA_Detailed,"R0: %d\tR1: %d\tR2: %d\tR3: %d\n",data_RF[0],data_RF[1],data_RF[2],data_RF[3]);
+	//DPRINTF(CGRA_Detailed,"\nIN READ REGFILE R0 = %d\n",data_RF[0]);
+	//DPRINTF(CGRA_Detailed,"R0: %d\tR1: %d\tR2: %d\tR3: %d\n",data_RF[0],data_RF[1],data_RF[2],data_RF[3]);
     if(address < config_boundary)
     {
       DPRINTF(CGRA_Detailed,"\nREAD: REG NUMBER: %d dist: %d\n",address,distance);

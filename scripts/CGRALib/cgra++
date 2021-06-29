@@ -5,8 +5,8 @@
 #Expected arguments or inputs - .c or .cpp files
 
 #Set Paths
-ccf_root="/home/local/ASUAD/aabuyaz1/documents/code/ins3"
-install_path="/home/local/ASUAD/aabuyaz1/sw"
+ccf_root="/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04"
+install_path="/home/local/ASUAD/quoclon1/sw"
 obj="obj"
 objFound=0;
 searchstring=".o"

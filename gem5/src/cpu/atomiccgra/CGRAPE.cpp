@@ -91,7 +91,7 @@ void CGRA_PE::Decode()
       switch (ins->getLeftMuxSelector())
       {
         case Register:
-          DPRINTF(CGRA_Detailed,"\n******** DB INPUT1 ReadAddress%d************\n",ins->getReadRegAddress1());
+          DPRINTF(CGRA_Detailed,"\n******** DB INPUT1 ReadAddress = %d************\n",ins->getReadRegAddress1());
           Input1 = RegFile.Read(ins->getReadRegAddress1());
           break;
         case Left:
@@ -108,7 +108,7 @@ void CGRA_PE::Decode()
           break;
         case DataBus:
           Input1 = *(dataBs);
-          DPRINTF(CGRA_Detailed,"\n******** DB INPUT1 %d************\n",Input1);
+          DPRINTF(CGRA_Detailed,"\n******** DB INPUT1 = %d************\n",Input1);
           break;
         case Immediate:
           Input1=ins->getImmediateValue();
@@ -123,7 +123,7 @@ void CGRA_PE::Decode()
       switch (ins->getRightMuxSelector())
       {
         case Register:
-          DPRINTF(CGRA_Detailed,"\n******** DB INPUT2 ReadAddress%d************\n",ins->getReadRegAddress2());
+          DPRINTF(CGRA_Detailed,"\n******** DB INPUT2 ReadAddress = %d************\n",ins->getReadRegAddress2());
           Input2 = RegFile.Read(ins->getReadRegAddress2());
           break;
         case Left:
@@ -140,7 +140,7 @@ void CGRA_PE::Decode()
           break;
         case DataBus:
           Input2 = *(dataBs);
-          DPRINTF(CGRA_Detailed,"\n******** DB INPUT1 %d************\n",(int)Input2);
+          DPRINTF(CGRA_Detailed,"\n******** DB INPUT2 = %d************\n",(int)Input2);
           break;
         case Immediate:
           Input2=ins->getImmediateValue();
@@ -407,7 +407,7 @@ void CGRA_PE::IExecute()
 
     if (ins->getWriteRegisterEnable())
     {
-      DPRINTF(CGRA_Detailed,"\n************** WE *****************\n");
+      //DPRINTF(CGRA_Detailed,"\n************** WE *****************\n");
       int writeRegisterNumber = ins->getWriteRegAddress();
 
       RegFile.Write(writeRegisterNumber,Output);
@@ -418,7 +418,9 @@ void CGRA_PE::IExecute()
     if(ins_opcode==EQ || ins_opcode==NEQ || ins_opcode==GT || ins_opcode==LT)
     {
       //write the result to the controller bus
-      DPRINTF(CGRA_Detailed,"\nCOMPARE INSTRUCTION OUTPUT = %d\n",Output);
+      //(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
+      (this->Controller_Reg) = !Output;
+      if(Output) DPRINTF(CGRA_Detailed, "Controller_Reg reset\n");
     }
   }
   else
@@ -449,7 +451,7 @@ void CGRA_PE::IExecute()
         DPRINTF(CGRA_Detailed,"\n******** LDUI IN THIS PE %d************\n",Output);
         break;
       case sel:
-        Output = (InputP == true) ? Input1 : Input2;
+        Output = (InputP == false) ? Input1 : Input2;
         DPRINTF(CGRA_Detailed,"\nInput1 = %d\tInput2 = %d\tInputP = %d\n",Input1, Input2, (int)InputP);
         DPRINTF(CGRA_Detailed,"\n******** Selection IN THIS PE %d************\n",Output);
         break;
@@ -495,7 +497,7 @@ void CGRA_PE::IExecute()
       else if(ins_opcode==loopexit)
       {
         // If LoopExit is True then, controller reg should be false.
-        (this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
+	(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
       }
 
       //TODO: Fix Micro-architecture for P-type (PredMux) rather than controlling write enable.
@@ -641,7 +643,7 @@ void CGRA_PE::FExecute()
 
     if (ins->getWriteRegisterEnable())
     {
-      DPRINTF(CGRA_Detailed,"\n************** WE *****************\n");
+      //DPRINTF(CGRA_Detailed,"\n************** WE *****************\n");
       int writeRegisterNumber = ins->getWriteRegAddress();
 
       RegFile.Write(writeRegisterNumber,(int)FPOutput);

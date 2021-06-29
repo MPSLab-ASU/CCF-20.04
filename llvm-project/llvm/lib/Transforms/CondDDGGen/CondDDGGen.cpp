@@ -46,8 +46,9 @@
 #include <iostream>
 #include <fstream>
 
-#define DEBUG 1 
-
+#define DEBUG   1 
+//DEBUG flag for update store
+#define DEBUG1  0
 using namespace llvm;
 
 unsigned int NodeID = 0;
@@ -82,6 +83,7 @@ std::map<llvm::Value*, std::string> map_instn_defn_livein_to_load;
 std::map<Instruction*, std::string> map_instn_defn_liveout_to_load;
 
 std::map<std::string, unsigned> map_livein_to_alignment;
+std::map<std::string, Datatype> map_livein_to_datatype; 
 std::map<std::string, unsigned> map_liveout_to_alignment;
 
 std::map< BasicBlock*, BasicBlock* > map_liveout_destnBB_newBB;
@@ -112,10 +114,8 @@ static const MDNode *GetCGRAMetadata(const Loop *L, StringRef Name) {
     if (!S)
       continue;
 
-    if(DEBUG) errs() << "S->getString() = " << S->getString() << "\n";
-    if (Name.equals(S->getString())) {
+    if (Name.equals(S->getString()))
       return MD;
-    }
   }
   return nullptr;
 }
@@ -223,6 +223,7 @@ namespace llvm
       map_instn_defn_livein_to_load.clear();
       map_instn_defn_liveout_to_load.clear();
       map_livein_to_alignment.clear();
+      map_livein_to_datatype.clear();
       map_liveout_to_alignment.clear();
       map_liveout_destnBB_newBB.clear();
       map_replace_liveout_use.clear();
@@ -301,9 +302,8 @@ namespace llvm
           // TC can be TC+1 if instruction is le instead of lt
           operands.push_back(endValue);
           operands.push_back(startValue);
-          // Edits by Arkan 
           //TerminatorInst *TI = Preheader->getTerminator();
-          auto *TI = Preheader->getTerminator();
+	  auto *TI = Preheader->getTerminator();
           IRBuilder<> builder(TI); //building the cloned instruction
 
           Value *sub = builder.CreateSub(endValue, startValue);
@@ -538,15 +538,19 @@ Default:
 
     StoreInst* getLiveOutToBeStored(Instruction *BI, std::vector<BasicBlock *> bbs, std::vector<BasicBlock *> LoopLatchExitBlks)
     {
+      //errs() << "inside liveout to be stored\n";
       StoreInst * ptr;
       // Reject two common cases fast: instructions with no uses (like stores)
       // and instructions with one use that is in the same block as this.
       if (BI->use_empty())
         return NULL;
 
+      //errs() << "passed null\n";
       ptr = NULL;
+
       for(auto U : BI->users()){  // U is of type User*
         if(auto Inst = dyn_cast<Instruction>(U)){
+          //  errs() << "Liveout store: " << *Inst << "\n";
           // an instruction uses V
           // Ensure that the use is outside of the BBs of loop
           if ( std::find(bbs.begin(), bbs.end(), Inst->getParent()) != bbs.end() )
@@ -562,10 +566,16 @@ Default:
             break;
           }
           else
+          {
+            //  errs() << "inside else\n";
+            //exit(1);
+            continue; 
             ptr = getLiveOutToBeStored(Inst, bbs, LoopLatchExitBlks);
+          }
           if(ptr != NULL) break;
         }
       }
+      // errs() << "passed for loop\n"; 
       if(ptr != NULL)
       {
         GlobalValue* G = dyn_cast<llvm::GlobalValue>(ptr);
@@ -596,23 +606,29 @@ Default:
     NODE * updateExitConditionNode(DFG *myDFG, NODE *exitCond, std::vector<BasicBlock *> bbs)
     {
       NODE *phiNode = new NODE(cgra_select, 1, NodeID++, "", NULL);
+      Datatype dt = int32; 
+      phiNode->setDatatype(dt);
       myDFG->insert_Node(phiNode);
       NODE *constInt;
 
       BranchInst *brInst = loopExitBranch;
       if(brInst->isUnconditional())
       {
-        if(DEBUG) errs() << "Should not reach here!\n";
+        errs() << "Should not reach here!\n";
         return NULL;
       }
       BasicBlock *bb1 = brInst->getSuccessor(0);
       if ( std::find(bbs.begin(), bbs.end(), bb1) != bbs.end())
       {
         constInt = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+        llvm::Datatype dt = int32;
+        constInt->setDatatype(dt);
       }
       else
       {
         constInt = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+        llvm::Datatype dt = int32;
+        constInt->setDatatype(dt);
       }
 
       myDFG->insert_Node(constInt);
@@ -625,8 +641,12 @@ Default:
 
     NODE * padUnsafeLiveOutOperationsWithSelects(DFG *myDFG, NODE *unsafeOp, NODE *exitCond, std::vector<BasicBlock *> bbs)
     {
+      Datatype dt = unsafeOp->getDatatype();
+      if(DEBUG) errs() << "\n\nAre we padding LiveOuts?\n\n" ; 
       NODE *selOp = new NODE(cond_select, 1, NodeID++, "", NULL);
+      selOp->setDatatype(dt);
       myDFG->insert_Node(selOp);
+      if(DEBUG) errs() << "\n\nUnsafe op node: " << selOp->get_ID() << "\n\n"; 
 
       /* Due to ISA challenges for select instruction,
          a select operation cannot store its output value in registers.
@@ -636,8 +656,10 @@ Default:
          forming Loop-carried dependence with a delay of the cycle as 2 instead of 1 */
 
       NODE *forwardValue = new NODE(add, 1, NodeID++, "", NULL);
+      forwardValue->setDatatype(dt);
       myDFG->insert_Node(forwardValue);
       NODE *const0 = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+      const0->setDatatype((Datatype) int32);
       myDFG->insert_Node(const0);
 
       unsigned selectSelf_opOrder;
@@ -645,7 +667,7 @@ Default:
       BranchInst *brInst = loopExitBranch;
       if(brInst->isUnconditional())
       {
-        if(DEBUG) errs() << "Should not reach here!\n";
+        errs() << "Should not reach here!\n";
         return NULL;
       }
       BasicBlock *bb1 = brInst->getSuccessor(0);
@@ -660,7 +682,13 @@ Default:
         selectSelf_opOrder = 0;
       }
 
+
+      if(unsafeOp->is_Load_Address_Generator())
+          unsafeOp = unsafeOp->get_Related_Node();
       myDFG->make_Arc(unsafeOp, selOp, EdgeID++, 0, TrueDep, selectInput_opOrder);
+    
+      if(forwardValue->is_Load_Address_Generator())
+          forwardValue = forwardValue->get_Related_Node();
       myDFG->make_Arc(forwardValue, selOp, EdgeID++, 1, TrueDep, selectSelf_opOrder);
       myDFG->make_Arc(exitCond, selOp, EdgeID++, 0, PredDep, 2);
 
@@ -698,7 +726,9 @@ Default:
      */
     NODE * generateLoopExitNode(DFG *myDFG, NODE *exitCond, std::vector<BasicBlock *> bbs)
     {
+      Datatype dt = exitCond->getDatatype(); 
       NODE *exitOp = new NODE(loopctrl, 1, NodeID++, "", NULL);
+      exitOp->setDatatype(dt);
       myDFG->insert_Node(exitOp);
 
       NODE *constInt;
@@ -708,7 +738,7 @@ Default:
       BranchInst *brInst = loopExitBranch;
       if(brInst->isUnconditional())
       {
-        if(DEBUG) errs() << "Should not reach here!\n";
+        errs() << "Should not reach here!\n";
         return NULL;
       }
       BasicBlock *bb1 = brInst->getSuccessor(0);
@@ -717,12 +747,14 @@ Default:
         exitOp_Order = 1;
         const_opOrder = 0;
         constInt = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+        constInt->setDatatype((Datatype) int32);
       }
       else
       {
         exitOp_Order = 0;
         const_opOrder = 1;
         constInt = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+        constInt->setDatatype((Datatype) int32);
       }
 
       myDFG->insert_Node(constInt);
@@ -734,7 +766,6 @@ Default:
 
     bool Update_LiveOut_Variables(Instruction *BI, DFG* myDFG, std::vector<BasicBlock *> bbs, std::vector<BasicBlock *> LoopLatchExitBlks)
     {
-      if(DEBUG) errs() << "Initializing important variables\n";
       bool IRChanged = false;
       std::string storeVariable;
       bool loadInserted = false;
@@ -750,33 +781,43 @@ Default:
       if (BI->use_empty())
         return IRChanged;
 
+
       bool usedOutside = false;
       for(auto U : BI->users()){  // U is of type User*
 
         if(auto Inst = dyn_cast<Instruction>(U)){
           // an instruction uses Value
           // Ensure that the use is outside of the BBs of loop
-            if ( std::find(bbs.begin(), bbs.end(), Inst->getParent()) == bbs.end() ) {
-              usedOutside = true;
-              errs() << "usedOutside is True\n";
-            
-            }
+          if ( std::find(bbs.begin(), bbs.end(), Inst->getParent()) == bbs.end() )
+            usedOutside = true;
         }
       }
 
-      if (!usedOutside) return IRChanged;
+      //errs() << "passed usedoutside true\n";
+      if (!usedOutside) return IRChanged; 
       std::map<Instruction *, std::string>::iterator it;
+      //errs() << "before find(BI)\n";
       it = map_instn_defn_liveout_to_load.find(BI);
+      //errs() << "passed find (BI)\n";
       if (it != map_instn_defn_liveout_to_load.end() )
+      {
+        //errs() << "inside IR\n";
         return IRChanged;
+      }
+
+      if(DEBUG)
+      {
+        errs() << "we are in liveout update\n";
+        errs() << "Ins: " << *BI << "\n";
+      }
 
       NODE *node;
-
-      if(DEBUG) errs() << "getLiveOutToBeStored called\n";
+      //errs() << "before new store\n";
       newStore = getLiveOutToBeStored(BI, bbs, LoopLatchExitBlks);
+      //errs() << "after get liveout store\n"; 
       if(newStore == NULL)
       {
-        if(DEBUG) errs() << "newStore is NULL\n";
+        //errs() << "Inside store in null\n";
         std::string gPtrName;
         Value *v = dyn_cast<Value>(BI);
         Type* T = v->getType();
@@ -795,7 +836,7 @@ Default:
             alignment = (T->getPrimitiveSizeInBits())/8;
           else
             alignment = T->getPrimitiveSizeInBits() %8;
-      
+
           dt = get_Datatype(T, alignment); 
           // IntegerTy()  == 11 means it is arbitrary bit width integers.
           // LLVM classifies char as IntegerTy with bit width 1. 
@@ -805,35 +846,55 @@ Default:
         }
         else if(T->isPointerTy())
         { 
-          if(DEBUG) errs() << "inside else if\n";
           gPtrName = "gPtr" + std::to_string(++gPtrNo);
-          PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
+          //PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
           // find the element type
-          ArrayType* PT = dyn_cast<ArrayType>(T);
-          
-          int bit_width; 
-          if(PT->getPrimitiveSizeInBits() % 8 == 0)
-           bit_width = (PT->getElementType()->getPrimitiveSizeInBits())/8;
-          else
-            bit_width = PT->getElementType()->getPrimitiveSizeInBits() %8;
-          
-          if(bit_width == 4)
-          {
-            if(PT->getElementType()->isIntegerTy())
-              dt = int32;
+          PointerType* PT = dyn_cast<PointerType>(T);
+
+          if(DEBUG)
+            errs() << "after get seq ptr\n";
+
+          int bit_width;
+          if(PT != nullptr)
+          { 
+            if(PT->getPrimitiveSizeInBits() % 8 == 0)
+              bit_width = (PT->getElementType()->getPrimitiveSizeInBits())/8;
             else
-              dt = float32;  
+              bit_width = PT->getElementType()->getPrimitiveSizeInBits() %8;
+            if(DEBUG)
+              errs() << "passed bit width\n"; 
+            if(bit_width == 4)
+            {
+              if(PT->getElementType()->isFloatingPointTy())
+                dt = float32;
+              else
+                dt = int32;  
+            }
+            else if(bit_width == 8)
+              dt = float64;
+            else if(bit_width < 4)
+              dt = character;
           }
-          else if(bit_width == 8)
+          else
           {
-            dt = float64;
-          }
-          else if(bit_width < 4)
-          {
-            dt = character;
-          }
+            if(T->getPrimitiveSizeInBits() % 8 == 0)
+              bit_width = (T->getPrimitiveSizeInBits())/8;
+            else
+              bit_width = T->getPrimitiveSizeInBits() %8;
+            if(bit_width == 4)
+            {
+              if(T->isIntegerTy())
+                dt = int32;
+              else
+                dt = float32;
+            }
+            else if(bit_width == 8)
+              dt = float64;
+            else if(bit_width < 4)
+              dt = character;
+          } 
           gPtr = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, gPtrName);
-          ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PointerTy_0);
+          ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PT);
           gPtr->setInitializer(const_ptr_2);
           alignment = T->getPointerAddressSpace();
           if(alignment < 4) alignment = 4;
@@ -851,8 +912,11 @@ Default:
       // Find the store node, if not found track it using successors in the next block
       else
       {
-        if(DEBUG) errs() << "Inside else statement\n";
+        if(DEBUG)
+          errs() << "else store in not null\n";
         ptr = newStore->getPointerOperand();
+        Value *v = dyn_cast<Value>(BI);
+        Type* T = v->getType();
         if(ptr == NULL) return false;
         IRChanged = true;
         storeVariable = ptr->getName().str();
@@ -865,11 +929,20 @@ Default:
         }
         if(node == NULL) {
           node = new NODE(constant, 1, ((NodeID++)+100), storeVariable, ptr);
-          if(DEBUG) errs() << "insert_node called\n";
+          llvm::Datatype dt;  
+          if(T->getPrimitiveSizeInBits() % 8 == 0)
+            alignment = (T->getPrimitiveSizeInBits())/8;
+          else
+            alignment = T->getPrimitiveSizeInBits() %8;
+
+          dt = get_Datatype(T, alignment);
+          node->setDatatype(dt);
           myDFG->insert_Node(node);
+
         }
       }
 
+      //errs() << "Passed if else\n";
       map_instn_defn_liveout_to_load[BI] = storeVariable;
       map_liveout_to_alignment[storeVariable] = alignment;
       NODE *outputNode = myDFG->get_Node(BI);
@@ -889,6 +962,7 @@ Default:
         outputNode = padUnsafeLiveOutOperationsWithSelects(myDFG, outputNode, exitCond, bbs);
       }
 
+      //errs() << "Passed dynamic\n";
       myDFG->make_Arc(outputNode, node, EdgeID++, 0, LiveOutDataDep, 0);
 
       unsigned int CGRA_ConstantID = node->get_ID();
@@ -909,12 +983,32 @@ Default:
       LoadInst* loadGlobal;
       LoadInst* loadGlobalNonPhi;
 
-      // See if need to load and modify the operands of the successors
-      for(auto U : BI->users()){  // U is of type User*
+
+      /*for(auto U : BI->users()){  // U is  f type User*
         if(auto Inst = dyn_cast<Instruction>(U))
         {
-          if(DEBUG) errs() << "Inst: " << *Inst << "\n";
-          if(DEBUG) errs() << "gVarNo: " << gVarNo << "\n";
+        if ( std::find(bbs.begin(), bbs.end(), Inst->getParent()) != bbs.end() )
+        continue;
+        errs() << "Inst: " << *Inst << "\n";
+        }
+        }*/ 
+      //exit(1);
+
+      BasicBlock* LoadInsertedBB, *currentBB;
+      // See if need to load and modify the operands of the successors
+      for(auto U : BI->users()){  // U is  f type User*
+        if(auto Inst = dyn_cast<Instruction>(U))
+        {
+          currentBB = Inst->getParent();
+
+          //this ensures that the load instructions are added to the 
+          // users from different basicblocks. 
+          if(LoadInsertedBB != currentBB)
+            loadInserted = false;
+          //else
+          //  continue; 
+          //errs() << "Inst: " << *Inst << "\n";
+          //errs() << "gVarNo: " << gVarNo << "\n";
           // an instruction uses V
           // Ensure that the use is outside of the BBs of loop
           if ( std::find(bbs.begin(), bbs.end(), Inst->getParent()) != bbs.end() )
@@ -925,7 +1019,7 @@ Default:
               (dyn_cast<llvm::GlobalValue>(Inst)))
           {
 
-            if(DEBUG) errs() << "gVarNo: " << gVarNo << "\t erase from Parent\n";
+            //errs() << "gVarNo: " << gVarNo << "\t erase from Parent\n";
             Inst->eraseFromParent();
             break;
           }
@@ -933,7 +1027,7 @@ Default:
           {
 
             if(Inst->getOpcode() == Instruction::PHI)
-            {
+            { 
               // Create new BB between LoopLatchExit and the block where PHI is located
               // Insert load instruction in newly created BB
 
@@ -942,15 +1036,6 @@ Default:
               // and the block containing the Phi
               // TODO: Due to single loop exit block, currently assumed that
               // the sourceBB from loop for the destination phi node would be same.
-              if(DEBUG) errs() << "Inst-getOpcode() is PHI\n";
-              PHINode *phiInst = dyn_cast<PHINode>(Inst);
-              if(DEBUG) errs() << "numIncomingValues is \t" << phiInst->getNumIncomingValues() << "\n";
-              for(unsigned i=0; i < phiInst->getNumIncomingValues(); i++)
-              {
-                  if(DEBUG) errs() << "hi\n";
-                  auto a = phiInst->getIncomingValue(i);
-                  if(DEBUG) errs() << *(a) << "\t" << a->getType() << "\n";
-              }
               BasicBlock *newBB, *destinationBB;
               destinationBB = Inst->getParent();
 
@@ -958,23 +1043,21 @@ Default:
               it = map_liveout_destnBB_newBB.find(destinationBB);
               if (it != map_liveout_destnBB_newBB.end() )
               {
-                if(DEBUG) errs() << "destinationBB exists\n";
                 newBB = it->second;
               }
               else
               {
-                if(DEBUG) errs() << "destinationBB does not exist\n";
+                if(DEBUG)
+                  errs() << "New BB create else\n";
                 newBB = newBB->Create(destinationBB->getContext(), "", destinationBB->getParent(), nullptr);
 
                 BasicBlock *sourceBB = BI->getParent();
                 // Find out the BB from which the live-out value is coming from
                 PHINode *phiInst = dyn_cast<PHINode>(Inst);
-                if(DEBUG) errs() << "getNumIncomingValues = " << phiInst->getNumIncomingValues() << "\n";
                 for(unsigned i=0; i < phiInst->getNumIncomingValues(); i++)
                 {
                   if(dyn_cast<Instruction>(phiInst->getIncomingValue(i)) == BI)
                   {
-                    if(DEBUG) errs() << "incoming value of PHI is the same as BI\n";
                     sourceBB = phiInst->getIncomingBlock(i);
                     break;
                   }
@@ -1010,7 +1093,7 @@ Default:
               }
 
               //TerminatorInst *TI = newBB->getTerminator();
-              auto *TI = newBB->getTerminator();
+	      auto *TI = newBB->getTerminator();
               //errs() << "term instr: " << *TI << "\n";
               loadGlobal = new LoadInst(Inst->getType(),ptr, "", TI);
               map_replace_liveout_use[Inst] = loadGlobal;
@@ -1019,38 +1102,57 @@ Default:
               //for(BasicBlock::iterator mitt = newBB->begin(); mitt!=newBB->end(); ++mitt)
               // errs() << *mitt << "\n";
 
+              //BasicBlock *sourceBB = BI->getParent();
               //errs() << "sourceBB: \n";
               //for(BasicBlock::iterator mitt = sourceBB->begin(); mitt!=sourceBB->end(); ++mitt)
               // errs() << *mitt << "\n";
             }
             else
-            {
-              if(DEBUG) errs() << "Another else statement entered\n";
+            { 
               // Make all instructions that referred to BI now refer to loadGlobal as their source.
+              // if load not inserted add load node in the destination BB. 
+              // Usually the we add the load instruction of the loadGlobal just before the Inst.
+              // But this causes the "Instruction Does not Dominate all uses!" error.
+              // So we find the top first non phi node of the BB and insert the load. 
               if(!loadInserted)
               {
-                if(DEBUG) errs() << "if load not inserted!\n";
-                loadGlobalNonPhi = new LoadInst(Inst->getType(),ptr, storeVariable, Inst); //previously ptr->getName()
+                if(DEBUG)
+                  errs() << "if load not inserted!\n";
+                BasicBlock *destinationBB = Inst->getParent();
+                Instruction *FirstNonPhi = destinationBB->getFirstNonPHI();
+		Type *T = ptr->getType();
+
+		if(T->isPointerTy())
+		{
+		   //PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
+                   // find the element type
+                   PointerType* PT = dyn_cast<PointerType>(T);
+                   if(DEBUG) errs() << "found array type\n";
+                  loadGlobalNonPhi = new LoadInst(PT->getElementType(), ptr, storeVariable, FirstNonPhi);
+		}
+		else
+                 loadGlobalNonPhi = new LoadInst(ptr->getType(),ptr, storeVariable, FirstNonPhi);
                 loadInserted = true;
+                LoadInsertedBB = destinationBB;  
               }
-              if(DEBUG) errs() << "Adding the new loadGlobalNonPhi into map_replace_liveout_use[Inst]\n";
               map_replace_liveout_use[Inst] = loadGlobalNonPhi;
-
-
             }
           }
           IRChanged = true;
         }
       }
 
+      if(DEBUG)
+        errs() << "passed update liveout\n"; 
       // replace use with load instruction
+
       std::map<Instruction*, Instruction*>::iterator itt;
       for(itt = map_replace_liveout_use.begin(); itt != map_replace_liveout_use.end(); itt++)
-      {
-        if(DEBUG) errs() << "Updating load instructions\t" << *(itt->first) << "\t" << *(itt->second) << "\n";
+      { 
+        if(DEBUG)
+          errs() << "inside updating load instructions\t" << *(itt->first) << "\t" << *(itt->second) << "\n";
         (itt->first)->replaceUsesOfWith(BI,dyn_cast<Value>(itt->second));
       }
-
       return IRChanged;
     }
 
@@ -1090,7 +1192,7 @@ Default:
 
         std::string gPtrName;
         //TerminatorInst *TI = Inst->getParent()->getTerminator();
-        auto *TI = Inst->getParent()->getTerminator();
+	auto *TI = Inst->getParent()->getTerminator();
         std::map<Value *, std::string>::iterator it;
         it = map_instn_defn_livein_to_load.find(v);
         if (it != map_instn_defn_livein_to_load.end() )
@@ -1099,6 +1201,7 @@ Default:
         llvm::Type* T = v->getType();
         GlobalVariable *gPtr;
         unsigned alignment = 4;
+        Datatype dt;  
 
         if(T->isIntegerTy() || T->isFloatingPointTy())
         {
@@ -1107,14 +1210,70 @@ Default:
           gPtr = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, gPtrName);
           Constant *constVal = Constant::getNullValue(T);
           gPtr->setInitializer(constVal);
-          alignment = (T->getPrimitiveSizeInBits())/8;
+
+          if(T->getPrimitiveSizeInBits() % 8 == 0)
+            alignment = (T->getPrimitiveSizeInBits())/8;
+          else
+            alignment = T->getPrimitiveSizeInBits() %8;
+
+          dt = get_Datatype(T, alignment);
         }
         else if(T->isPointerTy())
         {
           gPtrName = "gPtr" + std::to_string(++gPtrNo);
-          PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
+          //PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
+
+          PointerType* PT = dyn_cast<PointerType>(T);
+
+          if(DEBUG)
+            errs() << "after get seq ptr\n";
+
+          int bit_width;
+          if(PT != nullptr)
+          {
+            if(PT->getPrimitiveSizeInBits() % 8 == 0)
+              bit_width = (PT->getElementType()->getPrimitiveSizeInBits())/8;
+            else
+              bit_width = PT->getElementType()->getPrimitiveSizeInBits() %8;
+            if(DEBUG)
+              errs() << "passed bit width\n";
+            if(bit_width == 4)
+            {
+              if(PT->getElementType()->isFloatingPointTy())
+                dt = float32;
+              else
+                dt = int32;
+            }
+            else if(bit_width == 8)
+              dt = float64;
+            else if(bit_width < 4)
+              dt = character;
+          }
+          else
+          {
+            if(DEBUG)
+            {
+              errs() << "inside else of the update livein\n";
+              errs() << "T->getPrimitiveSizeInBits(): " << T->getPrimitiveSizeInBits() << "\n";
+            }
+            if(T->getPrimitiveSizeInBits() % 8 == 0)
+              bit_width = (T->getPrimitiveSizeInBits())/8;
+            else
+              bit_width = T->getPrimitiveSizeInBits() %8;
+            if(bit_width == 4)
+            {
+              if(T->isIntegerTy())
+                dt = int32;
+              else
+                dt = float32;
+            }
+            else if(bit_width == 8)
+              dt = float64;
+            else if(bit_width < 4)
+              dt = character;
+          }
           gPtr = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, gPtrName);
-          ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PointerTy_0);
+          ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PT);
           gPtr->setInitializer(const_ptr_2);
           /* Assumption is that Pointers will occupy 4 bytes for 32-bit system */
           alignment = T->getPointerAddressSpace();
@@ -1128,8 +1287,10 @@ Default:
         StoreInst *newStoreInstn = new StoreInst(v,gPtr,TI);
 
         // Load value back from Global Pointer Inside Loop Block
-        map_instn_defn_livein_to_load[v] = gPtrName;
+        //map_instn_defn_livein_to_load[v] = gPtrName; 
+        map_instn_defn_livein_to_load[v] = gPtrName; 
         map_livein_to_alignment[gPtrName] = alignment;
+        map_livein_to_datatype[gPtrName] = dt;
       }
       return IRChanged;
     }
@@ -1166,14 +1327,11 @@ Default:
       bool retVal = false;
       std::string name="";
       unsigned alignment;
-      if(DEBUG) errs() << "Attempting to type cast BI as Value v\n";
       Value *v = dyn_cast<Value>(BI);
-      if(DEBUG) errs() << "Value* v = " << v << "\n";
-      if(DEBUG) errs() << "Getting Type of Value v\n";
       Type* T = v->getType();
-      int bit_width = T->getPrimitiveSizeInBits()/8;  
-      llvm::Datatype dt = get_Datatype(T, bit_width); 
-      if(DEBUG) errs() << "Entering Switch Case statements\n";
+      int bit_width = T->getPrimitiveSizeInBits()/8; 
+      llvm::Datatype dt = get_Datatype(T, bit_width);
+
       switch (BI->getOpcode())
       {
         // Terminator Instructions
@@ -1185,9 +1343,11 @@ Default:
           return retVal;
         case Instruction::Switch:
           {
-            errs() << "instr: " << *BI << "\n";
-            errs() << "\n\nSwitch Detected!\n\n";
-            errs() << "num_cases: " << cast<SwitchInst>(BI)->getNumCases() << "\n";
+            if(DEBUG) {
+              errs() << "instr: " << *BI << "\n";
+              errs() << "\n\nSwitch Detected!\n\n";
+              errs() << "num_cases: " << cast<SwitchInst>(BI)->getNumCases() << "\n";
+            }
 
 
             //errs() << "num_cases: " << (cast<SwitchInst>(BI)->getSuccessor())->getName().str() << "\n";
@@ -1206,8 +1366,8 @@ Default:
                   return false;
               //errs() << "intrs: " << *it << "\n";
             } 
-
-            errs() << "default: " << cast<SwitchInst>(BI)->getDefaultDest() << "\n";
+            if(DEBUG)
+              errs() << "default: " << cast<SwitchInst>(BI)->getDefaultDest() << "\n";
             BasicBlock * bbs = cast<SwitchInst>(BI)->getDefaultDest(); 
             for(BasicBlock::iterator it = bbs->begin(); it!=bbs->end(); ++it)
               if (!Add_Node(&(*it), myDFG, loopHeader))
@@ -1247,7 +1407,7 @@ Default:
 
           // Standard binary operators...
         case Instruction::Add:
-        case Instruction::FAdd: 
+        case Instruction::FAdd:  
           node = new NODE(add, 1, NodeID++, BI->getName().str(), BI);
           node->setDatatype(dt); 
           myDFG->insert_Node(node);
@@ -1352,29 +1512,39 @@ Default:
           retVal = true;
           return retVal;
         case Instruction::Store:
-          node = new NODE(st_add, 1, NodeID++, BI->getName().str(), BI);
-          node2 = new NODE(st_data, 1, NodeID++, BI->getName().str(), BI);
-          node->set_Store_Data_Bus_Write(node2);
-          node2->set_Store_Address_Generator(node);
-          StoreInst *tempStoreInst;
-          tempStoreInst = dyn_cast<StoreInst>(BI);
-          alignment = tempStoreInst->getAlignment();
-          node->setAlignment(alignment);
-          node->setDatatype(dt);
-          node2->setDatatype(dt);
-          myDFG->insert_Node(node);
-          myDFG->insert_Node(node2);
-          for(unsigned ii=0; ii<BI->getNumOperands(); ii++)
           {
-            GetElementPtrInst *temp = dyn_cast<GetElementPtrInst>(BI->getOperand(ii));
-            if(temp)
+            node = new NODE(st_add, 1, NodeID++, BI->getName().str(), BI);
+            node2 = new NODE(st_data, 1, NodeID++, BI->getName().str(), BI);
+            node->set_Store_Data_Bus_Write(node2);
+            node2->set_Store_Address_Generator(node);
+            StoreInst *tempStoreInst;
+            tempStoreInst = dyn_cast<StoreInst>(BI);
+            alignment = tempStoreInst->getAlignment();
+            if(DEBUG1) errs() << "alignment for store: " << alignment << "\n";
+            if(DEBUG1) errs() << "T: " << T << "\n";
+            StoreInst* si = dyn_cast<StoreInst>(BI); 
+            Value *vi = si->getPointerOperand(); 
+            Type* Ti = vi->getType()->getPointerElementType();
+            if(DEBUG1) errs() << "store name: " << node->get_ID() << "\n"; 
+            dt = get_Datatype(Ti, alignment); 
+            if(DEBUG1) errs() << "Datatype: " << dt << "\n";
+            node->setAlignment(alignment);
+            node->setDatatype(dt);
+            node2->setDatatype(dt);
+            myDFG->insert_Node(node);
+            myDFG->insert_Node(node2);
+            for(unsigned ii=0; ii<BI->getNumOperands(); ii++)
             {
-              idxprom_nodeID_load_alignment_map[temp]=alignment;
-              break;
+              GetElementPtrInst *temp = dyn_cast<GetElementPtrInst>(BI->getOperand(ii));
+              if(temp)
+              {
+                idxprom_nodeID_load_alignment_map[temp]=alignment;
+                break;
+              }
             }
+            retVal = true;
+            return retVal;
           }
-          retVal = true;
-          return retVal;
         case Instruction::AtomicCmpXchg:
           retVal = false;
           errs() << "\n\nAtomicCmpXchg Detected!\n\n";
@@ -1389,6 +1559,7 @@ Default:
           return retVal;
         case Instruction::GetElementPtr:
           node = new NODE(add, 1, NodeID++, BI->getName().str(),BI);
+          dt = int32; 
           node->setDatatype(dt);
           myDFG->insert_Node(node);
           retVal = true;
@@ -1409,14 +1580,30 @@ Default:
           return retVal;
         case Instruction::FPTrunc:
         case Instruction::FPExt:
+          node = new NODE(andop, 1, NodeID++, BI->getName().str(), BI);
+          node->setDatatype(dt);
+          myDFG->insert_Node(node);
+          return true;
         case Instruction::FPToUI:
         case Instruction::FPToSI:
+          node = new NODE(add, 1, NodeID++, BI->getName().str(), BI); 
+          node->setDatatype((Datatype) int32);
+          myDFG->insert_Node(node);
+          return true; 
         case Instruction::UIToFP:
         case Instruction::SIToFP:
+          node = new NODE(add, 1, NodeID++, BI->getName().str(), BI);
+          node->setDatatype((Datatype) float32);
+          myDFG->insert_Node(node);
+          return true;
         case Instruction::IntToPtr:
         case Instruction::PtrToInt:
+          retVal = true; 
         case Instruction::BitCast:
-          retVal = true;
+          node = new NODE(add, 1, NodeID++, BI->getName().str(), BI);
+          node->setDatatype(dt);
+          myDFG->insert_Node(node);
+          return true;
           // llvm document: It is always a no-op cast becasue
           // no bits change.
           return retVal;
@@ -1519,14 +1706,10 @@ Default:
              If Phi is not in loopHeader block, treat it as a select instruction
            */
           {
-            errs () << "Phi node detected\n";
-            errs () << "Initializing Node\n";
+            if(DEBUG) errs() << "We are here for PHI\n";
             node = new NODE(cgra_select, 1, NodeID++, BI->getName().str(), BI);
-            errs () << "Setting Node Datatype\n";
             node->setDatatype(dt);
-            errs () << "Inserting Node\n";
             myDFG->insert_Node(node);
-            errs () << "Inserting Node Successful\n";
             retVal = true;
             return retVal;
           }
@@ -1554,13 +1737,8 @@ Default:
 
           // Other Operations
         case Instruction::Call:
-          if(!BI->isDebugOrPseudoInst()) {
-            retVal = false;
-            errs() << "\n\nCall Detected!\n\n";
-          } else {
-              errs() << "\n\nDebug/PsuedoInst Call Detected\n\n";
-              retVal = true;
-          }
+          retVal = false;
+          errs() << "\n\nCall Detected!\n\n";
           return retVal;
         case Instruction::VAArg:
           retVal = false;
@@ -1603,23 +1781,56 @@ Default:
 
       if(bb1->getSinglePredecessor() == bb2->getSinglePredecessor())
       {
-        //errs() << "in 1st if\n"; 
+        if(DEBUG)
+          errs() << "in 1st if\n"; 
         BasicBlock *tempBB = bb1->getSinglePredecessor();
-        for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
+        if(DEBUG)
+          if(tempBB == NULL)
+            errs() <<  "tempBB is NULL\n";
+        if(tempBB != NULL)
         {
-          if(BI_temp->getOpcode() != Instruction::Br)
-            continue;
-
-          BranchInst* tempBrInst = dyn_cast<llvm::BranchInst>(BI_temp);
-          if(tempBrInst->isUnconditional()) break;
-          brInst = tempBrInst;
-          condInst = dyn_cast<llvm::Instruction>(tempBrInst->getCondition());
-          retBlk = bb1->getSinglePredecessor();
+          for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
+          {
+            if(BI_temp->getOpcode() != Instruction::Br)
+              continue;
+            if(DEBUG) errs() << "inside common parents: " << (*BI_temp) << "\n";
+            BranchInst* tempBrInst = dyn_cast<llvm::BranchInst>(BI_temp);
+            if(tempBrInst->isUnconditional()) break;
+            brInst = tempBrInst;
+            condInst = dyn_cast<llvm::Instruction>(tempBrInst->getCondition());
+            retBlk = bb1->getSinglePredecessor();
+          }
+        }
+        else
+        {
+          bool found = false;
+          for (unsigned int ii = 0; ii < bbs.size(); ii++)
+          {
+            if(found) break;
+            for (BasicBlock::iterator BBI = bbs[ii]->begin(); BBI != bbs[ii]->end(); ++BBI)
+            {
+              if(BBI->getOpcode() != Instruction::Br)
+                continue;
+              if(DEBUG) errs() << "inside common parents: " << (*BBI) << "\n";
+              BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
+              if(tempBrInst->isUnconditional()) break;
+              if( (tempBrInst->getSuccessor(0) == bb1) &&
+                  (tempBrInst->getSuccessor(1) == bb2))
+              {
+                brInst = tempBrInst;
+                condInst = dyn_cast<llvm::Instruction>(tempBrInst->getCondition());
+                retBlk = bbs[ii];
+                found = true;
+                break;
+              }
+            }
+          }
         }
       }
       else if(bb1->getSinglePredecessor() == bb2)
       {
-        // errs() << "in 2nd if-else\n";
+        if(DEBUG)
+          errs() << "in 2nd if-else\n";
         BasicBlock *tempBB = bb2;
         for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
         {
@@ -1635,7 +1846,8 @@ Default:
       }
       else if(bb1 == bb2->getSinglePredecessor())
       {
-        //errs() << "in 3rd if-else\n";
+        if(DEBUG)
+          errs() << "in 3rd if-else\n";
         BasicBlock *tempBB = bb1;
         for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
         {
@@ -1651,7 +1863,8 @@ Default:
       }
       else
       {
-        // errs() << "in last else\n";     
+        if(DEBUG)
+          errs() << "in last else\n";     
 
         // errs() << "bbssize: " << bbs.size() << "\n";
         bool found = false;
@@ -1662,6 +1875,7 @@ Default:
           {
             if(BBI->getOpcode() != Instruction::Br)
               continue;
+            if(DEBUG) errs() << "inside common parents: " << (*BBI) << "\n";
             BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
             if(tempBrInst->isUnconditional()) break;
             if( (tempBrInst->getSuccessor(0) == bb1) &&
@@ -1688,6 +1902,8 @@ Default:
           continue;
 
         tempBrInst = dyn_cast<llvm::BranchInst>(BI_temp);
+        brInst = tempBrInst;
+        condInst = dyn_cast<llvm::Instruction>(tempBrInst->getCondition());
         if(tempBrInst->isUnconditional()) return NULL;
         return tempBrInst;
       }
@@ -1722,6 +1938,17 @@ Default:
 
           BasicBlock *succ1 = tempBrInst->getSuccessor(0);
           BasicBlock *succ2 = tempBrInst->getSuccessor(1);
+          if(DEBUG1)
+          { 
+            errs() << "Br inst=" << *tempBrInst << "\n"; 
+            if(succ2 != NULL)
+            {
+              errs() << "working in succ2\n";
+              for(BasicBlock::iterator itt=succ2->begin(); itt!=succ2->end(); ++itt)
+                errs() << *itt << "\n";
+            }
+
+          }
           BasicBlock *commonSuccessor = SearchCommonSuccessorForBranching(bbs[ii],succ1,succ2,loopLatch);
           assert((commonSuccessor != NULL) && "Error while finding common successor");
 
@@ -1729,10 +1956,51 @@ Default:
           elseBlocks.push_back(succ2);
           condBlocks.push_back(bbs[ii]);
           condSet.push_back(tempBrInst);
+          if(DEBUG1)
+          {
+            errs() << "succ blocks pushed\n";
+            if(commonSuccessor == NULL)
+              errs() << "Hi common sucessor is null\n";
+            else
+            {
+              for(BasicBlock::iterator itt = commonSuccessor->begin(); itt != commonSuccessor->end(); ++itt)
+                errs() << *itt << "\n";
+            }
+            errs() << "\n";  
+          }
           succBlocks.push_back(commonSuccessor);
           break;
         }
       }
+      if(DEBUG1)
+      {
+        errs() << "from collecting info\n";
+        for(unsigned int ii=0; ii < ifBlocks.size(); ii++)  
+        {
+          errs() << "ii: " << ii << "\n";
+          for(BasicBlock::iterator BBI = ifBlocks[ii]->begin(); BBI != ifBlocks[ii]->end(); ++BBI)
+            errs() << "ifBlock ins: " << *BBI << "\n";
+          errs() << "\n";
+        }
+
+        for(unsigned int ii=0; ii < elseBlocks.size(); ii++)  
+        {
+          errs() << "ii: " << ii << "\n";
+          for(BasicBlock::iterator BBI = elseBlocks[ii]->begin(); BBI != elseBlocks[ii]->end(); ++BBI)
+            errs() << "elseBlock ins: " << *BBI << "\n";
+          errs() << "\n";
+        }
+        for(unsigned int ii=0; ii < condSet.size(); ii++)
+          errs() << "condset: " << *(condSet[ii]) << "\n"; 
+        //for(unsigned int ii=0; ii < succBlocks.size(); ii++)
+        // {
+        //   errs() << "ii: " << ii << "\n";
+        //  for(BasicBlock::iterator BBI = succBlocks[ii]->begin(); BBI != succBlocks[ii]->end(); ++BBI)
+        //    errs() << "succBlock ins: " << *BBI << "\n";
+        //  errs() << "\n";
+        //}
+      }
+
       /*
          for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
          {
@@ -1747,23 +2015,56 @@ Default:
     {
       // Global array and variable names for which
       // there is at least a store in conditional path
-      std::vector<std::string> storeVarNames;
-      std::vector<int> varFound;
+      //std::vector<std::string> storeVarNames;
+      //std::vector<int> varFound;
 
-      //errs() << "cond blocks size: " << condBlocks.size() << "\n"; 
+      if(DEBUG1) errs() << "condsize: " << condBlocks.size() << "\n";
+
+
+      /*for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
+        {
+        for(unsigned int it = 0; it < 2; it++)
+        {
+        BasicBlock *current;
+        if(it == 0)
+        current = ifBlocks[ii];
+        else
+        current = elseBlocks[ii];
+
+        if(current == succBlocks[ii]) continue;
+
+      //while(current != loopLatch)
+      //{
+      if(current == succBlocks[ii]) break;
+      for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
+      {
+      if(DEBUG1)
+      errs() << "we are in store: " << *BBI << "\n";
+
+      if(BBI->getOpcode() == Instruction::Br)
+      {
+      BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
+      if(tempBrInst->isUnconditional())
+      current = current->getSingleSuccessor();
+      else
+      {
+      // current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
+      current = loopLatch; 
+      }
+      break;
+      }
+      else if(BBI->getOpcode() == Instruction::Store)
+      {
+      if(DEBUG1) errs() << "inside storei\n";
+      }
+      }
+      //}
+      }
+      }*/
+
 
       for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
       {
-        //errs() << "ii: " << ii << "\n";
-        std::vector<bool> varLoaded;
-        std::vector<Instruction*> variableValue;
-        std::vector<Value*> variablePtr;
-        std::vector<unsigned> variableAlignment;
-        std::vector<std::string> storeArrNames;
-        std::vector<int> arrayFound;
-        std::vector<Instruction *> arrayIndex;
-
-        //errs() << "before for loop: " << ii << "\n";
         for(unsigned int it = 0; it < 2; it++)
         {
           BasicBlock *current;
@@ -1774,241 +2075,528 @@ Default:
 
           if(current == succBlocks[ii]) continue;
 
-          while(current != loopLatch)
+          //while(current != loopLatch)
+          // {
+          if(current == succBlocks[ii]) break;  
+          for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
           {
-            if(current == succBlocks[ii]) break;
-            for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
+            if(DEBUG1)
+              errs() << "break ins: " << *BBI << "\n";
+
+            if(BBI->getOpcode() == Instruction::Br)
             {
-              if(BBI->getOpcode() == Instruction::Br)
+              BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
+              if(tempBrInst->isUnconditional())
+                current = current->getSingleSuccessor();
+              else
               {
-                BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
-                if(tempBrInst->isUnconditional())
-                  current = current->getSingleSuccessor();
-                else
-                  current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
-                break;
+                //current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
+                current = loopLatch;
               }
-              else if(BBI->getOpcode() == Instruction::Store)
+              break;
+            }
+            else if(BBI->getOpcode() == Instruction::Store)
+            {
+              if(DEBUG1)
+                errs() << "in store: " << *BBI << "\n";
+              StoreInst *stInst = (dyn_cast<llvm::StoreInst>(BBI));
+              // TODO
+              Instruction *ptrOperand = (dyn_cast<Instruction>(stInst->getPointerOperand()));
+              Instruction *valOperand = (dyn_cast<Instruction>(stInst->getValueOperand()));
+              if(DEBUG1)
               {
-                StoreInst *stInst = (dyn_cast<llvm::StoreInst>(BBI));
-                // TODO
-                Instruction *ptrOperand = (dyn_cast<Instruction>(stInst->getPointerOperand()));
-                if(ptrOperand != nullptr)
+                errs() << "ptroperand: " << *ptrOperand << "\n";
+              }
+              if(ptrOperand != nullptr)
+              {
+                GetElementPtrInst *ptrInst = dyn_cast<GetElementPtrInst>(stInst->getPointerOperand());
+                std::string varName; 
+                if(ptrInst != nullptr) 
                 {
-                  errs() << "Inside Ptr operand not null\n"  ;
+                  varName = ptrInst->getPointerOperand()->getName().str();
+                  if(varName.empty()) varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+                }
+                else
+                  varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+                if(DEBUG1) errs() << "varName: " << varName << "\n";
 
-                  if(stInst == nullptr)
-                    errs() << "st Inst is null\n"; 
-                  GetElementPtrInst *ptrInst = dyn_cast<GetElementPtrInst>(stInst->getPointerOperand());
-                  std::string varName; 
-                  if(ptrInst != nullptr) 
+                NODE* node4 = myDFG->get_Node(ptrOperand);
+                if(DEBUG1) errs() << "passed node 4: " << node4->get_ID() << "\n";
+                NODE* node5 = myDFG->get_Node(valOperand);
+                if(DEBUG1) errs() << "passed node 5: " << node5->get_ID() << "\n";
+                std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
+
+
+                NODE* node_ld; 
+                NODE* in_node;
+                bool found=false;
+                for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+                {
+                  if(outGoingArcs[ii]->get_From_Node() == node4 && outGoingArcs[ii]->get_To_Node()->get_Instruction() == ld_add) 
                   {
-                    errs() << "Inside if\n";
-                    errs() << "pointer name: " << ptrInst->getPointerOperand()->getName() << "\n";   
-                    varName = ptrInst->getPointerOperand()->getName().str();
+                    found = true; 
+                    node_ld = outGoingArcs[ii]->get_To_Node(); 
+                  }
+                }
+                if(DEBUG1) errs() << "passed outgoing found:" << found << "\n";
 
-                    errs() << "passed varname: " << varName << "\n"; 
-
-                    if(varName.empty())
+                if(!found)
+                {
+                  NODE* node = myDFG->get_Node_Mem_Data(cast<Instruction>(BBI));
+                  for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+                  {
+                    if(outGoingArcs[ii]->get_To_Node() == node && outGoingArcs[ii]->get_From_Node()->get_Instruction() != st_add)
                     {
-                      errs() << "inside empty\n";
-                      varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
-                      errs() << "varname: " << varName << "\n"; 
+
+                      in_node = outGoingArcs[ii]->get_From_Node();
                     }
                   }
-                  else
-                    varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+                  if(DEBUG1) errs() << "mnode: " << node->get_ID() << "\n";
+                  NODE* node1 = new NODE(ld_add, 1, NodeID++, "", NULL);
+                  NODE* node2 = new NODE(ld_data, 1, NodeID++, "", NULL);
+                  node1->setDatatype(node->getDatatype());
+                  node2->setDatatype(node->getDatatype());
+                  unsigned alignment = stInst->getAlignment();
+                  node1->setAlignment(alignment);
+                  node1->set_Load_Data_Bus_Read(node2); 
+                  node2->set_Load_Address_Generator(node1);
+                  myDFG->insert_Node(node1);
+                  myDFG->insert_Node(node2);
 
-                  std::vector<std::string>::iterator itt = std::find(storeVarNames.begin(), storeVarNames.end(), varName);
-                  if(itt == storeVarNames.end())
+                  NODE* node3 = new NODE(cond_select, 1, NodeID++, "", NULL); 
+                  myDFG->insert_Node(node3);
+
+                  if(DEBUG1) errs() << " not found inserting nodes: node1: " << node1->get_ID() << "\tnode2: " << node2->get_ID() << "\tnode3:" << node3->get_ID() << "\n";
+                  ARC* arc;
+                  if(in_node != NULL)
                   {
-                    storeVarNames.push_back(varName);
-                    varFound.push_back(it);
-                    variablePtr.push_back(stInst->getPointerOperand());
-                    variableAlignment.push_back(stInst->getAlignment());
+                    arc = myDFG->get_Arc(in_node, node);
+                    if(arc != NULL)
+                      myDFG->Remove_Arc(arc); 
+                  }
+                  myDFG->make_Arc(node4, node1, EdgeID++, 0, TrueDep, 0);
+                  //myDFG->make_Arc(node1, node2, EdgeID++, 0, TrueDep, 0);
+                  if(DEBUG1) errs() << "if: " << it << "\n";
+                  if(DEBUG1) errs() << "if ii: " << ii << "\n";
+                  Instruction* cond; 
+                  //if(ii == 0)
+                  cond = dyn_cast<llvm::Instruction>(condSet[ii]->getCondition());
+                  //else
+                  //cond = dyn_cast<llvm::Instruction>(condSet[0]->getCondition());
+                  BasicBlock *parent = BBI->getParent(); 
+                  NODE* node6 = myDFG->get_Node(cond);  
+                  if(DEBUG1) errs() << "if node6: " << node6->get_ID() << "\n"; 
+                  if(it == 0) 
+                  {
+                    myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
+                    if(in_node!=NULL)
+                      myDFG->make_Arc(in_node, node3, EdgeID++, 0, TrueDep, 1);      
+                    else
+                      myDFG->make_Arc(node, node3, EdgeID++, 0, TrueDep, 1);
+                    myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
                   else
-                  {     
-                    varFound[std::distance(storeVarNames.begin(), itt)] = 2;
+                  {    
+                    myDFG->make_Arc(node5, node3, EdgeID++, 0, TrueDep, 0);
+                    myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1); 
+                    myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
+                  node3->setDatatype(node6->getDatatype()); 
+                  myDFG->make_Arc(node3, node, EdgeID++, 0, TrueDep, 0);
                 }
                 else
                 {
-                  std::string varName = stInst->getPointerOperand()->getName().str();
-                  if(varName.empty()) varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
-                  assert( !varName.empty() && "Variable does not have name! Debug!\n");
-                  std::vector<std::string>::iterator itt = std::find(storeVarNames.begin(), storeVarNames.end(), varName);
-                  if(itt == storeVarNames.end())
+                  if(node5->get_Instruction() == ld_add) node5 = node5->get_Related_Node();
+                  NODE* node3 = new NODE(cond_select, 1, NodeID++, "", NULL);
+                  if(DEBUG1) errs() << "inserting nodes: node3: " << node3->get_ID() << "\n";
+                  myDFG->insert_Node(node3);
+                  NODE* node_ld_data = node_ld->get_Related_Node(); 
+                  if(DEBUG1) errs() << "node ld data: " << node_ld_data->get_ID() << "\n";
+                  NODE* node = myDFG->get_Node_Mem_Data(cast<Instruction>(BBI));
+                  if(DEBUG1) errs() << "mnode: " << node->get_ID() << "\n";
+                  ARC* arc = myDFG->get_Arc(node5, node);
+                  if(arc != NULL)
+                    myDFG->Remove_Arc(arc); 
+                  if(DEBUG1) errs() << "else: " << it << "\n";
+                  if(DEBUG1) errs() << "else ii: " << ii << "\n";
+                  Instruction* cond;
+                  //if(it == 0)
+                    cond = dyn_cast<llvm::Instruction>(condSet[ii]->getCondition());
+                  //else
+                  //  cond = dyn_cast<llvm::Instruction>(condSet[0]->getCondition());
+                  NODE* node6 = myDFG->get_Node(cond);
+                  if(DEBUG1) errs() << "else node6: " << node6->get_ID() << "\n";
+                  if(it == 0)
                   {
-                    storeVarNames.push_back(varName);
-                    varFound.push_back(it);
-                    variablePtr.push_back(stInst->getPointerOperand());
-                    variableAlignment.push_back(stInst->getAlignment());
+                    myDFG->make_Arc(node_ld_data, node3, EdgeID++, 0, TrueDep, 0);
+                    myDFG->make_Arc(node5, node3, EdgeID++, 0, TrueDep, 1); 
+                    myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
                   else
-                    varFound[std::distance(storeVarNames.begin(), itt)] = 2;
+                  {
+                    myDFG->make_Arc(node5, node3, EdgeID++, 0, TrueDep, 0);
+                    myDFG->make_Arc(node_ld_data, node3, EdgeID++, 0, TrueDep, 1);
+                    myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
+                  }
+                  node3->setDatatype(node6->getDatatype()); 
+                  myDFG->make_Arc(node3, node, EdgeID++, 0, TrueDep, 0);
                 }
+              }
+              else
+              {
+                if(DEBUG1) errs() << "PTR operand is null\n";
               }
             }
           }
+          //} 
         }
 
-        //errs() << "storeVarName: " << storeVarNames.size() << "\n"; 
-        // Iterate for each variable or array
-        for(unsigned int it = 0; it < storeVarNames.size(); it++)
+      }
+      // This for loop collects the incoming variable ptr or simple node to the store.
+      // Particularly to the st_add. 
+      //for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
+      // {
+      //errs() << "ii: " << ii << "\n";
+      // std::vector<bool> varLoaded;
+      // std::vector<Instruction*> variableValue;
+      // std::vector<Value*> variablePtr;
+      // std::vector<unsigned> variableAlignment;
+      // std::vector<std::string> storeArrNames;
+      //std::vector<int> arrayFound;
+      //std::vector<Instruction *> arrayIndex;
+
+      //errs() << "before for loop: " << ii << "\n";
+      /*for(unsigned int it = 0; it < 2; it++)
         {
-          //errs() << "Inside 2nd for\n";
-          bool presentInBothBlks = (varFound[it] == 2);
-          Value *op1, *op2;
-          StoreInst *stInst;
+        BasicBlock *current;
+        if(it == 0)
+        current = ifBlocks[ii];
+        else
+        current = elseBlocks[ii];
 
-          for(unsigned int itt = 0; itt < 2; itt++)
-          {
-            BasicBlock *current;
-            if(itt == 0)
-              current = ifBlocks[ii];
-            else
-              current = elseBlocks[ii];
+        if(current == succBlocks[ii]) continue;
 
-            if(current == succBlocks[ii])
-              continue;
+        while(current != loopLatch)
+        {
+        if(current == succBlocks[ii]) break;
+        for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
+        {
+        if(BBI->getOpcode() == Instruction::Br)
+        {
+        BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
+        if(tempBrInst->isUnconditional())
+        current = current->getSingleSuccessor();
+        else
+        current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
+        break;
+        }
+        else if(BBI->getOpcode() == Instruction::Store)
+        {
+        if(DEBUG1)
+        errs() << "in store: " << *BBI << "\n";
+        StoreInst *stInst = (dyn_cast<llvm::StoreInst>(BBI));
+      // TODO
+      Instruction *ptrOperand = (dyn_cast<Instruction>(stInst->getPointerOperand()));
+      if(DEBUG1)
+      {
+      errs() << "ptroperand: " << *ptrOperand << "\n";
+      }
+      if(ptrOperand != nullptr)
+      {
+      GetElementPtrInst *ptrInst = dyn_cast<GetElementPtrInst>(stInst->getPointerOperand());
+      std::string varName; 
+      if(ptrInst != nullptr) 
+      {
+      varName = ptrInst->getPointerOperand()->getName().str();
 
-            while(current != loopLatch)
-            {
-              if(current == succBlocks[ii]) break;
-              for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
-              {
-                if(BBI->getOpcode() == Instruction::Br)
-                {
-                  BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
-                  if(tempBrInst->isUnconditional())
-                    current = current->getSingleSuccessor();
-                  else
-                    current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
-                  break;
-                }
-                else if(BBI->getOpcode() == Instruction::Store)
-                {
-                  stInst = (dyn_cast<llvm::StoreInst>(BBI));
-                  std::string stInstName = stInst->getPointerOperand()->getName().str();
-                  if(stInstName.empty())
-                    stInstName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
-                  if(stInstName.compare(storeVarNames[it]) != 0)
-                    continue;
-                  if(!presentInBothBlks)
-                  {
-                    if(itt == 0)
-                    {
-                      op1 = stInst->getPointerOperand();
-                      op2 = stInst;
-                    }
-                    else
-                    {
-                      op1 = stInst;
-                      op2 = stInst->getPointerOperand();
-                    }
-                  }
-                  else
-                  {
-                    if(itt == 0)
-                      op1 = stInst->getPointerOperand();
-                    else
-                      op2 = stInst->getPointerOperand();
-                  }
-                }
-              }
-            }
-          }
+      //if(varName.empty())
+      //  {
+      //  varName = myDFG->get_Node(ptrInst->getPointerOperand())->get_Name(); 
+      //  errs() << "varname: " << varName << "\n";
+      //  varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+      //  errs() << "varname: " << varName << "\n";
 
-          NODE *node1 = myDFG->get_Node(stInst); //store_address node
-          NODE *node2;                          //store_data node
-          NODE *selectNode = new NODE(cond_select, 1, NodeID++, "", NULL);
-          NODE *constInt;
-          myDFG->insert_Node(selectNode);
+      // }
 
-          if(!presentInBothBlks)
-          {
-            std::string dummyStoreName;
-            Value *v = stInst->getValueOperand();
-            Type* T = v->getType();
-            GlobalVariable *dummyStore;
-            unsigned alignment = 4;
+      if(varName.empty()) varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+      }
+      else
+      varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
 
-            dummyStoreName = "dmy_CGRAst_" + std::to_string(++dummyStoreVarNo);
-            // Create new dummy variable
-            dummyStore = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, dummyStoreName);
-            constInt = new NODE(constant, 1, NodeID++, dummyStoreName, NULL);
 
-            if(T->isIntegerTy() || T->isFloatingPointTy())
-            {
-              Constant *constVal = Constant::getNullValue(T);
-              dummyStore->setInitializer(constVal);
-              alignment = (T->getPrimitiveSizeInBits())/8;
-            }
-            else if(T->isPointerTy())
-            {
-              PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
-              ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PointerTy_0);
-              dummyStore->setInitializer(const_ptr_2);
-              alignment = T->getPointerAddressSpace();
-              if(alignment < 4) alignment = 4;
-            }
-            dummyStore->setUnnamedAddr(GlobalValue::UnnamedAddr::Local);
-            myDFG->insert_Node(constInt);
-          }
+      std::vector<std::string>::iterator itt = std::find(storeVarNames.begin(), storeVarNames.end(), varName);
+      if(itt == storeVarNames.end())
+      {
+      storeVarNames.push_back(varName);
+      varFound.push_back(it);
+      variablePtr.push_back(stInst->getPointerOperand());
+      variableAlignment.push_back(stInst->getAlignment());
+      }
+      else
+      {     
+      varFound[std::distance(storeVarNames.begin(), itt)] = 2;
+      }
+      }
+      else
+      {
+        std::string varName = stInst->getPointerOperand()->getName().str();
+        if(varName.empty()) varName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+        assert( !varName.empty() && "Variable does not have name! Debug!\n");
+        std::vector<std::string>::iterator itt = std::find(storeVarNames.begin(), storeVarNames.end(), varName);
+        if(itt == storeVarNames.end())
+        {
+          storeVarNames.push_back(varName);
+          varFound.push_back(it);
+          variablePtr.push_back(stInst->getPointerOperand());
+          variableAlignment.push_back(stInst->getAlignment());
+        }
+        else
+          varFound[std::distance(storeVarNames.begin(), itt)] = 2;
+      }
+    }
+    }
+    }
+    }*/
+    // Iterate for each variable or array
+    /*for(unsigned int it = 0; it < storeVarNames.size(); it++)
+      {
+      bool presentInBothBlks = (varFound[it] == 2);
+      if(DEBUG1) errs() << "present if both blks: " << presentInBothBlks << "\n";
+      Value *op1, *op2;
+      StoreInst *stInst;
 
-          NODE *input1 = myDFG->get_Node(op1);
-          NODE *input2 = myDFG->get_Node(op2);
-          NODE *condNode = myDFG->get_Node(Find_Last_CMP_Instruction(condBlocks[ii]));
-          unsigned selectInput_opOrder;
-          unsigned selectSelf_opOrder;
-          ARC *arc1;
+      for(unsigned int itt = 0; itt < 2; itt++)
+      {
+      BasicBlock *current;
+      if(itt == 0)
+      current = ifBlocks[ii];
+      else
+      current = elseBlocks[ii];
 
-          if(node1->is_Store_Data_Bus_Write())
-          {
-            node2 = node1;
-            node1 = node2->get_Related_Node();
-          }
+      if(current == succBlocks[ii])
+      continue;
+
+      while(current != loopLatch)
+      {
+      if(current == succBlocks[ii]) break;
+      for (BasicBlock::iterator BBI = current->begin(); BBI != current->end(); ++BBI)
+      {
+      if(BBI->getOpcode() == Instruction::Br)
+      {
+      BranchInst * tempBrInst = (dyn_cast<llvm::BranchInst>(BBI));
+      if(tempBrInst->isUnconditional())
+      current = current->getSingleSuccessor();
+      else
+      current = SearchCommonSuccessorForBranching(current,tempBrInst->getSuccessor(0), tempBrInst->getSuccessor(1),loopLatch);
+      break;
+      }
+      else if(BBI->getOpcode() == Instruction::Store)
+      {
+      stInst = (dyn_cast<llvm::StoreInst>(BBI));
+      std::string stInstName = stInst->getPointerOperand()->getName().str();
+      if(stInstName.empty())
+      stInstName = myDFG->get_Node(stInst->getPointerOperand())->get_Name();
+      if(stInstName.compare(storeVarNames[it]) != 0)
+      continue;
+      if(!presentInBothBlks)
+      {
+      if(itt == 0)
+      {
+      op1 = stInst->getPointerOperand();
+      op2 = stInst;
+      }
+      else
+      {
+      op1 = stInst;
+      op2 = stInst->getPointerOperand();
+      }
+      }
+      else
+      {
+      if(itt == 0)
+      op1 = stInst->getPointerOperand();
+      else
+      op2 = stInst->getPointerOperand();
+      }
+      }
+      }
+      }
+      }
+
+      NODE *node1 = myDFG->get_Node(stInst); //store_address node
+      NODE *node2;                          //store_data node
+      NODE *selectNode = new NODE(cond_select, 1, NodeID++, "", NULL);
+      NODE *constInt;
+      selectNode->setDatatype(node1->getDatatype()); 
+      myDFG->insert_Node(selectNode);
+    Datatype dt;      
+
+    if(!presentInBothBlks)
+    {
+      std::string dummyStoreName;
+      Value *v = stInst->getValueOperand();
+      Type* T = v->getType();
+      GlobalVariable *dummyStore;
+      unsigned alignment = 4;
+
+      dummyStoreName = "dmy_CGRAst_" + std::to_string(++dummyStoreVarNo);
+      // Create new dummy variable
+      dummyStore = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, dummyStoreName);
+      constInt = new NODE(constant, 1, NodeID++, dummyStoreName, NULL);
+
+      if(T->isIntegerTy() || T->isFloatingPointTy())
+      {
+        Constant *constVal = Constant::getNullValue(T);
+        dummyStore->setInitializer(constVal);
+        alignment = (T->getPrimitiveSizeInBits())/8;
+        if(T->isIntegerTy())
+        {
+          if(alignment == 1)
+            dt = character;
+          if(alignment == 2)
+            dt = int16;
+          else  
+            dt = int32;
+        }
+        if(T->isFloatingPointTy())
+        {
+          if(alignment == 1)
+            dt = character;
+          if(alignment == 2)
+            dt = int16;
           else
-            node2 = node1->get_Related_Node();
-
-          if(op1 == stInst)
-          {
-            selectInput_opOrder = 1;
-            selectSelf_opOrder = 0;
-            myDFG->make_Arc(input2, selectNode, EdgeID++, 0, TrueDep, selectInput_opOrder);
-            myDFG->make_Arc(constInt, selectNode, EdgeID++, 0, TrueDep, selectSelf_opOrder);
-            arc1 = myDFG->get_Arc(input2, node1);
-            myDFG->Remove_Arc(arc1);
-          }
-          else if(op2 == stInst)
-          {
-            selectInput_opOrder = 0;
-            selectSelf_opOrder = 1;
-            myDFG->make_Arc(input1, selectNode, EdgeID++, 0, TrueDep, selectInput_opOrder);
-            myDFG->make_Arc(constInt, selectNode, EdgeID++, 0, TrueDep, selectSelf_opOrder);
-            arc1 = myDFG->get_Arc(input1, node1);
-            myDFG->Remove_Arc(arc1);
-          }
-          else
-          {
-            //"Store In Both Paths! Not Implemented\n";
-            myDFG->make_Arc(input1, selectNode, EdgeID++, 0, TrueDep, 0);
-            myDFG->make_Arc(input2, selectNode, EdgeID++, 0, TrueDep, 1);
-            arc1 = myDFG->get_Arc(input1, node1);
-            myDFG->Remove_Arc(arc1);
-            arc1 = myDFG->get_Arc(input2, node1);
-            myDFG->Remove_Arc(arc1);
-          }
-
-          myDFG->make_Arc(condNode, selectNode, EdgeID++, 0, PredDep, 2);
-          myDFG->make_Arc(selectNode, node1, EdgeID++, 0, TrueDep, 0);
+            dt = int32;
         }
       }
+      else if(T->isPointerTy())
+      {
+        PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
+        ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PointerTy_0);
+        SequentialType* PT = dyn_cast<SequentialType>(T);
+        //errs() << "after get seq ptr\n";
+
+        int bit_width;
+        if(PT != nullptr)
+        { 
+          if(PT->getPrimitiveSizeInBits() % 8 == 0)
+          {
+            //errs()<< "inside if\n";
+            bit_width = (PT->getElementType()->getPrimitiveSizeInBits())/8;
+          }
+          else
+          {
+            //errs() << "inside else\n";
+            bit_width = PT->getElementType()->getPrimitiveSizeInBits() %8;
+          }
+          //errs() << "passed bit width\n"; 
+          if(bit_width == 4)
+          {
+            if(PT->getElementType()->isIntegerTy())
+              dt = int32;
+            else
+              dt = float32;  
+          }
+          else if(bit_width == 8)
+          {
+            dt = float64;
+          }
+          else if(bit_width < 4)
+          {
+            dt = character;
+          }
+        }
+        else
+        {
+          if(T->getPrimitiveSizeInBits() % 8 == 0)
+          {
+            //errs()<< "inside if\n";
+            bit_width = (T->getPrimitiveSizeInBits())/8;
+          }
+          else
+          {
+            //errs() << "inside else\n";
+            bit_width = T->getPrimitiveSizeInBits() %8;
+          }
+          //errs() << "passed bit width\n";
+          if(bit_width == 4)
+          {
+            if(T->isIntegerTy())
+              dt = int32;
+            else
+              dt = float32;
+          }
+          else if(bit_width == 8)
+          {
+            dt = float64;
+          }
+          else if(bit_width < 4)
+          {
+            dt = character;
+          }
+        } 
+        dummyStore->setInitializer(const_ptr_2);
+        alignment = T->getPointerAddressSpace();
+        if(alignment < 4) alignment = 4;
+      }
+      dummyStore->setUnnamedAddr(GlobalValue::UnnamedAddr::Local);
+      constInt->setDatatype(dt);
+      myDFG->insert_Node(constInt);
+    } 
+
+    NODE *input1 = myDFG->get_Node(op1);
+    NODE *input2 = myDFG->get_Node(op2);
+    NODE *condNode = myDFG->get_Node(Find_Last_CMP_Instruction(condBlocks[ii]));
+    unsigned selectInput_opOrder;
+    unsigned selectSelf_opOrder;
+    ARC *arc1;
+
+    if(node1->is_Store_Data_Bus_Write())
+    {
+      node2 = node1;
+      node1 = node2->get_Related_Node();
+    }
+    else
+      node2 = node1->get_Related_Node();
+
+    if(op1 == stInst)
+    {
+      selectInput_opOrder = 1;
+      selectSelf_opOrder = 0;
+      myDFG->make_Arc(input2, selectNode, EdgeID++, 0, TrueDep, selectInput_opOrder);
+      myDFG->make_Arc(constInt, selectNode, EdgeID++, 0, TrueDep, selectSelf_opOrder);
+      arc1 = myDFG->get_Arc(input2, node1);
+      myDFG->Remove_Arc(arc1);
+    }
+    else if(op2 == stInst)
+    {
+      selectInput_opOrder = 0;
+      selectSelf_opOrder = 1;
+      myDFG->make_Arc(input1, selectNode, EdgeID++, 0, TrueDep, selectInput_opOrder);
+      myDFG->make_Arc(constInt, selectNode, EdgeID++, 0, TrueDep, selectSelf_opOrder);
+      arc1 = myDFG->get_Arc(input1, node1);
+      myDFG->Remove_Arc(arc1);
+    }
+    else
+    {
+      //"Store In Both Paths! Not Implemented\n";
+      myDFG->make_Arc(input1, selectNode, EdgeID++, 0, TrueDep, 0);
+      myDFG->make_Arc(input2, selectNode, EdgeID++, 0, TrueDep, 1);
+      arc1 = myDFG->get_Arc(input1, node1);
+      myDFG->Remove_Arc(arc1);
+      arc1 = myDFG->get_Arc(input2, node1);
+      myDFG->Remove_Arc(arc1);
+    }
+    myDFG->make_Arc(condNode, selectNode, EdgeID++, 0, PredDep, 2);
+    myDFG->make_Arc(selectNode, node1, EdgeID++, 0, TrueDep, 0);
+    }*/
+    //}
+
     }
 
     BasicBlock * SearchCommonSuccessorForBranching(BasicBlock *bb, BasicBlock *bb1, BasicBlock *bb2, BasicBlock *loopLatch)
     {
+      if(DEBUG1)
+        errs() << "We are in searchcommon\n";
       BasicBlock* retBlk = NULL;
       if((bb1 == NULL) || (bb2 == NULL)) return retBlk;
 
@@ -2016,6 +2604,8 @@ Default:
       BasicBlock* succ2 = bb2->getSingleSuccessor();
       if((succ1 == succ2) && (succ1 != NULL))
       {
+        if(DEBUG1)
+          errs() << "succ1\n";
         retBlk = succ1;
       }
       else if(succ1 == bb2)
@@ -2028,6 +2618,8 @@ Default:
       }
       else
       {
+        if(DEBUG1)
+          errs() << "we are in else\n";
         if((succ1 == NULL) && (bb1 != loopLatch))
         {
           for (BasicBlock::iterator BBI = bb1->begin(); BBI != bb1->end(); ++BBI)
@@ -2043,6 +2635,7 @@ Default:
 
         if((succ2 == NULL) && (bb2 != loopLatch))
         {
+          if(DEBUG1) errs() << "succ2 NULL and bb not looplatch\n";
           for (BasicBlock::iterator BBI = bb2->begin(); BBI != bb2->end(); ++BBI)
           {
             if(BBI->getOpcode() != Instruction::Br)
@@ -2060,6 +2653,8 @@ Default:
           retBlk = succ2;
         else if(bb1->getSingleSuccessor() == succ2)
           retBlk = succ2;
+        else if(bb1->getSingleSuccessor() == succ2)
+          retBlk = succ2; 
         else if(bb2 == succ1)
           retBlk = succ1;
         else if(bb2->getSingleSuccessor() == succ1)
@@ -2076,33 +2671,67 @@ Default:
       ARC* arc1;
       DataDepType dep = TrueDep;
 
-      /*	std::cout << "DEBUG -- From Update_dependency" << std::endl;
-          std::cout << "DEBUG -- print the basic blocks and instructions: " << bbs.size() << std::endl;*/	
-      /*for (int i = 0; i < bbs.size(); i++)
-        {
-        for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
-        {
-        if(BI->getOpcode == Instruction::ICmp || BI->getOpcode == Instruction::FCmp)
-        {
-        node1 = myDFG->get_Node(BI);
-        errs() << "cmp:" << node1->get_Name() << "\n;"
-        }
-        Instruction *ii = &*BI;
-        errs() << "Inst: " << *ii << "\n";
-        }
-        }*/
+      if(DEBUG)
+        errs() << "DEBUG -- From Update_dependency\n";
 
-
-      if (BI->getOpcode() == Instruction::Trunc)
-      {
-        Type* T = (dyn_cast<TruncInst>(BI))->getDestTy();
-        unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1;
-        node1 = myDFG->get_Node(BI);
-        node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
-        myDFG->insert_Node(node2);
-        myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+      if(DEBUG) {
+        errs() << "Instruction: " << *BI << "\n";
+        errs() << "before trun\n";
       }
 
+      if(BI->getOpcode() == Instruction::FPToUI || BI->getOpcode() == Instruction::FPToSI)
+      {
+        node1 = myDFG->get_Node(BI);
+        node2 = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+        node2->setDatatype((Datatype) int32);
+        myDFG->insert_Node(node2);
+        myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+
+      }
+      if(BI->getOpcode() == Instruction::UIToFP || BI->getOpcode() == Instruction::SIToFP)
+      {
+        node1 = myDFG->get_Node(BI);
+        node2 = new NODE(constant, 1, NodeID++, "ConstFP0", NULL);
+        node2->setDatatype((Datatype) float32);
+        myDFG->insert_Node(node2);
+        myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+
+      }
+      if (BI->getOpcode() == Instruction::Trunc || BI->getOpcode() == Instruction::FPTrunc)
+      {
+        Type* T; 
+        if(BI->getOpcode() == Instruction::Trunc)
+          T = (dyn_cast<TruncInst>(BI))->getDestTy();
+        else
+          T = (dyn_cast<FPTruncInst>(BI))->getDestTy();
+        unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1; 
+        node1 = myDFG->get_Node(BI);
+        if(BI->getOpcode() == Instruction::Trunc)
+          node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
+        else
+          node2 = new NODE(constant, 1, NodeID++, "ConstFP"+std::to_string(mask), NULL);
+        myDFG->insert_Node(node2);
+        node2->setDatatype(node1->getDatatype()); 
+        myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+      }
+      if(BI->getOpcode() == Instruction::BitCast)
+      {
+        node1 = myDFG->get_Node(BI);
+        if(node1->getDatatype() == character || node1->getDatatype() == int16 || node1->getDatatype() == int32)
+        {
+          node2 = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+          myDFG->insert_Node(node2);
+          myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+        }
+        else
+        {
+          node = new NODE(constant, 1, NodeID++, "ConstFP0", NULL);
+          myDFG->insert_Node(node2);
+          myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
+        }
+      }
+      if(DEBUG)
+        errs() << "before sext\n";
       if((BI->getOpcode() == Instruction::SExt))
       {
         node1 = myDFG->get_Node(BI);
@@ -2110,28 +2739,43 @@ Default:
         Type* T = v->getType();
         unsigned mask = T->getPrimitiveSizeInBits();
         node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
+        node2->setDatatype(node1->getDatatype());
         myDFG->insert_Node(node2);
         myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
       }
-
-      if (BI->getOpcode() == Instruction::ZExt)
+      if(DEBUG)
+        errs() << "before ZExt\n"; 
+      if (BI->getOpcode() == Instruction::ZExt || BI->getOpcode() == Instruction::FPExt)
       {
         Value *v = dyn_cast<Value>(BI->getOperand(0));
         Type* T = v->getType();
         unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1;
         node1 = myDFG->get_Node(BI);
-        node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
+        if(BI->getOpcode() == Instruction::ZExt)
+          node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
+        else
+          node2 = new NODE(constant, 1, NodeID++, "ConstFP"+std::to_string(mask), NULL);
+        node2->setDatatype(node1->getDatatype());
         myDFG->insert_Node(node2);
         myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
       }
-
+      if(DEBUG)
+        errs() << "after zext\n";
       for (unsigned int j = 0; j < BI->getNumOperands(); j++)
       {
+        if(DEBUG) {
+          errs() << "BI: " << *BI << "\n";
+          errs() << "j: " << j << "\n";
+          errs() << "valid: " << BI->getOperand(j)->getValueID() << "\n";
+        }
+
         dep = TrueDep;
         //constant values can be immediate
         //if it is greater than immediate field; instruction generation should treat it as nonrecurring value
         if (BI->getOperand(j)->getValueID() == llvm::Value::ConstantIntVal)
         {
+          if(DEBUG)
+            errs() << "before constintval\n";
           std::ostringstream os;
           int constVal = 0;
           if(dyn_cast<llvm::ConstantInt>((BI)->getOperand(j))->getBitWidth() > 1)
@@ -2141,18 +2785,20 @@ Default:
           os << constVal;
           std::string name = "ConstInt" + os.str();
           Datatype dt;
-            Value *v = dyn_cast<Value>(BI);
-            Type* T = v->getType();
-            int bit_width = T->getPrimitiveSizeInBits()/8;
-            if(bit_width == 1)
-              dt = character;
-            else if(bit_width == 2)
-              dt = int16;
-            else
-              dt = int32;
+          //errs() << "before dyncast\n";
+          Value *v = dyn_cast<Value>(BI);
+          Type* T = v->getType();
+          int bit_width = T->getPrimitiveSizeInBits()/8;
+          if(bit_width == 1)
+            dt = character;
+          else if(bit_width == 2)
+            dt = int16;
+          else
+            dt = int32;
           if (myDFG->get_Node((BI)->getOperand(j)) == NULL)
           {
             node1 = new NODE(constant, 1, NodeID++, name, (BI)->getOperand(j));
+            node1->setDatatype(dt);
             myDFG->insert_Node(node1);
           }
           else
@@ -2165,23 +2811,32 @@ Default:
         }
         else if (BI->getOperand(j)->getValueID() == llvm::Value::ConstantFPVal)
         {
-          //for now we ignore FP constants
+          if(DEBUG)
+            errs() << "before constFPval\n";
+          //We support only single precision fp. But sometimes IR converts the float to doubles.
+          // SO we need to get the appropriate FP val.
           std::ostringstream os;
-          os << cast<ConstantFP>((BI)->getOperand(j))->getValueAPF().convertToFloat();
-          std::string name = "ConstFP" + os.str();
           Datatype dt;
-            Value *v = dyn_cast<Value>(BI);
-            Type* T = v->getType();
-            int bit_width = T->getPrimitiveSizeInBits()/8;
-            if(bit_width == 8)
-              dt = float64;
-            else if(bit_width == 2)
-              dt = float16;
-            else if(bit_width == 4)
-              dt = float32;
+          Value *v = dyn_cast<Value>(BI);
+          Type* T = v->getType();
+          int bit_width = T->getPrimitiveSizeInBits()/8;
+          if(bit_width == 8)
+            dt = float64;
+          else if(bit_width == 2)
+            dt = float16;
+          else if(bit_width == 4)
+            dt = float32;
+
+          if(dt == float64)
+            os << cast<ConstantFP>((BI)->getOperand(j))->getValueAPF().convertToDouble();
+          else
+            os << cast<ConstantFP>((BI)->getOperand(j))->getValueAPF().convertToFloat();
+          std::string name = "ConstFP" + os.str();
+
           if (myDFG->get_Node((BI)->getOperand(j)) == NULL)
           {
             node1 = new NODE(constant, 1, NodeID++, name, (BI)->getOperand(j));
+            node1->setDatatype(dt);
             myDFG->insert_Node(node1);
           }
           else
@@ -2194,14 +2849,16 @@ Default:
         }
         else if (BI->getOperand(j)->getValueID() == llvm::Value::BasicBlockVal)
         {
-          errs() << "intr: " << *BI << "\n";
-          errs() << "val: " <<  BI->getOperand(j) << "\n"; 
+          if(DEBUG) {
+            errs() << "intr: " << *BI << "\n";
+            errs() << "val: " <<  BI->getOperand(j) << "\n"; 
+          }
           BasicBlock *bb = dyn_cast<llvm::BasicBlock>(BI->getOperand(j)); 
 
-          for(BasicBlock::iterator it  = bb->begin(); it != bb->end(); ++it) 
-          {
-            errs() << "instr inside : " << *it << "\n" ;
-          }
+          //for(BasicBlock::iterator it  = bb->begin(); it != bb->end(); ++it) 
+          //{
+          //errs() << "instr inside : " << *it << "\n" ;
+          //}
 
           errs() << "\n\nBasicBlockVal Detected!\n\n";
           continue;
@@ -2210,6 +2867,8 @@ Default:
             (BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal) ||
             (BI->getOperand(j)->getValueID() == llvm::Value::ArgumentVal))
         {
+          if(DEBUG)
+            errs() << "in globalvariable\n";
           if(BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal)
           {
             if(BI->getOpcode() != Instruction::Load && BI->getOpcode() != Instruction::Store)
@@ -2219,34 +2878,54 @@ Default:
           std::string name;
           name = cast<Instruction>((BI)->getOperand(j))->getName().str();
           int distance = 0;
-
+          Datatype dt; 
+          if(DEBUG)
+            errs() << "name: " << name << "\n"; 
           //if the node has not been created, create it, else get distance
           if (myDFG->get_Node((BI)->getOperand(j)) == NULL)
           {
+            if(DEBUG) {
+              errs() << "inside getoperand null\n";
+              errs() << "BI: " << *BI << "\n"; 
+              errs() << "operand: " << BI->getOperand(j)->getValueID() << "\n";
+              errs() << "value name: " << BI->getOperand(j)->getName().str() << "\n";
+            }
             Value *defInst = BI->getOperand(j);
-            std::map<Value *, std::string>::iterator it;
+            std::map<Value *,std::string>::iterator it;
             it = map_instn_defn_livein_to_load.find(defInst);
             if ((it != map_instn_defn_livein_to_load.end()) ||
                 (BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal))
             {
+              if(DEBUG)
+                errs() << "inside the if function\n";
               std::string ptrName;
               unsigned alignment = 4;
               if (it != map_instn_defn_livein_to_load.end())
               {
+                if(DEBUG)
+                {
+                  errs() << "inside if ptr name: " << it->second << "\n";
+                  errs() << "dt: " << map_livein_to_datatype[ptrName] << "\n";
+                }
                 ptrName = it->second;
                 alignment = map_livein_to_alignment[ptrName];
+                dt = map_livein_to_datatype[ptrName];
               }
               else
               {
+                if(DEBUG)
+                  errs() << "inside else to get gptr name livein\n";
                 ptrName = name;
               }
 
+              if(DEBUG)
+                errs() << "passed ifelse\n";
               node1 = new NODE(constant, 1, NodeID++, ptrName, (BI)->getOperand(j));
-              node1->setAlignment(alignment); 
+              node1->setAlignment(alignment);
+              node2 = myDFG->get_Node(BI);  
+              //llvm::Datatype dt = node2->getDatatype();
+              //node1->setDatatype(dt);
               myDFG->insert_Node(node1);
-              node2 = myDFG->get_Node(BI);
-              llvm::Datatype dt = node2->getDatatype(); 
-              node1->setDatatype(dt);  
               unsigned int livein_datatype = (unsigned int)(node2->getDatatype());
               dep = LiveInDataDep;
               unsigned int CGRA_loadAddID = ((NodeID++)+100);
@@ -2268,6 +2947,8 @@ Default:
           }
           else
           {
+            if(DEBUG)
+              errs() << "else getoperand null\n";
             distance = getDistance(cast<Instruction>((BI)->getOperand(j)),
                 cast<Instruction>((BI)->getOperand(j))->getParent(), BI, BI->getParent(), bbs,loopLatch);
           }
@@ -2275,6 +2956,8 @@ Default:
           //if the operand instruction corresponds to a load operation
           if (cast<Instruction>((BI)->getOperand(j))->getOpcode() == Instruction::Load)
           {
+            if(DEBUG)
+              errs() << "if load\n"; 
             node1 = myDFG->get_Node_Mem_Data(cast<Instruction>((BI)->getOperand(j)));
             if (node1 == NULL)
             {
@@ -2282,46 +2965,118 @@ Default:
             }
           }
           else
-          {
+          { 
+            if(DEBUG)
+              errs() << "else load\n";
             node1 = myDFG->get_Node((BI)->getOperand(j));
           }
 
           //if its a store instruction
           if (BI->getOpcode() == Instruction::Store)
           {
+            if(DEBUG)
+              errs() << "in opcode store\n";
             if((dyn_cast<StoreInst>(BI))->getPointerOperand() == BI->getOperand(j))
             {
-              node2 = myDFG->get_Node_Mem_Add(BI);
-              if(((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantIntVal) || ((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantFPVal)) {
-                node3 = myDFG->get_Node((dyn_cast<StoreInst>(BI))->getValueOperand());
-                node4 = myDFG->get_Node_Mem_Data(BI);
-                myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep,0);
+              if(DEBUG) {
+                errs() << "in if\n";
+                errs() << "BI: " << *BI << "\n";
               }
+              node2 = myDFG->get_Node_Mem_Add(BI);
+              if(DEBUG) {
+                errs() << "passed node2: " << node2->get_Name() << "\n";
+                errs() << "value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n"; 
+              }
+
+              if(((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantIntVal) || ((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantFPVal)) {
+                if(DEBUG)
+                  errs() << "before get node\n";
+                node3 = myDFG->get_Node((dyn_cast<StoreInst>(BI))->getValueOperand());
+                //Datatype dt1 = node2->getDatatype();
+                if(DEBUG)
+                {
+                  errs() << "get node3: " << node3->get_ID() << "\n";   
+                  //exit(1);
+                }
+                node4 = myDFG->get_Node_Mem_Data(BI);
+                if(DEBUG)
+                  errs() << "get node4\n";
+                myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep,0);
+                if(DEBUG)
+                  errs() << "passed make arc\n";
+                //node3->setDatatype(dt1);
+                //node4->setDatatype(dt1); 
+              }
+              else
+              {
+                node3 = myDFG->get_Node(BI->getOperand(j));
+                if(DEBUG)
+                  errs() << "get the other incoming to store: " << node3->get_ID() << "\n";
+                node4 = myDFG->get_Node_Mem_Data(BI);
+                //Datatype dt1 = node3->getDatatype();
+                //node2->setDatatype(dt1);
+                //node4->setDatatype(dt1);
+              }
+              if(DEBUG)
+                errs() << "exiting if\n";
             }
             else
             {
+              if(DEBUG)
+                errs() << "in else\n";
+
               node2 = myDFG->get_Node_Mem_Data(BI);
-              if((dyn_cast<StoreInst>(BI))->getPointerOperand()->getValueID() == llvm::Value::ConstantIntVal) {
+              if(DEBUG) {
+                errs() << "passed node2: " << node2->get_Name() << "\n";
+                errs() << "value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n";
+                errs() << "node2 dt: " << node2->getDatatype() << "\n";
+              }
+
+              if(((dyn_cast<StoreInst>(BI))->getPointerOperand()->getValueID() == llvm::Value::ConstantIntVal) || ((dyn_cast<StoreInst>(BI))->getPointerOperand()->getValueID() == llvm::Value::ConstantFPVal)) {
                 node3 = myDFG->get_Node((dyn_cast<StoreInst>(BI))->getPointerOperand());
                 node4 = myDFG->get_Node_Mem_Add(BI);
+                if(DEBUG)
+                {
+                  errs() << "node4: " << node4->get_ID() << "\n";
+                  errs() << "node 2 dt: " << node2->getDatatype() << "\n";
+                  errs() << "dt: " << node2->getDatatype() << "\n";
+                  exit(1);
+                }
+                //Datatype dt1 = node2->getDatatype();
+                // node3->setDatatype(dt1);
                 myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep,0);
               }
             }
           }
           else if (BI->getOpcode() == Instruction::Load)
           {
+            if(DEBUG)
+              errs() << "else load2\n"; 
             node2 = myDFG->get_Node_Mem_Add(BI);
           }
           else
           {
+            if(DEBUG) {
+              errs() << "else else load\n";
+              errs() << "BI: " << *BI << "\n"; 
+            }
             node2 = myDFG->get_Node(BI);
+            if(DEBUG)
+              errs() << "after get node\n";
           }
           myDFG->make_Arc(node1, node2, EdgeID++, distance,dep,j);
         }
       }
-
+      if(DEBUG)
+        errs() << "before select\n";
       if(BI->getOpcode() == Instruction::Select)
       {
+        if(DEBUG) {
+          errs() << "Select BI: " << *BI << "\n"; 
+          errs() << "Select node: " << myDFG->get_Node(BI)->get_ID() << "\n";
+
+        }
+        
         //change OperandOrder To 1
         node1 = myDFG->get_Node(BI);
         node = myDFG->get_Node((dyn_cast<SelectInst>(BI))->getCondition());
@@ -2329,11 +3084,15 @@ Default:
         arc1->SetOperandOrder(2);
         arc1->Set_Dependency_Type(PredDep);
         node = myDFG->get_Node((dyn_cast<SelectInst>(BI))->getTrueValue());
-        arc1 = myDFG->get_Arc(node, node1);
-        arc1->SetOperandOrder(0);
-        node = myDFG->get_Node((dyn_cast<SelectInst>(BI))->getFalseValue());
+        if(node->is_Load_Address_Generator())
+          node = node->get_Related_Node();  
         arc1 = myDFG->get_Arc(node, node1);
         arc1->SetOperandOrder(1);
+        node = myDFG->get_Node((dyn_cast<SelectInst>(BI))->getFalseValue());
+        if(node->is_Load_Address_Generator())
+          node = node->get_Related_Node();
+        arc1 = myDFG->get_Arc(node, node1);
+        arc1->SetOperandOrder(0);
       }
 
       /* Shail says:
@@ -2343,6 +3102,8 @@ Default:
          And 3rd operand is the offset variable i.e. indsvars or i.
          Thus, we should eliminate constant0  and do 1st operand + (4 * 3rd Operand)
        */
+      if(DEBUG)
+        errs() << "Before getelementPtr\n"; 
       if(BI->getOpcode() == Instruction::GetElementPtr)
       {
         ArrID++;
@@ -2353,16 +3114,20 @@ Default:
           //Fix Predecessor Nodes With idxprom
           node1 = myDFG->get_Node(BI);
           std::string operandname = BI->getOperand(i)->getName().str();
+          Datatype dt = node1->getDatatype(); 
           //Add Node If Unnamed Private
           if(!operandname.empty())
           {
             std::string str = BI->getOperand(i)->getName().str();
             node2 = new NODE(constant, 1, NodeID++, str , NULL);
+            node2->setDatatype(dt);
             myDFG->insert_Node(node2);
             myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 0);
           }
           else
+          {
             node2 = myDFG->get_Node(BI->getOperand(i));
+          }
 
           if(node2->is_Load_Address_Generator())
             node2 = node2->get_Related_Node();
@@ -2388,7 +3153,7 @@ Default:
           }
 
           //Fix Insertion Of idxprom, if not there
-          if(i==2)
+          if((BI->getNumOperands()==3 && i==2) || (BI->getNumOperands()==2 && i==1))
           {
             node1 = myDFG->get_Node(BI);
             node = node2;
@@ -2416,6 +3181,9 @@ Default:
               node3 = new NODE(mult, 1, NodeID++, "idxprom"+arrid.str() , NULL);
               unsigned alignment = idxprom_nodeID_load_alignment_map[BI];
               node4 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(alignment), NULL);
+              Datatype dt = int32; 
+              node3->setDatatype(dt); 
+              node4->setDatatype(dt);
               myDFG->insert_Node(node3);
               myDFG->insert_Node(node4);
               arc1 = myDFG->get_Arc(node, node1);
@@ -2437,7 +3205,7 @@ Default:
         }
       }
 
-      //Fix Successor Operand Order
+      //Fix Successor Operand Order`
       if((BI->getOpcode() == Instruction::Load) || (BI->getOpcode() == Instruction::Store))
       {
         node1 = myDFG->get_Node(BI);
@@ -2484,10 +3252,13 @@ Default:
       //errs() << "Inst: " << *ii << "\n";
       //}
       //}
-
+      if(DEBUG)
+        errs() << "before phi\n"; 
       if(BI->getOpcode() == Instruction::PHI)
       {
-        //errs()  << "Inside data dependecy and instruction is a phi\n";
+
+        if(DEBUG)
+          errs() << "inside phi: " << *BI << "\n";
         node1 = myDFG->get_Node(BI);
         //If phi node is at top of the loop - it's not due to if-then-else
         //so avoid acting on phi node to supply predicate
@@ -2496,9 +3267,14 @@ Default:
 
         // the following if statement is for 
         if(BI->getParent() != loopHeader)
-        { 
+        {
           //errs() << "top brinst: " << myDFG->get_Node(brInst)->get_Name() << "\n";
-          //errs() << "INstr: " << *(BI) << "\n" ;
+
+          if(DEBUG) {
+            errs() << "INstr: " << *(BI) << "\n" ;
+            errs() << "node: " << myDFG->get_Node(BI)->get_ID() << "\n";     
+          }
+
           std::vector<BasicBlock*> bbList;
           std::vector<Instruction*> operandList;
 
@@ -2507,8 +3283,25 @@ Default:
           {
             bbList.push_back(dyn_cast<PHINode>(BI)->getIncomingBlock(ii));
             operandList.push_back(dyn_cast<Instruction>(BI->getOperand(ii)));
-            //errs() << "bbList: " << (bbList[ii]->front()) << "\n"; 
           } 
+
+          if(DEBUG)
+          {
+            for(unsigned int ii=0; ii < (int) operandList.size(); ii++)
+              errs() << "op nodes: " << myDFG->get_Node(operandList[ii])->get_ID() << "\n";
+
+            errs() << "BBLIST:\n\n"; 
+            for(unsigned int ii=0; ii < (int) bbList.size(); ii++)
+            {
+              errs() << "ii: " << ii << "\n"; 
+              for(BasicBlock::iterator BBBI = bbList[ii]->begin(); BBBI!= bbList[ii]->end(); ++BBBI)
+                errs() << *BBBI << "\n";
+              errs() << "\n"; 
+            }
+            //exit(1);
+          }
+
+          if(DEBUG) errs() << "passed operands" << "\n";
 
           std::vector<NODE*> succofPhi;
           std::vector<Instruction*> condNodes;
@@ -2517,144 +3310,408 @@ Default:
           std::vector<int> succofPhiOpOrder;
 
 
-          for(unsigned int ii=0; ii< BI->getNumOperands(); ++ii)
-          {
+          /*for(unsigned int ii=0; ii< BI->getNumOperands(); ++ii)
+            {
             node2 = myDFG->get_Node(BI->getOperand(ii));
+            if(DEBUG) {
+            errs() << "we are removing the arc for: " << node1->get_ID() << "\t" << node2->get_ID() << "\n";
+            }
             arc1 = myDFG->get_Arc(node2,node1);
             if(arc1 != NULL)
-              myDFG->Remove_Arc(arc1);
-          }
-          std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
-          for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
-          {
+            myDFG->Remove_Arc(arc1);
+            }
+
+            std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
+            if(DEBUG) errs() << "total arcs: " << (int) outGoingArcs.size() << "\n";
+            for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+            {
             if(outGoingArcs[ii]->get_From_Node() == node1)
             {
-              succofPhi.push_back(outGoingArcs[ii]->get_To_Node());
-              succofPhiDistance.push_back(outGoingArcs[ii]->Get_Inter_Iteration_Distance());
-              succofPhiDepType.push_back(outGoingArcs[ii]->Get_Dependency_Type());
-              succofPhiOpOrder.push_back(outGoingArcs[ii]->GetOperandOrder());
+            if(DEBUG) errs() << "outgoing nodes: " << outGoingArcs[ii]->get_To_Node()->get_ID() << "\n";
+            succofPhi.push_back(outGoingArcs[ii]->get_To_Node());
+            succofPhiDistance.push_back(outGoingArcs[ii]->Get_Inter_Iteration_Distance());
+            succofPhiDepType.push_back(outGoingArcs[ii]->Get_Dependency_Type());
+            succofPhiOpOrder.push_back(outGoingArcs[ii]->GetOperandOrder());
             }
-          }
-          myDFG->delete_Node(node1);
+            }
+           */
+          if(DEBUG)
+            for(unsigned int ii=0; ii < (int)succofPhi.size(); ii++)
+            {
+              errs() << "succ nodes: " << succofPhi[ii]->get_ID() << "\n";
+            }
 
-          //errs() << "bbList.size(): " << bbList.size() << "\n"; 
-          while(bbList.size() > 1)
+
+          if(bbList.size() > 1)
           {
+            if(bbList.size() > 2) {errs() << "bbList has more than two basicblocks. Check!\n"; exit(1);}
+
+            BasicBlock* succ1 = bbList[0]->getSingleSuccessor(); 
+            BasicBlock* succ2 = bbList[1]->getSingleSuccessor();
+            BasicBlock *commonParent;
+            BasicBlock* current = BI->getParent(); 
+            BranchInst * tempBr;
+
+            if((succ1 == NULL) && (succ2 == NULL))
+            {
+              if(DEBUG) errs() << "in new function if1 : " << *BI << "\n";
+              // this function is to update brInst and condInst
+              //tempBr = getConditionalBranch(bbList[0]);
+              if(DEBUG) errs() << "both succ are null" << "\n";  
+              commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
+            }
+            else if((succ1 != NULL) && (succ2 == NULL))
+            {
+              if(DEBUG) errs() << "in new function if2 : " << *BI << "\n";
+              // this function is to update brInst and condInst
+              if(current != loopLatch)
+              commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
+              else
+              commonParent = SearchCommonParentForBranching(bbList[0],current,bbs);
+              //tempBr = getConditionalBranch(bbList[1]); 
+              //if(DEBUG) errs() << "br: " << tempBr << "\n"; 
+            }
+            else
+            {
+              if(DEBUG) errs() << "in new function else : " << *BI << "\n";
+              if((bbList[0]->getSinglePredecessor() == bbList[1]) ||
+                  (bbList[1]->getSinglePredecessor() == bbList[0]))
+                commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
+            }
+
+            for(unsigned int ii=0; ii< BI->getNumOperands(); ++ii)
+            {
+              node2 = myDFG->get_Node(BI->getOperand(ii));
+              if(DEBUG) {
+                errs() << "we are removing the arc for: " << node1->get_ID() << "\t" << node2->get_ID() << "\n";
+              }
+              arc1 = myDFG->get_Arc(node2,node1);
+              if(arc1 != NULL)
+                myDFG->Remove_Arc(arc1);
+            }
+
+            std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
+            if(DEBUG) errs() << "total arcs: " << (int) outGoingArcs.size() << "\n";
+            for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+            {
+              if(outGoingArcs[ii]->get_From_Node() == node1)
+              {
+                if(DEBUG) errs() << "outgoing nodes: " << outGoingArcs[ii]->get_To_Node()->get_ID() << "\n";
+                succofPhi.push_back(outGoingArcs[ii]->get_To_Node());
+                succofPhiDistance.push_back(outGoingArcs[ii]->Get_Inter_Iteration_Distance());
+                succofPhiDepType.push_back(outGoingArcs[ii]->Get_Dependency_Type());
+                succofPhiOpOrder.push_back(outGoingArcs[ii]->GetOperandOrder());
+              }
+            }
+            myDFG->delete_Node(node1);
+            if(dyn_cast<PHINode>(BI)->getNumIncomingValues() > 2)
+              node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), brInst);
+            else
+              node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), BI);
+            node3->setDatatype(node2->getDatatype()); 
+            myDFG->insert_Node(node3);
+            if(DEBUG) errs() << "New node no: " << node3->get_ID() << "\n";
+            // update operands of the phi-->select
+            for(int ii=0; ii<(int) operandList.size(); ii++)
+            {
+              // This is to support phi nodes that have one or both operands
+              // as Constants.
+              if(ii==0)
+              {
+                if(operandList[ii] != NULL) 
+                {
+                  if(DEBUG) errs() << "node 2 in operand list: " << myDFG->get_Node(operandList[ii])->get_ID() << "\tInstruction: " << myDFG->get_Node(operandList[ii])->get_Instruction() << "\n";
+                  node2 = myDFG->get_Node(operandList[ii]);
+                }
+                else
+                {
+                  if(DEBUG) errs() << "node 2 NOT in operand list: " << myDFG->get_Node(BI->getOperand(ii))->get_ID() << "\n";
+                  node2 = myDFG->get_Node(BI->getOperand(ii)); 
+                }
+
+                if(node2->is_Load_Address_Generator()) node2 = node2->get_Related_Node();
+              }
+              else
+              {         
+                if(operandList[ii] != NULL)
+                  node4 = myDFG->get_Node(operandList[ii]);
+                else
+                  node4 = myDFG->get_Node(BI->getOperand(ii));
+
+                if(node4->is_Load_Address_Generator()) node4 = node4->get_Related_Node();
+
+              }
+
+              //if(operandList[ii]->getOpcode() == Instruction::Select)
+              //{
+              //    myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, ii);
+              // }
+              //else
+              // {
+              // if(ii == 0)
+              //     myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1);
+              // else
+              //     myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
+              // }
+            }
+
+            // Mahesh: Make arcs. If one of the inputs is a select node, then the operand order changes.
+            if(node2->get_Instruction() == cond_select || node4->get_Instruction() == cond_select)
+            {
+              if(node2->get_Instruction() == cond_select)
+              {
+                myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
+                myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 1);
+              }
+              else
+              {
+                myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 0);
+                myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1);
+              }
+            }
+            else
+            {
+              myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1);
+              myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 0);
+            }    
+
+            //BasicBlock *commonParent = 
+            // update condInst
+            if(DEBUG) errs() << "passed making arc condinst: " << condInst << "\n";              
+            node2 = myDFG->get_Node(condInst);
+            if(DEBUG) errs() << "passed get node\n";
+            if(DEBUG) errs() << "condinst node2: " << node2->get_ID() << "\n";
+            node3->setDatatype(node2->getDatatype());
+            if(DEBUG) errs() << "passed getDatatype\n";
+            myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2); 
+            if(DEBUG) errs() << "passed making pred  arc\n";
+
+            // update outgoing arcs
+            for(unsigned int kk = 0; kk < succofPhi.size(); kk++)
+            {
+              myDFG->make_Arc(node3, succofPhi[kk], EdgeID++, succofPhiDistance[kk],
+                  succofPhiDepType[kk], succofPhiOpOrder[kk]);
+            }
+
+          }
+
+
+          //myDFG->delete_Node(node1);
+
+          /*while(bbList.size() > 1)
+            {
             for(unsigned int ii=0; ii < bbList.size(); ii++)
             {
-              for(unsigned int jj=0; jj < bbList.size(); jj++)
-              {
-                std::string operandName;
-                if(operandList[jj] != NULL) operandName = operandList[jj]->getOpcodeName();
-              }
-              for(unsigned int jj=0; jj < bbList.size(); jj++)
-              {
-                if(ii == jj) continue;
-                bool skip = false;
-                //Check that all successors are already operated.
-                //Otherwise skip such pair (ii,jj)
-                BasicBlock *succII = bbList[ii]->getSingleSuccessor();
-                BasicBlock *succJJ = bbList[jj]->getSingleSuccessor();
-                if(succII == NULL || succJJ == NULL)
-                {
-                  std::vector<BasicBlock*>::iterator it;
-                  for (succ_iterator SI = succ_begin(bbList[ii]), SE = succ_end(bbList[ii]); SI != SE; ++SI)
-                  {
-                    it = find(bbList.begin(), bbList.end(), (*SI));
-                    if (it != bbList.end()) {
-                      skip = true;
-                      break;
-                    }
-                  }
-
-                  for (succ_iterator SI = succ_begin(bbList[jj]), SE = succ_end(bbList[jj]); SI != SE; ++SI)
-                  {
-                    it = find(bbList.begin(), bbList.end(), (*SI));
-                    if (it != bbList.end()) {
-                      skip = true;
-                      break;
-                    }
-                  }
-
-                  if((bbList[ii]->getSinglePredecessor() == bbList[jj]) ||
-                      (bbList[jj]->getSinglePredecessor() == bbList[ii]))
-                    skip = false;
-                }
-                //errs() << "skip: " << skip << "\n"; 
-                if(skip) continue;
-                BasicBlock *commonParent = SearchCommonParentForBranching(bbList[ii],bbList[jj],bbs); 
-                if(commonParent == NULL) continue; 
-                bbList.erase(bbList.begin()+ii);
-                bbList.insert(bbList.begin()+ii,commonParent);
-                bbList.erase(bbList.begin()+jj);
-                if(dyn_cast<PHINode>(BI)->getNumIncomingValues() > 2)
-                  node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), brInst);
-                else
-                  node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), BI);
-                myDFG->insert_Node(node3);
-                node2 = myDFG->get_Node(operandList[ii]);
-                if(node2->is_Load_Address_Generator()) node2 = node2->get_Related_Node();
-                myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
-                node2 = myDFG->get_Node(operandList[jj]);
-                if(node2->is_Load_Address_Generator()) node2 = node2->get_Related_Node();
-                myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1); 
-                node2 = myDFG->get_Node(condInst);
-                myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2);
-
-                if(dyn_cast<PHINode>(BI)->getNumIncomingValues() <= 2)
-                {
-                  for(unsigned int kk = 0; kk < succofPhi.size(); kk++)
-                  {
-                    myDFG->make_Arc(node3, succofPhi[kk], EdgeID++, succofPhiDistance[kk],
-                        succofPhiDepType[kk], succofPhiOpOrder[kk]);
-                  }
-                }
-
-                //operandList.erase(operandList.begin()+ii);
-                //operandList.insert(operandList.begin()+ii,brInst);
-                //operandList.erase(operandList.begin()+jj);
-                break;
-              }
-              if(bbList.size() == 1) break;
+            for(unsigned int jj=0; jj < bbList.size(); jj++)
+            {
+            std::string operandName;
+            if(operandList[jj] != NULL) operandName = operandList[jj]->getOpcodeName();
             }
+            for(unsigned int jj=0; jj < bbList.size(); jj++)
+            {
+            if(ii == jj) continue;
+            bool skip = false;
+            int removebb; 
+          //Check that all successors are already operated.
+          //Otherwise skip such pair (ii,jj)
+          BasicBlock *succII = bbList[ii]->getSingleSuccessor();
+          BasicBlock *succJJ = bbList[jj]->getSingleSuccessor();
+          if(succII == NULL || succJJ == NULL)
+          {
+          if(DEBUG) {
+          if(succII == NULL ) errs() << "ii: " << ii << " II is null\n";
+          if(succJJ == NULL ) errs() << "jj: " << jj << " JJ is null\n";
+          }
+          std::vector<BasicBlock*>::iterator it;
+          for (succ_iterator SI = succ_begin(bbList[ii]), SE = succ_end(bbList[ii]); SI != SE; ++SI)
+          {
+          if(DEBUG) errs() << "we are inside ii\n";
+          it = find(bbList.begin(), bbList.end(), (*SI));
+          if (it != bbList.end()) {
+          if(DEBUG) errs() << "we are inside ii skip\n";
+          skip = true;
+          removebb = ii;
+          break;
+          }
           }
 
-          /* BasicBlock *tempBB1 = dyn_cast<PHINode>(BI)->getIncomingBlock(0)->getSinglePredecessor();
-             BasicBlock *tempBB2 = dyn_cast<PHINode>(BI)->getIncomingBlock(1)->getSinglePredecessor();
-             if(tempBB1 == tempBB2)
-             {
-             BasicBlock *tempBB = tempBB1;
-             for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
-             {
-             if(BI_temp->getOpcode() != Instruction::Br)
-             continue;
+          for (succ_iterator SI = succ_begin(bbList[jj]), SE = succ_end(bbList[jj]); SI != SE; ++SI)
+          {
+          if(DEBUG) errs() << "we are inside jj\n";
+          it = find(bbList.begin(), bbList.end(), (*SI));
+          if (it != bbList.end()) {
+          if(DEBUG) errs() << "we are inside jj skip\n";
+          skip = true;
+          removebb = jj; 
+          break;
+          }
+          }
 
-             node2 = myDFG->get_Node((dyn_cast<llvm::BranchInst>(BI_temp))->getCondition());
-             }
-             }
-             else
-             {
-             bool found = false;
-             for (unsigned int ii = 0; ii < bbs.size(); ii++)
-             {
-             if(found) break;
-             for (BasicBlock::iterator BBI = bbs[ii]->begin(); BBI != bbs[ii]->end(); ++BBI)
-             {
-             if(BBI->getOpcode() != Instruction::Br)
-             continue;
-             BranchInst * tempInst = (dyn_cast<llvm::BranchInst>(BBI));
-             if( (tempInst->getSuccessor(0) == (dyn_cast<Instruction>(BI->getOperand(0)))->getParent()) &&
-             (tempInst->getSuccessor(1) == (dyn_cast<Instruction>(BI->getOperand(1)))->getParent()))
-             {
-             node2 = myDFG->get_Node(tempInst->getCondition());
-             found = true;
-             break;
-             }
-             }
-             }
-             }
+          if((bbList[ii]->getSinglePredecessor() == bbList[jj]) ||
+          (bbList[jj]->getSinglePredecessor() == bbList[ii]))
+          skip = false;
+          }
 
-             myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2);*/
+          if(skip) { errs() << "removing removebb for node22 : " << removebb << "\n";bbList.erase(bbList.begin()+removebb); continue; }
+          BasicBlock *commonParent = SearchCommonParentForBranching(bbList[ii],bbList[jj],bbs); 
+          if(commonParent == NULL) 
+          { 
+          if(DEBUG)
+          errs() << "No common parents found\n";
+          continue; 
+          }
+
+          if(DEBUG)
+          errs() << "Common parents found not NULL\n";
+          bbList.erase(bbList.begin()+ii);
+          bbList.insert(bbList.begin()+ii,commonParent);
+          bbList.erase(bbList.begin()+jj);
+          for(unsigned int iii=0; iii< BI->getNumOperands(); ++iii)
+          {
+          node2 = myDFG->get_Node(BI->getOperand(iii));
+          if(DEBUG) {
+            errs() << "we are removing the arc for: " << node1->get_ID() << "\t" << node2->get_ID() << "\n";
+          }
+          arc1 = myDFG->get_Arc(node2,node1);
+          if(arc1 != NULL)
+            myDFG->Remove_Arc(arc1);
+        }
+
+        std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
+        if(DEBUG) errs() << "total arcs: " << (int) outGoingArcs.size() << "\n";
+        for(unsigned int iii = 0; iii < outGoingArcs.size(); iii++)
+        {
+          if(outGoingArcs[iii]->get_From_Node() == node1)
+          {
+            if(DEBUG) errs() << "outgoing nodes: " << outGoingArcs[iii]->get_To_Node()->get_ID() << "\n";
+            succofPhi.push_back(outGoingArcs[iii]->get_To_Node());
+            succofPhiDistance.push_back(outGoingArcs[iii]->Get_Inter_Iteration_Distance());
+            succofPhiDepType.push_back(outGoingArcs[iii]->Get_Dependency_Type());
+            succofPhiOpOrder.push_back(outGoingArcs[iii]->GetOperandOrder());
+          }
+        }
+        myDFG->delete_Node(node1);
+        if(dyn_cast<PHINode>(BI)->getNumIncomingValues() > 2)
+          node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), brInst);
+        else
+          node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), BI);
+        node3->setDatatype(node2->getDatatype()); 
+        myDFG->insert_Node(node3);
+        if(DEBUG) errs() << "New node no: " << node3->get_ID() << "\n";
+        //errs() << "operandlst: " << operandList[ii]->getOpcodeName() << "\n";
+        //if(operandList[ii] == NULL) 
+        //  {
+        //  errs() << BI->getOperand(0) << "\n";
+        //  NODE *node7 = myDFG->get_Node(BI->getOperand(0));  
+        //  errs() << "node7: " << node7->get_Name() << "\n"; 
+        //  NODE *node8 = myDFG->get_Node(BI->getOperand(1));
+        //  errs() << "node8: " << node8->get_Name() << "\n";
+
+        //}
+        // This is to support phi nodes that have one or both operands
+        // as Constants. 
+        if(operandList[ii] != NULL) 
+          node2 = myDFG->get_Node(operandList[ii]);
+        else
+          node2 = myDFG->get_Node(BI->getOperand(ii)); 
+
+        if(node2->is_Load_Address_Generator()) node2 = node2->get_Related_Node();
+        // This is to support phi nodes that have one or both operands
+        // as Constants.
+        NODE* node4;  
+        if(operandList[jj] != NULL)
+          node4 = myDFG->get_Node(operandList[jj]); 
+        else
+          node4 = myDFG->get_Node(BI->getOperand(jj));
+        if(node4->is_Load_Address_Generator()) node4 = node4->get_Related_Node();
+
+        if(operandList[ii] != NULL || operandList[jj] != NULL)
+        {
+          if(operandList[ii]->getOpcode() == Instruction::Select || operandList[jj]->getOpcode() == Instruction::Select)
+          {
+            errs() << "we are here\n";
+            errs() << "ins: " << *BI << "\n";
+            errs() << "node 3: " << node3->get_ID() << "\n";
+            errs() << "node2: " << node2->get_ID() << "\n";
+            errs() << "node4: " << node4->get_ID() << "\n";
+            if(operandList[ii]->getOpcode() == Instruction::Select)
+            {
+              myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
+              myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 1);
+            }
+            else if(operandList[jj]->getOpcode() == Instruction::Select)
+            {
+              myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 0);
+              myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1);
+            }
+          }
+          else
+          {
+            myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 0); 
+            myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1); 
+          }
+        }
+        else
+        {
+          myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 0); 
+          myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1); 
+        }
+        node2 = myDFG->get_Node(condInst);
+        node3->setDatatype(node2->getDatatype());
+        myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2);
+        if(dyn_cast<PHINode>(BI)->getNumIncomingValues() <= 2)
+        {
+          for(unsigned int kk = 0; kk < succofPhi.size(); kk++)
+          {
+            myDFG->make_Arc(node3, succofPhi[kk], EdgeID++, succofPhiDistance[kk],
+                succofPhiDepType[kk], succofPhiOpOrder[kk]);
+          }
+        }
+        //operandList.erase(operandList.begin()+ii);
+        //operandList.insert(operandList.begin()+ii,brInst);
+        //operandList.erase(operandList.begin()+jj);
+        break;
+        }
+        //if(bbList.size() == 1) break;
+        }
+        }*/
+
+        /* BasicBlock *tempBB1 = dyn_cast<PHINode>(BI)->getIncomingBlock(0)->getSinglePredecessor();
+           BasicBlock *tempBB2 = dyn_cast<PHINode>(BI)->getIncomingBlock(1)->getSinglePredecessor();
+           if(tempBB1 == tempBB2)
+           {
+           BasicBlock *tempBB = tempBB1;
+           for(BasicBlock::iterator BI_temp = tempBB->begin(); BI_temp !=tempBB->end(); ++BI_temp)
+           {
+           if(BI_temp->getOpcode() != Instruction::Br)
+           continue;
+
+           node2 = myDFG->get_Node((dyn_cast<llvm::BranchInst>(BI_temp))->getCondition());
+           }
+           }
+           else
+           {
+           bool found = false;
+           for (unsigned int ii = 0; ii < bbs.size(); ii++)
+           {
+           if(found) break;
+           for (BasicBlock::iterator BBI = bbs[ii]->begin(); BBI != bbs[ii]->end(); ++BBI)
+           {
+           if(BBI->getOpcode() != Instruction::Br)
+           continue;
+           BranchInst * tempInst = (dyn_cast<llvm::BranchInst>(BBI));
+           if( (tempInst->getSuccessor(0) == (dyn_cast<Instruction>(BI->getOperand(0)))->getParent()) &&
+           (tempInst->getSuccessor(1) == (dyn_cast<Instruction>(BI->getOperand(1)))->getParent()))
+           {
+           node2 = myDFG->get_Node(tempInst->getCondition());
+           found = true;
+           break;
+           }
+           }
+           }
+           }
+
+           myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2);*/
 
         }
         else
@@ -2662,27 +3719,37 @@ Default:
           // There are loop were the exit cond does not add a recurrent edge with distance 1.
           // If the recurrent to the phi is not added then the scheduiing algo runs into a infinite loop.
           // In that case this routine is a hack. It deletes the edge without recurrent and adds a recurrent edge. 
-          ARC* arc2, *arc3;  
-          //errs() << "We are here! just check if the incoming nodes other than a const should be from next iterations. If not, make it into interiteration dependent\n";
+          ARC* arc2, *arc3; 
+          if(DEBUG) 
+            errs() << "We are here! just check if the incoming nodes other than a const should be from next iterations. If not, make it into interiteration dependent\n";
           node1 = myDFG->get_Node(BI);
-          //errs() << "Node:" << node1->get_Name() << "\n";
+          if(DEBUG)
+            errs() << "Node:" << node1->get_Name() << "\n";
           std::vector<NODE*> incoming;
           incoming = node1->Get_Prev_Nodes(); 
+          if(DEBUG)   
+            errs() << "incoming size: " << (int)incoming.size() << "\n";
           for(int i=0; i<(int) incoming.size(); i++)
           {
-            //errs() << "incoming" << incoming[i]->get_Name() << "\n";  
+            if(DEBUG)
+              errs() << "incoming node: " << incoming[i]->get_ID() << "\tname: " << incoming[i]->get_Name() << "\n"; 
+
             arc2 = myDFG->get_Arc(incoming[i], node1); 
-            //errs() << "arc dis: " << arc2->Get_Inter_Iteration_Distance() << "\n";
 
             if(arc2->Get_Inter_Iteration_Distance() == 0 && incoming[i]->get_Instruction() != constant)
             {
-              myDFG->Remove_Arc(arc2); 
-              myDFG->make_Arc(incoming[i], node1, EdgeID++, 1, TrueDep, 0);
+              if(DEBUG)
+                errs() << "incoming node if: " << incoming[i]->get_ID() << "\n";
+              int inter_dep=1;
+              arc2->Set_Inter_Iteration_Distance(inter_dep); 
+              //myDFG->Remove_Arc(arc2); 
+              //myDFG->make_Arc(incoming[i], node1, EdgeID++, 1, TrueDep, 0);
             }
           }
-
         }
       }
+      if(DEBUG)
+        errs() << "DEBUG -- Exiting Update_dependency\n";
 
       return true;
     }
@@ -2724,19 +3791,17 @@ Default:
               node1 = myDFG->get_Node(&(*BI));
               if(BI->getParent() == loopHeader) {
                 node2 = myDFG->get_Node(&(*BI));
-                errs() << "loophead: " <<  node2->get_Name() << "\n"; 
               }
-              errs() << "inside NEW CMP" << "\n";
               errs() << node1->get_Name() << "\n";
               condList.push_back(node1);
               std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
-              for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
-              {
-                if(outGoingArcs[ii]->get_From_Node() == node1)
-                {
-                  errs() << "outnode:" << outGoingArcs[ii]->get_To_Node()->get_Name() << "\n"; 	
-                }
-              }
+              //for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+              // {
+              // if(outGoingArcs[ii]->get_From_Node() == node1)
+              //{
+              //  errs() << "outnode:" << outGoingArcs[ii]->get_To_Node()->get_Name() << "\n"; 	
+              // }
+              // }
             }
           }
         }	
@@ -2789,8 +3854,7 @@ Default:
           {
             //TODO: Check function call can be inlined
             //Check if call to a library function can be separated from user defined function
-            if(!BI->isDebugOrPseudoInst())
-                functionCalls++;
+            functionCalls++;
           }
           else if((BI->getOpcode() == Instruction::FAdd) ||
               (BI->getOpcode() == Instruction::FSub) ||
@@ -2884,10 +3948,10 @@ Default:
 
     virtual bool runOnLoop(Loop *L, LPPassManager &LPM)
     {
-      errs() << "loop id: " << L->getLoopID() << "\n"; 
+      //errs() << "loop id: " << L->getLoopID() << "\n"; 
 
-      if(HasBeenVisited(L->getLoopID()))
-        return false;
+      //if(HasBeenVisited(L->getLoopID()))
+      //  return false;
 
       visited_loops.push_back(L->getLoopID()); 
 
@@ -2896,33 +3960,23 @@ Default:
       ScalarEvolution * SE = &getAnalysis<ScalarEvolutionWrapperPass>().getSE();
       DominatorTree * DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();        
 
-      if(DEBUG) errs() << "Before CGRADisablePragma\n";
-      if (HasCGRADisablePragma(L)) {
-        if(DEBUG) errs() << "CGRAPragma Disabled\n";
+      if (HasCGRADisablePragma(L))
         return false;
-      }
 
-      if(DEBUG) errs() << "Before HasPragma\n";
       bool HasPragma = HasCGRAEnablePragma(L);
-      if(!HasPragma) {
-        if(DEBUG) errs() << "Does not have CGRA Pragma Enabled\n";
+      if(!HasPragma)
         return false;
-      }
 
       // We can only remove the loop if there is a preheader that we can
       // branch from after removing it.
       BasicBlock *Preheader = L->getLoopPreheader();
-      //BasicBlock* Predecessor = L->getLoopPredecessor();
-
 
       if (!Preheader) {
-        if(DEBUG) errs() << "There is no Preheader\n";
         return false;
       }
 
       // If LoopSimplify form is not available, stay out of trouble.
       if (!L->hasDedicatedExits()) {
-        errs() << "Has no Dedicated Exits\n";
         return false;
       }
 
@@ -2935,7 +3989,6 @@ Default:
       // a loop invariant manner.
       BasicBlock *ExitBlk = L->getUniqueExitBlock();
       if (!ExitBlk) {
-        errs() << "Has no Unique Exit Blocks\n";
         return false;
       }
 
@@ -2967,23 +4020,30 @@ Default:
       newPath = "./CGRAExec/L" + osLoopID.str() + "/livein_edge.txt";
       liveInEdgefile.open(newPath.c_str());
 
-      errs() << "Created livein text files\n";
       for (int i = 0; i < (int) bbs.size(); i++)
       {
-        errs() << "i = " << i << "\n";
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
         {
-          errs() << "Attempting to add a node\n";
-          if (!Add_Node(&(*BI), myDFG, L->getHeader())) {
-
-          
-            errs() << "Add_Node failed\n";
+          //errs() << "Ins: " << *BI << "\n";
+          if (!Add_Node(&(*BI), myDFG, L->getHeader()))
             return false;
-            
-          }
         }
+      } 
+
+      if(DEBUG) 
+      {
+        errs() << "Add nodes complete\n";
+        for (int i = 0; i < (int) bbs.size(); i++) 
+          for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
+          {
+            if (myDFG->get_Node(&(*BI)) != NULL)
+            {
+              errs() << "Ins: " << *BI << "\n";
+              errs() << "node: " << myDFG->get_Node(&(*BI))->get_ID() << "\n\n";
+            }
+          }
       }
-      errs() << "Added all Nodes\n";
+
       for (int i = 0; i < (int) bbs.size(); i++)
       {
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
@@ -3001,54 +4061,44 @@ Default:
             retVal |= Update_LiveIn_Variables(&(*BI), myDFG, bbs, LoopExitBlks, Preheader);
           }
         }
-      } 
-
-      errs() << "Updated all Live In Variables\n";
-
+      }  
+      //errs() << "Update livein complete\n";
       for (int i = 0; i < (int) bbs.size(); i++)
       {
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
         {
           if (myDFG->get_Node(&(*BI)) != NULL)
           {
-              if (!Update_Data_Dependencies(&(*BI), myDFG, bbs,L->getLoopLatch(), L->getHeader() )) {
-                  errs() << "Update_Data_Dependencies failed\n";
-                  return false;
-              
-              }
+            if (!Update_Data_Dependencies(&(*BI), myDFG, bbs,L->getLoopLatch(), L->getHeader() ))
+              return false;
           }
         }
       }
 
+      //errs() << "completed update data dependency\n";
       //if(!Update_Control_Dependencies(myDFG, bbs, L->getLoopLatch(), L->getHeader() ))
       //	return false;
 
-      errs() << "Closing Live In Text files\n";
       liveInNodefile.close();
       liveInEdgefile.close();
 
-      errs() << "Creating Live Out Text files\n";
       newPath = "./CGRAExec/L" + osLoopID.str() + "/liveout_node.txt";
       liveoutNodefile.open(newPath.c_str());
       newPath = "./CGRAExec/L" + osLoopID.str() + "/liveout_edge.txt";
       liveoutEdgefile.open(newPath.c_str());
-      errs() << "Created Live Out Text files\n";
 
       unsigned TripCount = calculateLoopTC(L, SE);
-      if(TripCount != 0) {
+      if(TripCount != 0)
         dynamicTC = false;
-        errs() << "Trip Count is not 0. DynamicTC is false\n";
-      }
 
       //Write TripCount in file
       std::ofstream lpTCfile;
       std::string tcfilename = "./CGRAExec/L" + osLoopID.str() + "/loop_iterations.txt";
-      errs() << "Creating Loop Iterations file\n";
       lpTCfile.open(tcfilename.c_str());
       lpTCfile << TripCount;
-      errs() << "Closing Loop Iterations file\n";
       lpTCfile.close();
 
+      //errs() << "closed all files\n";
       if(dynamicTC)
       {
         // TODO: If there are multiple exiting blocks, how to find the condition variable for dynamic TC loops
@@ -3065,8 +4115,9 @@ Default:
           calculateTCDynamically(indsvar, bbs, Preheader);
           dynamicTC = false;
         }
-      }
+      } 
 
+      //errs() << "completed dynamic TC\n"; 
       for (int i = 0; i < (int) bbs.size(); i++)
       {
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
@@ -3079,17 +4130,15 @@ Default:
             for(unsigned int itt = 0; itt < ExitBlks.size(); itt++)
             {
               LoopExitBlks.push_back(ExitBlks[itt]);
-            }
-            errs() << "Updating Live Out Variables\n";
+            } 
             retVal |= Update_LiveOut_Variables(&(*BI), myDFG, bbs, LoopExitBlks);
           }
         }
       } 
 
-      errs() << "Closing LiveOut Node file\n";
+      //errs() << "completed update liveout\n";
       liveoutNodefile.close();
       liveoutEdgefile.close();
-
       collectAllBranchInfo(bbs,L->getLoopLatch());
       updateStoresInConditionalBBs(L->getLoopLatch(),L->getHeader(),bbs, myDFG);
       std::ostringstream osNodeID;
@@ -3101,7 +4150,6 @@ Default:
       newPath = "./CGRAExec/L" + osLoopID.str() + "/" + directoryPath;
       std::rename(directoryPath.c_str(), newPath.c_str());
 
-      errs() << "Finished runOnLoop function\n";
       delete myDFG;return true; //retVal;
     }
   };

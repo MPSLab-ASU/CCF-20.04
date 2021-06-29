@@ -1,7 +1,7 @@
 ; ModuleID = 'CondDDGGen.bc'
 source_filename = "llvm-link"
 target datalayout = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
-target triple = "armv7-unknown-linux-eabi"
+target triple = "armv7-none-linux-eabi"
 
 %struct._IO_FILE = type { i32, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, i8*, %struct._IO_marker*, %struct._IO_FILE*, i32, i32, i32, i16, i8, [1 x i8], i8*, i64, %struct._IO_codecvt*, %struct._IO_wide_data*, %struct._IO_FILE*, i8*, i32, i32, [40 x i8] }
 %struct._IO_marker = type opaque
@@ -559,7 +559,7 @@ attributes #11 = { nounwind }
 !llvm.ident = !{!0, !0}
 !llvm.module.flags = !{!1, !2, !3, !4}
 
-!0 = !{!"clang version 13.0.0 (https://github.com/llvm/llvm-project.git 0d4534237de38fcf1b2a71bcb0f74cb5675fe7e1)"}
+!0 = !{!"clang version 13.0.0 (https://github.com/MPSLab-ASU/CCF-20.04/ 69d7c3299a1e6f5d4e7173a82d1ebc6a79ac1477)"}
 !1 = !{i32 7, !"Dwarf Version", i32 4}
 !2 = !{i32 2, !"Debug Info Version", i32 3}
 !3 = !{i32 1, !"wchar_size", i32 4}

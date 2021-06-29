@@ -3159,7 +3159,7 @@ void generateINITinstructions(char* objfile)
           printf("Generating Instructions To Store Address (Hex) %x\n",addrOfLargeconst);
           storeNonRecurringVal(addrOfLargeconst, reg_num, pe);
           Datatype DType = (Datatype)(getNodeDataType(node)); 
-      
+	  if(DEBUG) cout << "Node name: " << nodename << endl;
           if(liveInoperand_node_list.count(node) != 0)
           {
             std::vector<Pred_Instruction> ins_set;

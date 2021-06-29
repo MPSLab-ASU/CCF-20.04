@@ -374,9 +374,9 @@
                         "path": "system.cpu.workload",
                         "cmd": [
                             "./add_small",
-                            "10"
+                            "13"
                         ],
-                        "cwd": "/home/local/ASUAD/quoclon1/CCF_INS/ins3/benchmarks/Micro-benchmarks/simple_loop_1",
+                        "cwd": "/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/benchmarks/Micro-benchmarks/simple_loop_1",
                         "drivers": [],
                         "egid": 100,
                         "env": [],

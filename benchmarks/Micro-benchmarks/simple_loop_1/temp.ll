@@ -1,7 +1,7 @@
 ; ModuleID = 'add.c'
 source_filename = "add.c"
 target datalayout = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
-target triple = "armv7-unknown-linux-eabi"
+target triple = "armv7-none-linux-eabi"
 
 @.str = private unnamed_addr constant [33 x i8] c"iterations:%d\09, c:%d, result:%d\0A\00", align 1
 
@@ -64,8 +64,8 @@ attributes #4 = { nounwind }
 !llvm.module.flags = !{!9, !10, !11, !12}
 !llvm.ident = !{!13}
 
-!0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "clang version 13.0.0 (https://github.com/llvm/llvm-project.git 0d4534237de38fcf1b2a71bcb0f74cb5675fe7e1)", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, enums: !2, retainedTypes: !3, splitDebugInlining: false, nameTableKind: None)
-!1 = !DIFile(filename: "add.c", directory: "/home/local/ASUAD/quoclon1/CCF_INS/ins3/benchmarks/Micro-benchmarks/simple_loop_1")
+!0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "clang version 13.0.0 (https://github.com/MPSLab-ASU/CCF-20.04/ 69d7c3299a1e6f5d4e7173a82d1ebc6a79ac1477)", isOptimized: true, runtimeVersion: 0, emissionKind: FullDebug, enums: !2, retainedTypes: !3, splitDebugInlining: false, nameTableKind: None)
+!1 = !DIFile(filename: "add.c", directory: "/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/benchmarks/Micro-benchmarks/simple_loop_1")
 !2 = !{}
 !3 = !{!4, !5, !8}
 !4 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
@@ -77,7 +77,7 @@ attributes #4 = { nounwind }
 !10 = !{i32 2, !"Debug Info Version", i32 3}
 !11 = !{i32 1, !"wchar_size", i32 4}
 !12 = !{i32 1, !"min_enum_size", i32 4}
-!13 = !{!"clang version 13.0.0 (https://github.com/llvm/llvm-project.git 0d4534237de38fcf1b2a71bcb0f74cb5675fe7e1)"}
+!13 = !{!"clang version 13.0.0 (https://github.com/MPSLab-ASU/CCF-20.04/ 69d7c3299a1e6f5d4e7173a82d1ebc6a79ac1477)"}
 !14 = distinct !DISubprogram(name: "main", scope: !1, file: !1, line: 4, type: !15, scopeLine: 5, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagDefinition | DISPFlagOptimized, unit: !0, retainedNodes: !17)
 !15 = !DISubroutineType(types: !16)
 !16 = !{!4, !4, !5}

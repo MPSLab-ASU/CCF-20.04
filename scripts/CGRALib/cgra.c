@@ -171,8 +171,6 @@ void checkTotalLoops( )
     count = fopen(myfile, "r");
     fscanf(count, "%u", &totalLoops);
     fclose(count);
-    //printf("Exiiting cgra.c checkTotalLoops\n");
-
 }
 
 
@@ -187,7 +185,7 @@ void accelerateOnCGRA(unsigned int loopNo)
 {
     printf("\n\naccelerateOnCGRA\n");
     int result = 0; 
-   
+    //loopNo = 1;
     int configure = configureCGRA(loopNo);
     //if(DEBUG) printf("configure = %d, loopNo = %d\n", configure, loopNo);
     if(configure == -1)
@@ -225,7 +223,7 @@ void createCGRA()
   if(DEBUG) printf("createCGRA\n");
   int result = 0;
   unsigned i=1;
-
+  
   checkTotalLoops();
   initCGRA  = (int *)malloc(sizeof(int)*7*totalLoops);
   prologPtr = (int *)malloc(sizeof(int)*totalLoops);

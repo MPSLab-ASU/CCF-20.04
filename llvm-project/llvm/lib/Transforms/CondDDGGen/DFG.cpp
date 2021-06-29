@@ -72,6 +72,11 @@ int ARC::Get_Inter_Iteration_Distance()
   return Inter_Iteration_Distance;
 }
 
+void ARC::Set_Inter_Iteration_Distance(int inter)
+{
+  Inter_Iteration_Distance = inter;
+}
+
 // Return operandOrder
 int ARC::GetOperandOrder()
 {
@@ -753,11 +758,6 @@ void DFG::Dump_Loop(std::string filename)
 
   edgeFile.close();
   nodeFile.close();
-}
-
-void ARC::Set_Inter_Iteration_Distance(int inter)
-{
-  Inter_Iteration_Distance = inter;
 }
 
 ///make a new node from instruction BI and adds it to DFe* namespace llvm */
