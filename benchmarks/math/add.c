@@ -4,7 +4,7 @@
 int pow(int base, int pow){
   if(pow == 0) return 1;
   int ret = base;
-  #pragma CGRA
+  //#pragma CGRA
   for(int i = 0; i < pow; i++)
     ret *= base;
   return ret;
@@ -14,7 +14,7 @@ int power(int base, int pow){
   if(pow == 0) return 1;
   
   int ret = base;
-  //#pragma CGRA
+  #pragma CGRA
   for(int i = 0; i < pow -1; i++)
     ret *= base;
   return ret;
@@ -23,7 +23,7 @@ int power(int base, int pow){
 int bin_2_dec(char* bin, int len){  // takes in characters of binary, 1st index = most significant          
   int ret = 0;
   for(int i=len-1; i>=0; i--)
-    ret += (bin[len-i-1] == '1')? pow(2, i):0;
+    ret += (bin[len-i-1] == '1')? power(2, i):0;
   
   return ret;
 }
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	ret *= 2;
 	}*/
 
-    int ret = pow(2, p);
+    int ret = power(2, p);
     
     printf("***** 2^%d = %d *****\n", p, ret);
   }

@@ -9,18 +9,11 @@ digraph LoadConst {
 3 [color=red ];
 
 4 [color=red ];
-
-5 [color=red ];
-
-6 [color=red ];
-5 -> 0 [style=bold, color=red, label=1] 
-4 -> 1 [style=bold, color=red, label=1] 
-0 -> 2
-2 -> 3 [style=bold, color=blue ]
+3 -> 0 [style=bold, color=red, label=1] 
+2 -> 1 [style=bold, color=red, label=1] 
+1 -> 2
+0 -> 3
 3 -> 4
-1 -> 4
-0 -> 5
-5 -> 6
 
 }
 

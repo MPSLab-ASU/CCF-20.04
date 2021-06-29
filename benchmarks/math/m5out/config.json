@@ -374,7 +374,7 @@
                         "path": "system.cpu.workload",
                         "cmd": [
                             "./add_small",
-                            "106"
+                            "116"
                         ],
                         "cwd": "/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/benchmarks/math",
                         "drivers": [],

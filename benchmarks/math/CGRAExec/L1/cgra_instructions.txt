@@ -1,53 +1,43 @@
 Inside insgen
 
-UPDATING EDGES 5:0
+UPDATING EDGES 3:0
 
 UPDATING DEPENDENCY EDGES FOR NODE  0:1
 
-UPDATING EDGES 4:1
+UPDATING EDGES 2:1
 
 UPDATING DEPENDENCY EDGES FOR NODE  1:1
 
-UPDATING EDGES 0:2
+UPDATING EDGES 1:2
 
-UPDATING EDGES 2:3
+UPDATING EDGES 0:3
 
 UPDATING EDGES 3:4
 
-UPDATING EDGES 1:4
+UPDATING EDGES 5:0
 
-UPDATING EDGES 0:5
+UPDATING EDGES 8:1
 
-UPDATING EDGES 5:6
+UPDATING EDGES 11:2
 
-UPDATING EDGES 7:0
+UPDATING EDGES 14:3
 
-UPDATING EDGES 10:1
+UPDATING EDGES 15:4
 
-UPDATING EDGES 13:2
+UPDATING EDGES 119:120
 
-UPDATING EDGES 16:3
+UPDATING EDGES 2:120
 
-UPDATING EDGES 19:3
-
-UPDATING EDGES 19:5
-
-UPDATING EDGES 20:6
-
-UPDATING EDGES 124:125
-
-UPDATING EDGES 4:125
-
-UPDATING EDGES 123:125
-file ptr:0	open:1	 prolog_size:96
+UPDATING EDGES 118:120
+file ptr:0	open:1	 prolog_size:64
 
 
-96
+64
 32
-48
+32
 *********KERNEL*****************
 *********EPILOG*****************
-LiveOut_data_pe: 1	liveOut_data: 4
+LiveOut_data_pe: 2	liveOut_data: 2
 PE: 0	Configuration Boundary: 0	10e004000
 PE: 1	Configuration Boundary: 0	10e004000
 PE: 2	Configuration Boundary: 0	10e004000
@@ -65,55 +55,45 @@ PE: 13	Configuration Boundary: 0	10e004000
 PE: 14	Configuration Boundary: 0	10e004000
 PE: 15	Configuration Boundary: 0	10e004000
 	reg_num: 0
-	node: 7
+	node: 5
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 7
+constant	node: 5
 Generating Instructions To Store Address (Hex) 9a644
 gVar1
 Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 0
 Load Dyn Cons 168c02004 105c04000
-node: 7
+node: 5
 	reg_num: 0
-	node: 10
+	node: 8
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 10
-Generating Instructions To Store Address (Hex) 9a664
+constant	node: 8
+Generating Instructions To Store Address (Hex) 9a660
 gVar2
-Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 2
-Load Dyn Cons 168c02004 105c04000
-node: 10
-	reg_num: 0
-	node: 13
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 13
-Generating Instructions To Store Address (Hex) 9a690
-gVar3
-Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 4
-Load Dyn Cons 168c02004 105c04000
-node: 13
-	reg_num: 0
-	node: 16
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 16
-Generating Instructions To Store Address (Hex) 9a674
-gVar4
-Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 5
-Load Dyn Cons 168c02004 105c04000
-node: 16
-	reg_num: 0
-	node: 20
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 20
-Generating Instructions To Store Address (Hex) 9a658
-gVar5
 Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 1
 Load Dyn Cons 168c02004 105c04000
-node: 20
+node: 8
+	reg_num: 0
+	node: 11
+We have arrived after isLiveStoreData Line
+We have arrived after getNodeType
+constant	node: 11
+Generating Instructions To Store Address (Hex) 9a668
+gVar3
+Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 2
+Load Dyn Cons 168c02004 105c04000
+node: 11
+	reg_num: 1
+	node: 15
+We have arrived after isLiveStoreData Line
+We have arrived after getNodeType
+constant	node: 15
+Generating Instructions To Store Address (Hex) 9a65c
+gVar4
+Loading dynamic constant value. LDA and LDD are 168c82004: 105c0c000 in pe 2
+Load Dyn Cons 168c82004 105c0c000
+node: 15
 	reg_num: 1
 	node: 0
 We have arrived after isLiveStoreData Line
@@ -124,17 +104,17 @@ node: 0
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
 node: 1
-	reg_num: 1
+	reg_num: 2
 	node: 2
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
 node: 2
-	reg_num: 1
+	reg_num: 0
 	node: 3
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
 node: 3
-	reg_num: 1
+	reg_num: 3
 	node: 4
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
@@ -143,94 +123,74 @@ node: 4
 	node: 5
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-node: 5
-	reg_num: 2
-	node: 6
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-node: 6
-	reg_num: 3
-	node: 7
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 7
+constant	node: 5
 Generating Instructions To Store Address (Hex) 9a644
 gVar1
-Loading dynamic constant value. LDA and LDD are 168d82004: 105c1c000 in pe 0
-Load Dyn Cons 168d82004 105c1c000
-node: 7
+Loading dynamic constant value. LDA and LDD are 168d02004: 105c14000 in pe 0
+Load Dyn Cons 168d02004 105c14000
+node: 5
 	reg_num: 2
-	node: 10
+	node: 8
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 10
-Generating Instructions To Store Address (Hex) 9a664
+constant	node: 8
+Generating Instructions To Store Address (Hex) 9a660
 gVar2
-Loading dynamic constant value. LDA and LDD are 168d02004: 105c14000 in pe 2
+Loading dynamic constant value. LDA and LDD are 168d02004: 105c14000 in pe 1
 Load Dyn Cons 168d02004 105c14000
-node: 10
-	reg_num: 2
-	node: 13
+node: 8
+	reg_num: 4
+	node: 11
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 13
-Generating Instructions To Store Address (Hex) 9a690
+constant	node: 11
+Generating Instructions To Store Address (Hex) 9a668
 gVar3
-Loading dynamic constant value. LDA and LDD are 168d02004: 105c14000 in pe 4
-Load Dyn Cons 168d02004 105c14000
-node: 13
-	reg_num: 2
-	node: 16
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 16
-Generating Instructions To Store Address (Hex) 9a674
-gVar4
-Loading dynamic constant value. LDA and LDD are 168d02004: 105c14000 in pe 5
-Load Dyn Cons 168d02004 105c14000
-node: 16
-	reg_num: 4
-	node: 19
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-constant	node: 19
-Large Constant (Hex): 1	Constant (Decimal): 1
-node: 19
+Loading dynamic constant value. LDA and LDD are 168c02004: 105c04000 in pe 2
+Load Dyn Cons 168c02004 105c04000
+node: 11
 	reg_num: 3
-	node: 20
+	node: 14
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 20
-Generating Instructions To Store Address (Hex) 9a658
-gVar5
-Loading dynamic constant value. LDA and LDD are 168d82004: 105c1c000 in pe 1
-Load Dyn Cons 168d82004 105c1c000
-node: 20
+constant	node: 14
+Large Constant (Hex): 1	Constant (Decimal): 1
+node: 14
 	reg_num: 5
-	node: 123
+	node: 15
 We have arrived after isLiveStoreData Line
 We have arrived after getNodeType
-constant	node: 123
-Generating Instructions To Store Address (Hex) 9a66c
-gVar6
-node: 123
-	reg_num: 6
-	node: 124
-We have arrived after isLiveStoreData Line
-We have arrived after getNodeType
-ld_add/st_add	node: 124
-
-Variable Address (Hex): 9a66c	Node: 124	PE: 0	Address (Decimal): 632428	RegNum: 6
-node: 124
+constant	node: 15
+Generating Instructions To Store Address (Hex) 9a65c
+gVar4
+Loading dynamic constant value. LDA and LDD are 168c82004: 105c0c000 in pe 2
+Load Dyn Cons 168c82004 105c0c000
+node: 15
 	reg_num: 4
-	node: 125
+	node: 118
+We have arrived after isLiveStoreData Line
+We have arrived after getNodeType
+constant	node: 118
+Generating Instructions To Store Address (Hex) 9a64c
+gVar5
+node: 118
+	reg_num: 5
+	node: 119
+We have arrived after isLiveStoreData Line
+We have arrived after getNodeType
+ld_add/st_add	node: 119
+
+Variable Address (Hex): 9a64c	Node: 119	PE: 0	Address (Decimal): 632396	RegNum: 5
+node: 119
+	reg_num: 6
+	node: 120
 pe mem op
 0	25
-1	20
-2	18
-3	0
-4	13
-5	15
+1	18
+2	30
+3	3
+4	0
+5	0
 6	0
 7	0
 8	0
@@ -248,79 +208,60 @@ NODES SCHEDULED AT 1
 
 
 NODES SCHEDULED AT 2
-2	5	
+2	3	
 
-FOR NODE 2: Datatype:1 opcode:15 lmux:3 rmux:0 reg1:0 reg2:2 we:0 wreg:0 imm:0 ab:0 db:0
-Decoded 1f3040000
+FOR NODE 2: Datatype:1 opcode:2 lmux:1 rmux:0 reg1:0 reg2:4 we:1 wreg:6 imm:0 ab:0 db:0
+Decoded 121014000
 
-FOR NODE 5: Datatype:1 opcode:0 lmux:7 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:1 ab:0 db:0
-Decoded 107c00001
+FOR NODE 3: Datatype:1 opcode:0 lmux:2 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:1 ab:0 db:0
+Decoded 102c00001
 
 NODES SCHEDULED AT 3
-3	6	
-Printing Pred Inst for Node: 3
-popc: 4
-dt: 1
-getDatatype: 1
-
-FOR NODE 3:Pred Datatype:1 opcode:4 lmux:0 rmux:6 pmux: 1 reg1:0 reg2:0 regP:0 imm:1
-Decoded 148c01001
-
-FOR NODE 6: Datatype:1 opcode:12 lmux:1 rmux:0 reg1:0 reg2:3 we:0 wreg:0 imm:0 ab:0 db:0
-Decoded 1c1060000
-
-NODES SCHEDULED AT 4
 4	
 
-FOR NODE 4: Datatype:1 opcode:2 lmux:4 rmux:2 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:0
-Decoded 124400000
+FOR NODE 4: Datatype:1 opcode:12 lmux:2 rmux:0 reg1:0 reg2:5 we:0 wreg:0 imm:0 ab:0 db:0
+Decoded 1c2020000
 
 ****** Generating Instructions For Phi Nodes *****
 
 NODES SCHEDULED AT 1
-0	
+0	1	
 Phi Instructions
-selected_node: 7
+selected_node: 5
 node name: gVar1
 
-Phi! Prolog! FOR NODE 0: Datatype:1 opcode:1 lmux:0 rmux:0 reg1:3 reg2:0 we:0 wreg:0 imm:1 ab:0 db:0
-Decoded 118180001
-
-Kernel Instructions
-selected_node: 7
-node name: gVar1
-
-FOR NODE 0: Datatype:1 opcode:1 lmux:7 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:0
-Decoded 11fc00000
-
-NODES SCHEDULED AT 3
-1	
-Phi Instructions
-selected_node: 10
+Phi! Prolog! FOR NODE 0: Datatype:1 opcode:1 lmux:0 rmux:0 reg1:2 reg2:0 we:0 wreg:0 imm:1 ab:0 db:0
+Decoded 118100001
+selected_node: 8
 node name: gVar2
 
 Phi! Prolog! FOR NODE 1: Datatype:1 opcode:1 lmux:0 rmux:0 reg1:2 reg2:0 we:0 wreg:0 imm:2 ab:0 db:0
 Decoded 118100002
 
 Kernel Instructions
-selected_node: 10
+selected_node: 5
+node name: gVar1
+
+FOR NODE 0: Datatype:1 opcode:1 lmux:1 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:0
+Decoded 119c00000
+selected_node: 8
 node name: gVar2
 
-FOR NODE 1: Datatype:1 opcode:1 lmux:1 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:0
-Decoded 119c00000
+FOR NODE 1: Datatype:1 opcode:1 lmux:2 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:0
+Decoded 11ac00000
 
 ****** Generating Instructions For Store Nodes For Live Variables*****
 
-NODES SCHEDULED AT 5
+NODES SCHEDULED AT 4
 
 NODES SCHEDULED AT STORE CYCLE 0
-124	125	
+119	120	
 
-FOR NODE 124: Datatype:1 opcode:6 lmux:0 rmux:6 reg1:6 reg2:0 we:0 wreg:0 imm:4 ab:1 db:0
-Decoded 168d02004
+FOR NODE 119: Datatype:1 opcode:6 lmux:0 rmux:6 reg1:5 reg2:0 we:0 wreg:0 imm:4 ab:1 db:0
+Decoded 168c82004
 
-FOR NODE 125: Datatype:1 opcode:0 lmux:7 rmux:6 reg1:0 reg2:0 we:0 wreg:0 imm:0 ab:0 db:1
-Decoded 107c01000
+FOR NODE 120: Datatype:1 opcode:0 lmux:0 rmux:6 reg1:6 reg2:0 we:0 wreg:0 imm:0 ab:0 db:1
+Decoded 100d01000
 *******PROLOG*********
 0: 10e004000
 1: 10e004000
@@ -339,11 +280,11 @@ Decoded 107c01000
 14: 10e004000
 15: 10e004000
 16: 11e004644
-17: 11e004658
-18: 11e004664
+17: 11e004660
+18: 11e004668
 19: 177e00000
-20: 11e004690
-21: 11e004674
+20: 177e00000
+21: 177e00000
 22: 177e00000
 23: 177e00000
 24: 177e00000
@@ -358,8 +299,8 @@ Decoded 107c01000
 33: 12e00409a
 34: 12e00409a
 35: 177e00000
-36: 12e00409a
-37: 12e00409a
+36: 177e00000
+37: 177e00000
 38: 177e00000
 39: 177e00000
 40: 177e00000
@@ -374,8 +315,8 @@ Decoded 107c01000
 49: 13e004000
 50: 13e004000
 51: 177e00000
-52: 13e004000
-53: 13e004000
+52: 177e00000
+53: 177e00000
 54: 177e00000
 55: 177e00000
 56: 177e00000
@@ -390,8 +331,8 @@ Decoded 107c01000
 65: 167e00000
 66: 167e00000
 67: 177e00000
-68: 168c02004
-69: 167e00000
+68: 177e00000
+69: 177e00000
 70: 177e00000
 71: 177e00000
 72: 177e00000
@@ -406,8 +347,8 @@ Decoded 107c01000
 81: 167e00000
 82: 167e00000
 83: 177e00000
-84: 105c04000
-85: 167e00000
+84: 177e00000
+85: 177e00000
 86: 177e00000
 87: 177e00000
 88: 177e00000
@@ -418,12 +359,12 @@ Decoded 107c01000
 93: 177e00000
 94: 177e00000
 95: 177e00000
-96: 11e01c644
-97: 167e00000
-98: 168c02004
+96: 11e014644
+97: 168c02004
+98: 167e00000
 99: 177e00000
-100: 11e014690
-101: 168c02004
+100: 177e00000
+101: 177e00000
 102: 177e00000
 103: 177e00000
 104: 177e00000
@@ -434,12 +375,12 @@ Decoded 107c01000
 109: 177e00000
 110: 177e00000
 111: 177e00000
-112: 12e01c09a
-113: 167e00000
-114: 105c04000
+112: 12e01409a
+113: 105c04000
+114: 167e00000
 115: 177e00000
-116: 12e01409a
-117: 105c04000
+116: 177e00000
+117: 177e00000
 118: 177e00000
 119: 177e00000
 120: 177e00000
@@ -450,12 +391,12 @@ Decoded 107c01000
 125: 177e00000
 126: 177e00000
 127: 177e00000
-128: 13e01c000
-129: 168c02004
-130: 11e014664
+128: 13e014000
+129: 11e014660
+130: 168c02004
 131: 177e00000
-132: 13e014000
-133: 11e014674
+132: 177e00000
+133: 177e00000
 134: 177e00000
 135: 177e00000
 136: 177e00000
@@ -466,12 +407,12 @@ Decoded 107c01000
 141: 177e00000
 142: 177e00000
 143: 177e00000
-144: 168d82004
-145: 105c04000
-146: 12e01409a
+144: 167e00000
+145: 12e01409a
+146: 105c04000
 147: 177e00000
-148: 168d02004
-149: 12e01409a
+148: 177e00000
+149: 177e00000
 150: 177e00000
 151: 177e00000
 152: 177e00000
@@ -482,12 +423,12 @@ Decoded 107c01000
 157: 177e00000
 158: 177e00000
 159: 177e00000
-160: 105c1c000
-161: 11e01c658
-162: 13e014000
+160: 167e00000
+161: 13e014000
+162: 11e00c65c
 163: 177e00000
-164: 105c14000
-165: 13e014000
+164: 177e00000
+165: 177e00000
 166: 177e00000
 167: 177e00000
 168: 177e00000
@@ -498,12 +439,12 @@ Decoded 107c01000
 173: 177e00000
 174: 177e00000
 175: 177e00000
-176: 11e004001
-177: 12e01c09a
-178: 167e00000
+176: 167e00000
+177: 167e00000
+178: 12e00c09a
 179: 177e00000
 180: 177e00000
-181: 168d02004
+181: 177e00000
 182: 177e00000
 183: 177e00000
 184: 177e00000
@@ -514,12 +455,12 @@ Decoded 107c01000
 189: 177e00000
 190: 177e00000
 191: 177e00000
-192: 12e004000
-193: 13e01c000
-194: 167e00000
+192: 168d02004
+193: 167e00000
+194: 13e00c000
 195: 177e00000
 196: 177e00000
-197: 105c14000
+197: 177e00000
 198: 177e00000
 199: 177e00000
 200: 177e00000
@@ -530,9 +471,9 @@ Decoded 107c01000
 205: 177e00000
 206: 177e00000
 207: 177e00000
-208: 13e004000
-209: 168d82004
-210: 167e00000
+208: 105c14000
+209: 167e00000
+210: 168c82004
 211: 177e00000
 212: 177e00000
 213: 177e00000
@@ -546,9 +487,9 @@ Decoded 107c01000
 221: 177e00000
 222: 177e00000
 223: 177e00000
-224: 11e00c66c
-225: 105c1c000
-226: 168d02004
+224: 11e01c001
+225: 168d02004
+226: 105c0c000
 227: 177e00000
 228: 177e00000
 229: 177e00000
@@ -562,9 +503,9 @@ Decoded 107c01000
 237: 177e00000
 238: 177e00000
 239: 177e00000
-240: 12e00c09a
-241: 177e00000
-242: 105c14000
+240: 12e01c000
+241: 105c14000
+242: 11e004668
 243: 177e00000
 244: 177e00000
 245: 177e00000
@@ -578,9 +519,9 @@ Decoded 107c01000
 253: 177e00000
 254: 177e00000
 255: 177e00000
-256: 13e00c000
+256: 13e01c000
 257: 177e00000
-258: 177e00000
+258: 12e00409a
 259: 177e00000
 260: 177e00000
 261: 177e00000
@@ -594,9 +535,9 @@ Decoded 107c01000
 269: 177e00000
 270: 177e00000
 271: 177e00000
-272: 11e01466c
+272: 11e00464c
 273: 177e00000
-274: 177e00000
+274: 13e004000
 275: 177e00000
 276: 177e00000
 277: 177e00000
@@ -610,9 +551,9 @@ Decoded 107c01000
 285: 177e00000
 286: 177e00000
 287: 177e00000
-288: 12e01409a
+288: 12e00409a
 289: 177e00000
-290: 177e00000
+290: 168c02004
 291: 177e00000
 292: 177e00000
 293: 177e00000
@@ -626,9 +567,9 @@ Decoded 107c01000
 301: 177e00000
 302: 177e00000
 303: 177e00000
-304: 13e014000
+304: 13e004000
 305: 177e00000
-306: 177e00000
+306: 105c04000
 307: 177e00000
 308: 177e00000
 309: 177e00000
@@ -642,9 +583,9 @@ Decoded 107c01000
 317: 177e00000
 318: 177e00000
 319: 177e00000
-320: 177e00000
+320: 11e00c64c
 321: 177e00000
-322: 177e00000
+322: 11e00c65c
 323: 177e00000
 324: 177e00000
 325: 177e00000
@@ -658,9 +599,9 @@ Decoded 107c01000
 333: 177e00000
 334: 177e00000
 335: 177e00000
-336: 177e00000
+336: 12e00c09a
 337: 177e00000
-338: 177e00000
+338: 12e00c09a
 339: 177e00000
 340: 177e00000
 341: 177e00000
@@ -674,9 +615,9 @@ Decoded 107c01000
 349: 177e00000
 350: 177e00000
 351: 177e00000
-352: 177e00000
+352: 13e00c000
 353: 177e00000
-354: 177e00000
+354: 13e00c000
 355: 177e00000
 356: 177e00000
 357: 177e00000
@@ -692,7 +633,7 @@ Decoded 107c01000
 367: 177e00000
 368: 177e00000
 369: 177e00000
-370: 177e00000
+370: 168c82004
 371: 177e00000
 372: 177e00000
 373: 177e00000
@@ -708,7 +649,7 @@ Decoded 107c01000
 383: 177e00000
 384: 177e00000
 385: 177e00000
-386: 177e00000
+386: 105c0c000
 387: 177e00000
 388: 177e00000
 389: 177e00000
@@ -754,7 +695,7 @@ Decoded 107c01000
 429: 177e00000
 430: 177e00000
 431: 177e00000
-432: 118180001
+432: 177e00000
 433: 177e00000
 434: 177e00000
 435: 177e00000
@@ -770,11 +711,11 @@ Decoded 107c01000
 445: 177e00000
 446: 177e00000
 447: 177e00000
-448: 107c00001
+448: 177e00000
 449: 177e00000
 450: 177e00000
 451: 177e00000
-452: 1f3040000
+452: 177e00000
 453: 177e00000
 454: 177e00000
 455: 177e00000
@@ -786,12 +727,12 @@ Decoded 107c01000
 461: 177e00000
 462: 177e00000
 463: 177e00000
-464: 11fc00000
-465: 1c1060000
-466: 118100002
+464: 177e00000
+465: 177e00000
+466: 177e00000
 467: 177e00000
 468: 177e00000
-469: 148c01001
+469: 177e00000
 470: 177e00000
 471: 177e00000
 472: 177e00000
@@ -802,11 +743,11 @@ Decoded 107c01000
 477: 177e00000
 478: 177e00000
 479: 177e00000
-480: 107c00001
-481: 124400000
+480: 177e00000
+481: 177e00000
 482: 177e00000
 483: 177e00000
-484: 1f3040000
+484: 177e00000
 485: 177e00000
 486: 177e00000
 487: 177e00000
@@ -818,12 +759,12 @@ Decoded 107c01000
 493: 177e00000
 494: 177e00000
 495: 177e00000
-496: 11fc00000
-497: 1c1060000
-498: 119c00000
+496: 177e00000
+497: 177e00000
+498: 177e00000
 499: 177e00000
 500: 177e00000
-501: 148c01001
+501: 177e00000
 502: 177e00000
 503: 177e00000
 504: 177e00000
@@ -834,12 +775,76 @@ Decoded 107c01000
 509: 177e00000
 510: 177e00000
 511: 177e00000
+512: 177e00000
+513: 177e00000
+514: 177e00000
+515: 177e00000
+516: 177e00000
+517: 177e00000
+518: 177e00000
+519: 177e00000
+520: 177e00000
+521: 177e00000
+522: 177e00000
+523: 177e00000
+524: 177e00000
+525: 177e00000
+526: 177e00000
+527: 177e00000
+528: 118100001
+529: 118100002
+530: 177e00000
+531: 177e00000
+532: 177e00000
+533: 177e00000
+534: 177e00000
+535: 177e00000
+536: 177e00000
+537: 177e00000
+538: 177e00000
+539: 177e00000
+540: 177e00000
+541: 177e00000
+542: 177e00000
+543: 177e00000
+544: 177e00000
+545: 177e00000
+546: 121014000
+547: 102c00001
+548: 177e00000
+549: 177e00000
+550: 177e00000
+551: 177e00000
+552: 177e00000
+553: 177e00000
+554: 177e00000
+555: 177e00000
+556: 177e00000
+557: 177e00000
+558: 177e00000
+559: 177e00000
+560: 119c00000
+561: 11ac00000
+562: 1c2020000
+563: 177e00000
+564: 177e00000
+565: 177e00000
+566: 177e00000
+567: 177e00000
+568: 177e00000
+569: 177e00000
+570: 177e00000
+571: 177e00000
+572: 177e00000
+573: 177e00000
+574: 177e00000
+575: 177e00000
 *******KERNEl*********
-0: 107c00001
-1: 124400000
-2: 177e00000
-3: 177e00000
-4: 1f3040000
+0: 177e00000
+1: 177e00000
+2: 121014000
+3: 102c00001
+4: 177e00000
 5: 177e00000
 6: 177e00000
 7: 177e00000
@@ -851,12 +856,12 @@ Decoded 107c01000
 13: 177e00000
 14: 177e00000
 15: 177e00000
-16: 11fc00000
-17: 1c1060000
-18: 119c00000
+16: 119c00000
+17: 11ac00000
+18: 1c2020000
 19: 177e00000
 20: 177e00000
-21: 148c01001
+21: 177e00000
 22: 177e00000
 23: 177e00000
 24: 177e00000
@@ -867,14 +872,14 @@ Decoded 107c01000
 29: 177e00000
 30: 177e00000
 31: 177e00000
-Store instr: 168d02004
-Store instr: 107c01000
+Store instr: 168c82004
+Store instr: 100d01000
 *******EPILOG*********
-0: 107c00001
-1: 124400000
-2: 177e00000
-3: 177e00000
-4: 1f3040000
+0: 177e00000
+1: 177e00000
+2: 121014000
+3: 102c00001
+4: 177e00000
 5: 177e00000
 6: 177e00000
 7: 177e00000
@@ -887,11 +892,11 @@ Store instr: 107c01000
 14: 177e00000
 15: 177e00000
 16: 177e00000
-17: 1c1060000
-18: 119c00000
+17: 177e00000
+18: 1c2020000
 19: 177e00000
 20: 177e00000
-21: 148c01001
+21: 177e00000
 22: 177e00000
 23: 177e00000
 24: 177e00000
@@ -902,9 +907,9 @@ Store instr: 107c01000
 29: 177e00000
 30: 177e00000
 31: 177e00000
-32: 177e00000
-33: 124400000
-34: 177e00000
+32: 168c82004
+33: 177e00000
+34: 100d01000
 35: 177e00000
 36: 177e00000
 37: 177e00000
@@ -918,8 +923,8 @@ Store instr: 107c01000
 45: 177e00000
 46: 177e00000
 47: 177e00000
-48: 168d02004
-49: 107c01000
+48: 177e00000
+49: 177e00000
 50: 177e00000
 51: 177e00000
 52: 177e00000
