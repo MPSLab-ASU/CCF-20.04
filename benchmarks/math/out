@@ -1,0 +1,3343 @@
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/benchmarks/math
+106
+Simulation for CGRA for 4 x 4 with 4 registers per PE
+CPU frequency @ 2GHz
+CGRA frequency @ 0.7GHz
+CGRA4x4R4torus
+Global frequency set at 1000000000000 ticks per second
+warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+      0: system.cpu: initializing CGRA Dcache ports
+      0: system.cpu: Setting Up CGRA
+      0: system.cpu: CGRA instantiated
+0: system.remote_gdb: listening for remote gdb on port 7000
+gem5 Simulator System.  http://gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 20.1.0.4
+gem5 compiled Jun 28 2021 23:30:27
+gem5 started Jun 29 2021 14:44:01
+gem5 executing on en4181851l, pid 1056239
+command line: /home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt --debug-flags=CGRA,CGRA_Detailed,CGRA_Execute /home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/configs/example/se.py -n 1 --cpu-type CGRA4x4R4torus -c ./add_small -o 106
+
+**** REAL SIMULATION ****
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.master is deprecated. `master` is now called `mem_side_ports`
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+info: Entering event queue @ 0.  Starting simulation...
+info: Increasing stack size by one page.
+warn: ignoring syscall mprotect(...)
+createCGRA
+checkTotalLoops
+from cgra.c Initialize Parameters
+
+**********EPISIZE 64*********
+
+**********PROSIZE 512*********
+
+**********KERNSIZE 32*********
+
+******SIZE OF UNSIGNED LONG4*****
+
+******SIZE OF UNSIGNED LONG LONG8*****
+
+*******************before while loop**************
+
+************XDIM and YDim are 4, 4
+Loop Count: -3
+From FILE: PROLOGPC= a48e0, EPILOGPC=a46d8,  KernelPC=a58e8
+from cgra.c Initialize Parameters
+
+**********EPISIZE 64*********
+
+**********PROSIZE 576*********
+
+**********KERNSIZE 32*********
+
+******SIZE OF UNSIGNED LONG4*****
+
+******SIZE OF UNSIGNED LONG LONG8*****
+
+*******************before while loop**************
+
+************XDIM and YDim are 4, 4
+Loop Count: -3
+From FILE: PROLOGPC= a5d38, EPILOGPC=a5b30,  KernelPC=a6f40
+from cgra.c Initialize Parameters
+
+**********EPISIZE 64*********
+
+**********PROSIZE 576*********
+
+**********KERNSIZE 32*********
+
+******SIZE OF UNSIGNED LONG4*****
+
+******SIZE OF UNSIGNED LONG LONG8*****
+
+*******************before while loop**************
+
+************XDIM and YDim are 4, 4
+Loop Count: -3
+From FILE: PROLOGPC= a7250, EPILOGPC=a7048,  KernelPC=a8458
+from cgra.c Initialize Parameters
+
+**********EPISIZE 64*********
+
+**********PROSIZE 576*********
+
+**********KERNSIZE 32*********
+
+******SIZE OF UNSIGNED LONG4*****
+
+******SIZE OF UNSIGNED LONG LONG8*****
+
+*******************before while loop**************
+
+************XDIM and YDim are 4, 4
+Loop Count: -3
+From FILE: PROLOGPC= a8768, EPILOGPC=a8560,  KernelPC=a9970
+Main thread calling CGRA thread...
+Mode = 1
+Bin to dec mode
+Len = 6
+
+
+accelerateOnCGRA
+configureCGRA
+
+loopno = 3
+Core will execute loop 3 on CGRA
+
+
+runOnCGRA
+112802500: system.cpu: ************************Setting UP the CGRA************
+112802500: system.cpu: Inside Setup_CGRA_Execution
+112802500: system.cpu: CGRA: OLD PC: 113d4
+112802500: system.cpu: Loop count is -3
+112802500: system.cpu: Epilog Length is 4
+112802500: system.cpu: LiveVar_St_Epilog Length is 1
+112802500: system.cpu: II is 2
+112802500: system.cpu: Epilog count is  1
+112802500: system.cpu: Prolog count is  1
+112802500: system.cpu: Kernel Counter is  -3
+112802500: system.cpu: Prolog PC is a7250
+,112802500: system.cpu: Kernel PC is a8458
+112802500: system.cpu: Epilog PC is a7048
+112802500: system.cpu: CGRA PARAMETERS: PROLOG= 36, EPILOG=4, II=2, KernelCounter=-3
+112802500: system.cpu: CGRA PARAMETERS: PROLOG= 36, EPILOG=4, II=2, KernelCounter=-3
+112802500: system.cpu: CGRA PARAMETERS: PROLOGPC= a7250, EPILOGPC=a7048,  KernelPC=a8458
+112802500: system.cpu: CGRA PARAMETERS: PROLOGPC= a7250, EPILOGPC=a7048,  KernelPC=a8458
+112802500: system.cpu: CGRA PC : a7250
+112802500: system.cpu: **********************CGRA Execution is started**************************** 
+112802500: system.cpu: 
+Executing 1 CGRA Cycle.
+112802500: system.cpu: 
+Exiting 1 CGRA Cycle.
+112803000: system.cpu: Inside CGRA Execution else statement.
+112803000: system.cpu: Inside CGRA_Execution block.
+112803000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112803000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 1 ~~~~~~~
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 0
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 1
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 2
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 3
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 4
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 5
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 6
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 7
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 8
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 9
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 10
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 11
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 12
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 13
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 14
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: Ins: 4529864704, 10e004000 @ PE 15
+112803000: global: Predictor bit: 1	 Opcode: 0
+112803000: global: 
+Input1 = 0	Input2 = 0
+112803000: global: 
+******** Setting Configuration as 0************
+112803000: global: 
+************** WE *****************
+112803000: global: Distance is: 0
+112803000: system.cpu: CGRA advanceTime complete.
+112803000: system.cpu: *******IN ADVANCE PC******
+112803000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7250
+112803000: system.cpu: Passed Complete Drain().
+112803000: system.cpu: Make latency status=1.
+112803000: system.cpu: Inside status idle.
+112803000: system.cpu: Exiting schedule events
+112803000: system.cpu: We are here after Execution
+112803500: system.cpu: Inside CGRA Execution else statement.
+112803500: system.cpu: Inside CGRA_Execution block.
+112803500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112803500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 3 ~~~~~~~
+112803500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112803500: system.cpu: Ins: 4798301772, 11e00464c @ PE 0
+112803500: global: Predictor bit: 1	 Opcode: 1
+112803500: global: 
+Input1 = 1612	Input2 = 0
+112803500: global: 
+******** LDI IN THIS PE 1612************
+112803500: global: 
+************** WE *****************
+112803500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112803500: global: R0: 1612	R1: 0	R2: 0	R3: 0
+112803500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112803500: global: FPR0: 1612	FPR1: 0	FPR2: 0	FPR3: 0
+112803500: global: Writing output 1612 to register 0
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 4798301828, 11e004684 @ PE 1
+112803500: global: Predictor bit: 1	 Opcode: 1
+112803500: global: 
+Input1 = 1668	Input2 = 0
+112803500: global: 
+******** LDI IN THIS PE 1668************
+112803500: global: 
+************** WE *****************
+112803500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112803500: global: R0: 1668	R1: 0	R2: 0	R3: 0
+112803500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112803500: global: FPR0: 1668	FPR1: 0	FPR2: 0	FPR3: 0
+112803500: global: Writing output 1668 to register 0
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 4798301800, 11e004668 @ PE 2
+112803500: global: Predictor bit: 1	 Opcode: 1
+112803500: global: 
+Input1 = 1640	Input2 = 0
+112803500: global: 
+******** LDI IN THIS PE 1640************
+112803500: global: 
+************** WE *****************
+112803500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112803500: global: R0: 1640	R1: 0	R2: 0	R3: 0
+112803500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112803500: global: FPR0: 1640	FPR1: 0	FPR2: 0	FPR3: 0
+112803500: global: Writing output 1640 to register 0
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 4798301824, 11e004680 @ PE 4
+112803500: global: Predictor bit: 1	 Opcode: 1
+112803500: global: 
+Input1 = 1664	Input2 = 0
+112803500: global: 
+******** LDI IN THIS PE 1664************
+112803500: global: 
+************** WE *****************
+112803500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112803500: global: R0: 1664	R1: 0	R2: 0	R3: 0
+112803500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112803500: global: FPR0: 1664	FPR1: 0	FPR2: 0	FPR3: 0
+112803500: global: Writing output 1664 to register 0
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112803500: global: Predictor bit: 0	 Opcode: 7
+112803500: global: CGRA: NOOP.Execute()
+112803500: global: Distance is: 0
+112803500: system.cpu: CGRA advanceTime complete.
+112803500: system.cpu: *******IN ADVANCE PC******
+112803500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a72d0
+112803500: system.cpu: Passed Complete Drain().
+112803500: system.cpu: Make latency status=1.
+112803500: system.cpu: Inside status idle.
+112803500: system.cpu: Exiting schedule events
+112803500: system.cpu: We are here after Execution
+112804000: system.cpu: Inside CGRA Execution else statement.
+112804000: system.cpu: Inside CGRA_Execution block.
+112804000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112804000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 5 ~~~~~~~
+112804000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804000: system.cpu: Ins: 5066735770, 12e00409a @ PE 0
+112804000: global: Predictor bit: 1	 Opcode: 2
+112804000: global: 
+Input1 = 154	Input2 = 1612
+112804000: global: 
+******** LDMI IN THIS PE 154************
+112804000: global: 
+************** WE *****************
+112804000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804000: global: R0: 632396	R1: 0	R2: 0	R3: 0
+112804000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804000: global: FPR0: 632396	FPR1: 0	FPR2: 0	FPR3: 0
+112804000: global: Writing output 632396 to register 0
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 5066735770, 12e00409a @ PE 1
+112804000: global: Predictor bit: 1	 Opcode: 2
+112804000: global: 
+Input1 = 154	Input2 = 1668
+112804000: global: 
+******** LDMI IN THIS PE 154************
+112804000: global: 
+************** WE *****************
+112804000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804000: global: R0: 632452	R1: 0	R2: 0	R3: 0
+112804000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804000: global: FPR0: 632452	FPR1: 0	FPR2: 0	FPR3: 0
+112804000: global: Writing output 632452 to register 0
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 5066735770, 12e00409a @ PE 2
+112804000: global: Predictor bit: 1	 Opcode: 2
+112804000: global: 
+Input1 = 154	Input2 = 1640
+112804000: global: 
+******** LDMI IN THIS PE 154************
+112804000: global: 
+************** WE *****************
+112804000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804000: global: R0: 632424	R1: 0	R2: 0	R3: 0
+112804000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804000: global: FPR0: 632424	FPR1: 0	FPR2: 0	FPR3: 0
+112804000: global: Writing output 632424 to register 0
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 5066735770, 12e00409a @ PE 4
+112804000: global: Predictor bit: 1	 Opcode: 2
+112804000: global: 
+Input1 = 154	Input2 = 1664
+112804000: global: 
+******** LDMI IN THIS PE 154************
+112804000: global: 
+************** WE *****************
+112804000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804000: global: R0: 632448	R1: 0	R2: 0	R3: 0
+112804000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804000: global: FPR0: 632448	FPR1: 0	FPR2: 0	FPR3: 0
+112804000: global: Writing output 632448 to register 0
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112804000: global: Predictor bit: 0	 Opcode: 7
+112804000: global: CGRA: NOOP.Execute()
+112804000: global: Distance is: 0
+112804000: system.cpu: CGRA advanceTime complete.
+112804000: system.cpu: *******IN ADVANCE PC******
+112804000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7350
+112804000: system.cpu: Passed Complete Drain().
+112804000: system.cpu: Make latency status=1.
+112804000: system.cpu: Inside status idle.
+112804000: system.cpu: Exiting schedule events
+112804000: system.cpu: We are here after Execution
+112804500: system.cpu: Inside CGRA Execution else statement.
+112804500: system.cpu: Inside CGRA_Execution block.
+112804500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112804500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 7 ~~~~~~~
+112804500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112804500: system.cpu: Ins: 5335171072, 13e004000 @ PE 0
+112804500: global: Predictor bit: 1	 Opcode: 3
+112804500: global: 
+Input1 = 0	Input2 = 632396
+112804500: global: 
+******** LDUI IN THIS PE 0************
+112804500: global: 
+************** WE *****************
+112804500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804500: global: R0: 632396	R1: 0	R2: 0	R3: 0
+112804500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804500: global: FPR0: 632396	FPR1: 0	FPR2: 0	FPR3: 0
+112804500: global: Writing output 632396 to register 0
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 5335171072, 13e004000 @ PE 1
+112804500: global: Predictor bit: 1	 Opcode: 3
+112804500: global: 
+Input1 = 0	Input2 = 632452
+112804500: global: 
+******** LDUI IN THIS PE 0************
+112804500: global: 
+************** WE *****************
+112804500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804500: global: R0: 632452	R1: 0	R2: 0	R3: 0
+112804500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804500: global: FPR0: 632452	FPR1: 0	FPR2: 0	FPR3: 0
+112804500: global: Writing output 632452 to register 0
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 5335171072, 13e004000 @ PE 2
+112804500: global: Predictor bit: 1	 Opcode: 3
+112804500: global: 
+Input1 = 0	Input2 = 632424
+112804500: global: 
+******** LDUI IN THIS PE 0************
+112804500: global: 
+************** WE *****************
+112804500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804500: global: R0: 632424	R1: 0	R2: 0	R3: 0
+112804500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804500: global: FPR0: 632424	FPR1: 0	FPR2: 0	FPR3: 0
+112804500: global: Writing output 632424 to register 0
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 5335171072, 13e004000 @ PE 4
+112804500: global: Predictor bit: 1	 Opcode: 3
+112804500: global: 
+Input1 = 0	Input2 = 632448
+112804500: global: 
+******** LDUI IN THIS PE 0************
+112804500: global: 
+************** WE *****************
+112804500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112804500: global: R0: 632448	R1: 0	R2: 0	R3: 0
+112804500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112804500: global: FPR0: 632448	FPR1: 0	FPR2: 0	FPR3: 0
+112804500: global: Writing output 632448 to register 0
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112804500: global: Predictor bit: 0	 Opcode: 7
+112804500: global: CGRA: NOOP.Execute()
+112804500: global: Distance is: 0
+112804500: system.cpu: CGRA advanceTime complete.
+112804500: system.cpu: *******IN ADVANCE PC******
+112804500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a73d0
+112804500: system.cpu: Passed Complete Drain().
+112804500: system.cpu: Make latency status=1.
+112804500: system.cpu: Inside status idle.
+112804500: system.cpu: Exiting schedule events
+112804500: system.cpu: We are here after Execution
+112805000: system.cpu: Inside CGRA Execution else statement.
+112805000: system.cpu: Inside CGRA_Execution block.
+112805000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112805000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 9 ~~~~~~~
+112805000: global: 
+******** DB INPUT1 ReadAddress = 0************
+112805000: global: 
+******** DB INPUT1 ReadAddress = 0************
+112805000: system.cpu: Ins: 6052388868, 168c02004 @ PE 0
+112805000: global: Predictor bit: 1	 Opcode: 6
+112805000: global: 
+Input1 = 632396	Input2 = 4
+112805000: global: 
+******** ADDRESS GENERATED IN THIS PE 632396************
+112805000: global: 
+*********Setting Address 9a64c ******
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6037700608, 167e00000 @ PE 1
+112805000: global: Predictor bit: 0	 Opcode: 6
+112805000: global: 
+Input1 = 632452	Input2 = 632452
+112805000: global: 
+******** ASR IN THIS PE 39528************
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6037700608, 167e00000 @ PE 2
+112805000: global: Predictor bit: 0	 Opcode: 6
+112805000: global: 
+Input1 = 632424	Input2 = 632424
+112805000: global: 
+******** ASR IN THIS PE 2470************
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6052388868, 168c02004 @ PE 4
+112805000: global: Predictor bit: 1	 Opcode: 6
+112805000: global: 
+Input1 = 632448	Input2 = 4
+112805000: global: 
+******** ADDRESS GENERATED IN THIS PE 632448************
+112805000: global: 
+*********Setting Address 9a680 ******
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+112805000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112805000: global: Predictor bit: 0	 Opcode: 7
+112805000: global: CGRA: NOOP.Execute()
+112805000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112805000: system.cpu: CGRA advanceTime complete.
+112805000: system.cpu: *******IN ADVANCE PC******
+112805000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7450
+112805000: system.cpu: Passed Complete Drain().
+112805000: system.cpu: Make latency status=1.
+112805000: system.cpu: Inside status idle.
+112805000: system.cpu: Exiting schedule events
+112805000: system.cpu: We are here after Execution
+112805500: system.cpu: Inside CGRA Execution else statement.
+112805500: system.cpu: Inside CGRA_Execution block.
+112805500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112805500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 11 ~~~~~~~
+112805500: global: 
+******** DB INPUT1 = 4************
+112805500: global: 
+******** DB INPUT1 = 4************
+112805500: system.cpu: Ins: 4391452672, 105c04000 @ PE 0
+112805500: global: Predictor bit: 0	 Opcode: 0
+112805500: global: 
+Input1 = 4	Input2 = 0
+112805500: global: 
+******** SUM IN THIS PE 4************
+112805500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112805500: global: R0: 4	R1: 0	R2: 0	R3: 0
+112805500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112805500: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 0
+112805500: global: Writing output 4 to register 0
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6037700608, 167e00000 @ PE 1
+112805500: global: Predictor bit: 0	 Opcode: 6
+112805500: global: 
+Input1 = 39528	Input2 = 39528
+112805500: global: 
+******** ASR IN THIS PE 154************
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6037700608, 167e00000 @ PE 2
+112805500: global: Predictor bit: 0	 Opcode: 6
+112805500: global: 
+Input1 = 2470	Input2 = 2470
+112805500: global: 
+******** ASR IN THIS PE 38************
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 4391452672, 105c04000 @ PE 4
+112805500: global: Predictor bit: 0	 Opcode: 0
+112805500: global: 
+Input1 = 4	Input2 = 0
+112805500: global: 
+******** SUM IN THIS PE 4************
+112805500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112805500: global: R0: 4	R1: 0	R2: 0	R3: 0
+112805500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112805500: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 0
+112805500: global: Writing output 4 to register 0
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+112805500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112805500: global: Predictor bit: 0	 Opcode: 7
+112805500: global: CGRA: NOOP.Execute()
+112805500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112805500: system.cpu: CGRA advanceTime complete.
+112805500: system.cpu: *******IN ADVANCE PC******
+112805500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a74d0
+112805500: system.cpu: Passed Complete Drain().
+112805500: system.cpu: Make latency status=1.
+112805500: system.cpu: Inside status idle.
+112805500: system.cpu: Exiting schedule events
+112805500: system.cpu: We are here after Execution
+112806000: system.cpu: Inside CGRA Execution else statement.
+112806000: system.cpu: Inside CGRA_Execution block.
+112806000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112806000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 13 ~~~~~~~
+112806000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112806000: global: 
+******** DB INPUT1 ReadAddress = 0************
+112806000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112806000: system.cpu: Ins: 4798400076, 11e01c64c @ PE 0
+112806000: global: Predictor bit: 1	 Opcode: 1
+112806000: global: 
+Input1 = 1612	Input2 = 4
+112806000: global: 
+******** LDI IN THIS PE 1612************
+112806000: global: 
+************** WE *****************
+112806000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112806000: global: R0: 4	R1: 0	R2: 0	R3: 1612
+112806000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112806000: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 1612
+112806000: global: Writing output 1612 to register 3
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6037700608, 167e00000 @ PE 1
+112806000: global: Predictor bit: 0	 Opcode: 6
+112806000: global: 
+Input1 = 154	Input2 = 154
+112806000: global: 
+******** ASR IN THIS PE 0************
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6052388868, 168c02004 @ PE 2
+112806000: global: Predictor bit: 1	 Opcode: 6
+112806000: global: 
+Input1 = 632424	Input2 = 4
+112806000: global: 
+******** ADDRESS GENERATED IN THIS PE 632424************
+112806000: global: 
+*********Setting Address 9a668 ******
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 4798367360, 11e014680 @ PE 4
+112806000: global: Predictor bit: 1	 Opcode: 1
+112806000: global: 
+Input1 = 1664	Input2 = 4
+112806000: global: 
+******** LDI IN THIS PE 1664************
+112806000: global: 
+************** WE *****************
+112806000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112806000: global: R0: 4	R1: 0	R2: 1664	R3: 0
+112806000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112806000: global: FPR0: 4	FPR1: 0	FPR2: 1664	FPR3: 0
+112806000: global: Writing output 1664 to register 2
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+112806000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112806000: global: Predictor bit: 0	 Opcode: 7
+112806000: global: CGRA: NOOP.Execute()
+112806000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112806000: system.cpu: CGRA advanceTime complete.
+112806000: system.cpu: *******IN ADVANCE PC******
+112806000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7550
+112806000: system.cpu: Passed Complete Drain().
+112806000: system.cpu: Make latency status=1.
+112806000: system.cpu: Inside status idle.
+112806000: system.cpu: Exiting schedule events
+112806000: system.cpu: We are here after Execution
+112806500: system.cpu: Inside CGRA Execution else statement.
+112806500: system.cpu: Inside CGRA_Execution block.
+112806500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112806500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 15 ~~~~~~~
+112806500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112806500: global: 
+******** DB INPUT1 = 32************
+112806500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112806500: system.cpu: Ins: 5066834074, 12e01c09a @ PE 0
+112806500: global: Predictor bit: 1	 Opcode: 2
+112806500: global: 
+Input1 = 154	Input2 = 4
+112806500: global: 
+******** LDMI IN THIS PE 154************
+112806500: global: 
+************** WE *****************
+112806500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112806500: global: R0: 4	R1: 0	R2: 0	R3: 632396
+112806500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112806500: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 632396
+112806500: global: Writing output 632396 to register 3
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6037700608, 167e00000 @ PE 1
+112806500: global: Predictor bit: 0	 Opcode: 6
+112806500: global: 
+Input1 = 0	Input2 = 0
+112806500: global: 
+******** ASR IN THIS PE 0************
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 4391452672, 105c04000 @ PE 2
+112806500: global: Predictor bit: 0	 Opcode: 0
+112806500: global: 
+Input1 = 32	Input2 = 0
+112806500: global: 
+******** SUM IN THIS PE 32************
+112806500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112806500: global: R0: 32	R1: 0	R2: 0	R3: 0
+112806500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112806500: global: FPR0: 32	FPR1: 0	FPR2: 0	FPR3: 0
+112806500: global: Writing output 32 to register 0
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 5066801306, 12e01409a @ PE 4
+112806500: global: Predictor bit: 1	 Opcode: 2
+112806500: global: 
+Input1 = 154	Input2 = 4
+112806500: global: 
+******** LDMI IN THIS PE 154************
+112806500: global: 
+************** WE *****************
+112806500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112806500: global: R0: 4	R1: 0	R2: 632448	R3: 0
+112806500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112806500: global: FPR0: 4	FPR1: 0	FPR2: 632448	FPR3: 0
+112806500: global: Writing output 632448 to register 2
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+112806500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112806500: global: Predictor bit: 0	 Opcode: 7
+112806500: global: CGRA: NOOP.Execute()
+112806500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112806500: system.cpu: CGRA advanceTime complete.
+112806500: system.cpu: *******IN ADVANCE PC******
+112806500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a75d0
+112806500: system.cpu: Passed Complete Drain().
+112806500: system.cpu: Make latency status=1.
+112806500: system.cpu: Inside status idle.
+112806500: system.cpu: Exiting schedule events
+112806500: system.cpu: We are here after Execution
+112807000: system.cpu: Inside CGRA Execution else statement.
+112807000: system.cpu: Inside CGRA_Execution block.
+112807000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112807000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 17 ~~~~~~~
+112807000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112807000: global: 
+******** DB INPUT1 ReadAddress = 0************
+112807000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112807000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112807000: system.cpu: Ins: 5335269376, 13e01c000 @ PE 0
+112807000: global: Predictor bit: 1	 Opcode: 3
+112807000: global: 
+Input1 = 0	Input2 = 4
+112807000: global: 
+******** LDUI IN THIS PE 0************
+112807000: global: 
+************** WE *****************
+112807000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112807000: global: R0: 4	R1: 0	R2: 0	R3: 632396
+112807000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112807000: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 632396
+112807000: global: Writing output 632396 to register 3
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6052388868, 168c02004 @ PE 1
+112807000: global: Predictor bit: 1	 Opcode: 6
+112807000: global: 
+Input1 = 632452	Input2 = 4
+112807000: global: 
+******** ADDRESS GENERATED IN THIS PE 632452************
+112807000: global: 
+*********Setting Address 9a684 ******
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 4798367336, 11e014668 @ PE 2
+112807000: global: Predictor bit: 1	 Opcode: 1
+112807000: global: 
+Input1 = 1640	Input2 = 32
+112807000: global: 
+******** LDI IN THIS PE 1640************
+112807000: global: 
+************** WE *****************
+112807000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112807000: global: R0: 32	R1: 0	R2: 1640	R3: 0
+112807000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112807000: global: FPR0: 32	FPR1: 0	FPR2: 1640	FPR3: 0
+112807000: global: Writing output 1640 to register 2
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 5335236608, 13e014000 @ PE 4
+112807000: global: Predictor bit: 1	 Opcode: 3
+112807000: global: 
+Input1 = 0	Input2 = 4
+112807000: global: 
+******** LDUI IN THIS PE 0************
+112807000: global: 
+************** WE *****************
+112807000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112807000: global: R0: 4	R1: 0	R2: 632448	R3: 0
+112807000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112807000: global: FPR0: 4	FPR1: 0	FPR2: 632448	FPR3: 0
+112807000: global: Writing output 632448 to register 2
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+112807000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112807000: global: Predictor bit: 0	 Opcode: 7
+112807000: global: CGRA: NOOP.Execute()
+112807000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632452 - data: 5
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112807000: system.cpu: CGRA advanceTime complete.
+112807000: system.cpu: *******IN ADVANCE PC******
+112807000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7650
+112807000: system.cpu: Passed Complete Drain().
+112807000: system.cpu: Make latency status=1.
+112807000: system.cpu: Inside status idle.
+112807000: system.cpu: Exiting schedule events
+112807000: system.cpu: We are here after Execution
+112807500: system.cpu: Inside CGRA Execution else statement.
+112807500: system.cpu: Inside CGRA_Execution block.
+112807500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112807500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 19 ~~~~~~~
+112807500: global: 
+******** DB INPUT1 ReadAddress = 3************
+112807500: global: 
+******** DB INPUT1 = 5************
+112807500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112807500: global: 
+******** DB INPUT1 ReadAddress = 2************
+112807500: system.cpu: Ins: 6053961732, 168d82004 @ PE 0
+112807500: global: Predictor bit: 1	 Opcode: 6
+112807500: global: 
+Input1 = 632396	Input2 = 4
+112807500: global: 
+******** ADDRESS GENERATED IN THIS PE 632396************
+112807500: global: 
+*********Setting Address 9a64c ******
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 4391452672, 105c04000 @ PE 1
+112807500: global: Predictor bit: 0	 Opcode: 0
+112807500: global: 
+Input1 = 5	Input2 = 0
+112807500: global: 
+******** SUM IN THIS PE 5************
+112807500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112807500: global: R0: 5	R1: 0	R2: 0	R3: 0
+112807500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112807500: global: FPR0: 5	FPR1: 0	FPR2: 0	FPR3: 0
+112807500: global: Writing output 5 to register 0
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 5066801306, 12e01409a @ PE 2
+112807500: global: Predictor bit: 1	 Opcode: 2
+112807500: global: 
+Input1 = 154	Input2 = 32
+112807500: global: 
+******** LDMI IN THIS PE 154************
+112807500: global: 
+************** WE *****************
+112807500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112807500: global: R0: 32	R1: 0	R2: 632424	R3: 0
+112807500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112807500: global: FPR0: 32	FPR1: 0	FPR2: 632424	FPR3: 0
+112807500: global: Writing output 632424 to register 2
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6053437444, 168d02004 @ PE 4
+112807500: global: Predictor bit: 1	 Opcode: 6
+112807500: global: 
+Input1 = 632448	Input2 = 4
+112807500: global: 
+******** ADDRESS GENERATED IN THIS PE 632448************
+112807500: global: 
+*********Setting Address 9a680 ******
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+112807500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112807500: global: Predictor bit: 0	 Opcode: 7
+112807500: global: CGRA: NOOP.Execute()
+112807500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112807500: system.cpu: CGRA advanceTime complete.
+112807500: system.cpu: *******IN ADVANCE PC******
+112807500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a76d0
+112807500: system.cpu: Passed Complete Drain().
+112807500: system.cpu: Make latency status=1.
+112807500: system.cpu: Inside status idle.
+112807500: system.cpu: Exiting schedule events
+112807500: system.cpu: We are here after Execution
+112808000: system.cpu: Inside CGRA Execution else statement.
+112808000: system.cpu: Inside CGRA_Execution block.
+112808000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112808000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 21 ~~~~~~~
+112808000: global: 
+******** DB INPUT1 = 4************
+112808000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112808000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112808000: global: 
+******** DB INPUT1 = 4************
+112808000: system.cpu: Ins: 4391550976, 105c1c000 @ PE 0
+112808000: global: Predictor bit: 0	 Opcode: 0
+112808000: global: 
+Input1 = 4	Input2 = 0
+112808000: global: 
+******** SUM IN THIS PE 4************
+112808000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112808000: global: R0: 4	R1: 0	R2: 0	R3: 4
+112808000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112808000: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 4
+112808000: global: Writing output 4 to register 3
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 4798400132, 11e01c684 @ PE 1
+112808000: global: Predictor bit: 1	 Opcode: 1
+112808000: global: 
+Input1 = 1668	Input2 = 5
+112808000: global: 
+******** LDI IN THIS PE 1668************
+112808000: global: 
+************** WE *****************
+112808000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112808000: global: R0: 5	R1: 0	R2: 0	R3: 1668
+112808000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112808000: global: FPR0: 5	FPR1: 0	FPR2: 0	FPR3: 1668
+112808000: global: Writing output 1668 to register 3
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 5335236608, 13e014000 @ PE 2
+112808000: global: Predictor bit: 1	 Opcode: 3
+112808000: global: 
+Input1 = 0	Input2 = 32
+112808000: global: 
+******** LDUI IN THIS PE 0************
+112808000: global: 
+************** WE *****************
+112808000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112808000: global: R0: 32	R1: 0	R2: 632424	R3: 0
+112808000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112808000: global: FPR0: 32	FPR1: 0	FPR2: 632424	FPR3: 0
+112808000: global: Writing output 632424 to register 2
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 4391518208, 105c14000 @ PE 4
+112808000: global: Predictor bit: 0	 Opcode: 0
+112808000: global: 
+Input1 = 4	Input2 = 0
+112808000: global: 
+******** SUM IN THIS PE 4************
+112808000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112808000: global: R0: 4	R1: 0	R2: 4	R3: 0
+112808000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112808000: global: FPR0: 4	FPR1: 0	FPR2: 4	FPR3: 0
+112808000: global: Writing output 4 to register 2
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+112808000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112808000: global: Predictor bit: 0	 Opcode: 7
+112808000: global: CGRA: NOOP.Execute()
+112808000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112808000: system.cpu: CGRA advanceTime complete.
+112808000: system.cpu: *******IN ADVANCE PC******
+112808000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7750
+112808000: system.cpu: Passed Complete Drain().
+112808000: system.cpu: Make latency status=1.
+112808000: system.cpu: Inside status idle.
+112808000: system.cpu: Exiting schedule events
+112808000: system.cpu: We are here after Execution
+112808500: system.cpu: Inside CGRA Execution else statement.
+112808500: system.cpu: Inside CGRA_Execution block.
+112808500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112808500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 23 ~~~~~~~
+112808500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112808500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112808500: system.cpu: Ins: 4798300162, 11e004002 @ PE 0
+112808500: global: Predictor bit: 1	 Opcode: 1
+112808500: global: 
+Input1 = 2	Input2 = 4
+112808500: global: 
+******** LDI IN THIS PE 2************
+112808500: global: 
+************** WE *****************
+112808500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112808500: global: R0: 2	R1: 0	R2: 0	R3: 4
+112808500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112808500: global: FPR0: 2	FPR1: 0	FPR2: 0	FPR3: 4
+112808500: global: Writing output 2 to register 0
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 5066834074, 12e01c09a @ PE 1
+112808500: global: Predictor bit: 1	 Opcode: 2
+112808500: global: 
+Input1 = 154	Input2 = 5
+112808500: global: 
+******** LDMI IN THIS PE 154************
+112808500: global: 
+************** WE *****************
+112808500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112808500: global: R0: 5	R1: 0	R2: 0	R3: 632452
+112808500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112808500: global: FPR0: 5	FPR1: 0	FPR2: 0	FPR3: 632452
+112808500: global: Writing output 632452 to register 3
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6037700608, 167e00000 @ PE 2
+112808500: global: Predictor bit: 0	 Opcode: 6
+112808500: global: 
+Input1 = 632424	Input2 = 632424
+112808500: global: 
+******** ASR IN THIS PE 2470************
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+112808500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112808500: global: Predictor bit: 0	 Opcode: 7
+112808500: global: CGRA: NOOP.Execute()
+112808500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112808500: system.cpu: CGRA advanceTime complete.
+112808500: system.cpu: *******IN ADVANCE PC******
+112808500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a77d0
+112808500: system.cpu: Passed Complete Drain().
+112808500: system.cpu: Make latency status=1.
+112808500: system.cpu: Inside status idle.
+112808500: system.cpu: Exiting schedule events
+112808500: system.cpu: We are here after Execution
+112809000: system.cpu: Inside CGRA Execution else statement.
+112809000: system.cpu: Inside CGRA_Execution block.
+112809000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112809000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 25 ~~~~~~~
+112809000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112809000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112809000: system.cpu: Ins: 5066735616, 12e004000 @ PE 0
+112809000: global: Predictor bit: 1	 Opcode: 2
+112809000: global: 
+Input1 = 0	Input2 = 2
+112809000: global: 
+******** LDMI IN THIS PE 0************
+112809000: global: 
+************** WE *****************
+112809000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112809000: global: R0: 2	R1: 0	R2: 0	R3: 4
+112809000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112809000: global: FPR0: 2	FPR1: 0	FPR2: 0	FPR3: 4
+112809000: global: Writing output 2 to register 0
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 5335269376, 13e01c000 @ PE 1
+112809000: global: Predictor bit: 1	 Opcode: 3
+112809000: global: 
+Input1 = 0	Input2 = 5
+112809000: global: 
+******** LDUI IN THIS PE 0************
+112809000: global: 
+************** WE *****************
+112809000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112809000: global: R0: 5	R1: 0	R2: 0	R3: 632452
+112809000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112809000: global: FPR0: 5	FPR1: 0	FPR2: 0	FPR3: 632452
+112809000: global: Writing output 632452 to register 3
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6037700608, 167e00000 @ PE 2
+112809000: global: Predictor bit: 0	 Opcode: 6
+112809000: global: 
+Input1 = 2470	Input2 = 2470
+112809000: global: 
+******** ASR IN THIS PE 38************
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+112809000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112809000: global: Predictor bit: 0	 Opcode: 7
+112809000: global: CGRA: NOOP.Execute()
+112809000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632396 - data: 4
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112809000: system.cpu: CGRA advanceTime complete.
+112809000: system.cpu: *******IN ADVANCE PC******
+112809000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7850
+112809000: system.cpu: Passed Complete Drain().
+112809000: system.cpu: Make latency status=1.
+112809000: system.cpu: Inside status idle.
+112809000: system.cpu: Exiting schedule events
+112809000: system.cpu: We are here after Execution
+112809500: system.cpu: Inside CGRA Execution else statement.
+112809500: system.cpu: Inside CGRA_Execution block.
+112809500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112809500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 27 ~~~~~~~
+112809500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112809500: global: 
+******** DB INPUT1 ReadAddress = 3************
+112809500: system.cpu: Ins: 5335171072, 13e004000 @ PE 0
+112809500: global: Predictor bit: 1	 Opcode: 3
+112809500: global: 
+Input1 = 0	Input2 = 2
+112809500: global: 
+******** LDUI IN THIS PE 0************
+112809500: global: 
+************** WE *****************
+112809500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+112809500: global: R0: 2	R1: 0	R2: 0	R3: 4
+112809500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+112809500: global: FPR0: 2	FPR1: 0	FPR2: 0	FPR3: 4
+112809500: global: Writing output 2 to register 0
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6053961732, 168d82004 @ PE 1
+112809500: global: Predictor bit: 1	 Opcode: 6
+112809500: global: 
+Input1 = 632452	Input2 = 4
+112809500: global: 
+******** ADDRESS GENERATED IN THIS PE 632452************
+112809500: global: 
+*********Setting Address 9a684 ******
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6037700608, 167e00000 @ PE 2
+112809500: global: Predictor bit: 0	 Opcode: 6
+112809500: global: 
+Input1 = 38	Input2 = 38
+112809500: global: 
+******** ASR IN THIS PE 0************
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+112809500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112809500: global: Predictor bit: 0	 Opcode: 7
+112809500: global: CGRA: NOOP.Execute()
+112809500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632452 - data: 5
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112809500: system.cpu: CGRA advanceTime complete.
+112809500: system.cpu: *******IN ADVANCE PC******
+112809500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a78d0
+112809500: system.cpu: Passed Complete Drain().
+112809500: system.cpu: Make latency status=1.
+112809500: system.cpu: Inside status idle.
+112809500: system.cpu: Exiting schedule events
+112809500: system.cpu: We are here after Execution
+112810000: system.cpu: Inside CGRA Execution else statement.
+112810000: system.cpu: Inside CGRA_Execution block.
+112810000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112810000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 29 ~~~~~~~
+112810000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112810000: global: 
+******** DB INPUT1 = 5************
+112810000: global: 
+******** DB INPUT1 ReadAddress = 2************
+112810000: system.cpu: Ins: 4798332929, 11e00c001 @ PE 0
+112810000: global: Predictor bit: 1	 Opcode: 1
+112810000: global: 
+Input1 = 1	Input2 = 2
+112810000: global: 
+******** LDI IN THIS PE 1************
+112810000: global: 
+************** WE *****************
+112810000: global: 
+WRITE: REG NUMBER: 1 dist: 0
+112810000: global: R0: 2	R1: 1	R2: 0	R3: 4
+112810000: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+112810000: global: FPR0: 2	FPR1: 1	FPR2: 0	FPR3: 4
+112810000: global: Writing output 1 to register 1
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 4391550976, 105c1c000 @ PE 1
+112810000: global: Predictor bit: 0	 Opcode: 0
+112810000: global: 
+Input1 = 5	Input2 = 0
+112810000: global: 
+******** SUM IN THIS PE 5************
+112810000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112810000: global: R0: 5	R1: 0	R2: 0	R3: 5
+112810000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112810000: global: FPR0: 5	FPR1: 0	FPR2: 0	FPR3: 5
+112810000: global: Writing output 5 to register 3
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6053437444, 168d02004 @ PE 2
+112810000: global: Predictor bit: 1	 Opcode: 6
+112810000: global: 
+Input1 = 632424	Input2 = 4
+112810000: global: 
+******** ADDRESS GENERATED IN THIS PE 632424************
+112810000: global: 
+*********Setting Address 9a668 ******
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+112810000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112810000: global: Predictor bit: 0	 Opcode: 7
+112810000: global: CGRA: NOOP.Execute()
+112810000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112810000: system.cpu: CGRA advanceTime complete.
+112810000: system.cpu: *******IN ADVANCE PC******
+112810000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7950
+112810000: system.cpu: Passed Complete Drain().
+112810000: system.cpu: Make latency status=1.
+112810000: system.cpu: Inside status idle.
+112810000: system.cpu: Exiting schedule events
+112810000: system.cpu: We are here after Execution
+112810500: system.cpu: Inside CGRA Execution else statement.
+112810500: system.cpu: Inside CGRA_Execution block.
+112810500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112810500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 31 ~~~~~~~
+112810500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112810500: global: 
+******** DB INPUT1 = 32************
+112810500: system.cpu: Ins: 5066768384, 12e00c000 @ PE 0
+112810500: global: Predictor bit: 1	 Opcode: 2
+112810500: global: 
+Input1 = 0	Input2 = 2
+112810500: global: 
+******** LDMI IN THIS PE 0************
+112810500: global: 
+************** WE *****************
+112810500: global: 
+WRITE: REG NUMBER: 1 dist: 0
+112810500: global: R0: 2	R1: 1	R2: 0	R3: 4
+112810500: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+112810500: global: FPR0: 2	FPR1: 1	FPR2: 0	FPR3: 4
+112810500: global: Writing output 1 to register 1
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 4391518208, 105c14000 @ PE 2
+112810500: global: Predictor bit: 0	 Opcode: 0
+112810500: global: 
+Input1 = 32	Input2 = 0
+112810500: global: 
+******** SUM IN THIS PE 32************
+112810500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112810500: global: R0: 32	R1: 0	R2: 32	R3: 0
+112810500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112810500: global: FPR0: 32	FPR1: 0	FPR2: 32	FPR3: 0
+112810500: global: Writing output 32 to register 2
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+112810500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112810500: global: Predictor bit: 0	 Opcode: 7
+112810500: global: CGRA: NOOP.Execute()
+112810500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112810500: system.cpu: CGRA advanceTime complete.
+112810500: system.cpu: *******IN ADVANCE PC******
+112810500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a79d0
+112810500: system.cpu: Passed Complete Drain().
+112810500: system.cpu: Make latency status=1.
+112810500: system.cpu: Inside status idle.
+112810500: system.cpu: Exiting schedule events
+112810500: system.cpu: We are here after Execution
+112811000: system.cpu: Inside CGRA Execution else statement.
+112811000: system.cpu: Inside CGRA_Execution block.
+112811000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112811000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 33 ~~~~~~~
+112811000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112811000: system.cpu: Ins: 5335203840, 13e00c000 @ PE 0
+112811000: global: Predictor bit: 1	 Opcode: 3
+112811000: global: 
+Input1 = 0	Input2 = 2
+112811000: global: 
+******** LDUI IN THIS PE 0************
+112811000: global: 
+************** WE *****************
+112811000: global: 
+WRITE: REG NUMBER: 1 dist: 0
+112811000: global: R0: 2	R1: 1	R2: 0	R3: 4
+112811000: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+112811000: global: FPR0: 2	FPR1: 1	FPR2: 0	FPR3: 4
+112811000: global: Writing output 1 to register 1
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+112811000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112811000: global: Predictor bit: 0	 Opcode: 7
+112811000: global: CGRA: NOOP.Execute()
+112811000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112811000: system.cpu: CGRA advanceTime complete.
+112811000: system.cpu: *******IN ADVANCE PC******
+112811000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7a50
+112811000: system.cpu: Passed Complete Drain().
+112811000: system.cpu: Make latency status=1.
+112811000: system.cpu: Inside status idle.
+112811000: system.cpu: Exiting schedule events
+112811000: system.cpu: We are here after Execution
+112811500: system.cpu: Inside CGRA Execution else statement.
+112811500: system.cpu: Inside CGRA_Execution block.
+112811500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112811500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 35 ~~~~~~~
+112811500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112811500: system.cpu: Ins: 4798367300, 11e014644 @ PE 0
+112811500: global: Predictor bit: 1	 Opcode: 1
+112811500: global: 
+Input1 = 1604	Input2 = 2
+112811500: global: 
+******** LDI IN THIS PE 1604************
+112811500: global: 
+************** WE *****************
+112811500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112811500: global: R0: 2	R1: 1	R2: 1604	R3: 4
+112811500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112811500: global: FPR0: 2	FPR1: 1	FPR2: 1604	FPR3: 4
+112811500: global: Writing output 1604 to register 2
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+112811500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112811500: global: Predictor bit: 0	 Opcode: 7
+112811500: global: CGRA: NOOP.Execute()
+112811500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112811500: system.cpu: CGRA advanceTime complete.
+112811500: system.cpu: *******IN ADVANCE PC******
+112811500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7ad0
+112811500: system.cpu: Passed Complete Drain().
+112811500: system.cpu: Make latency status=1.
+112811500: system.cpu: Inside status idle.
+112811500: system.cpu: Exiting schedule events
+112811500: system.cpu: We are here after Execution
+112812000: system.cpu: Inside CGRA Execution else statement.
+112812000: system.cpu: Inside CGRA_Execution block.
+112812000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112812000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 37 ~~~~~~~
+112812000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112812000: system.cpu: Ins: 5066801306, 12e01409a @ PE 0
+112812000: global: Predictor bit: 1	 Opcode: 2
+112812000: global: 
+Input1 = 154	Input2 = 2
+112812000: global: 
+******** LDMI IN THIS PE 154************
+112812000: global: 
+************** WE *****************
+112812000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112812000: global: R0: 2	R1: 1	R2: 632388	R3: 4
+112812000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112812000: global: FPR0: 2	FPR1: 1	FPR2: 632388	FPR3: 4
+112812000: global: Writing output 632388 to register 2
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+112812000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112812000: global: Predictor bit: 0	 Opcode: 7
+112812000: global: CGRA: NOOP.Execute()
+112812000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112812000: system.cpu: CGRA advanceTime complete.
+112812000: system.cpu: *******IN ADVANCE PC******
+112812000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7b50
+112812000: system.cpu: Passed Complete Drain().
+112812000: system.cpu: Make latency status=1.
+112812000: system.cpu: Inside status idle.
+112812000: system.cpu: Exiting schedule events
+112812000: system.cpu: We are here after Execution
+112812500: system.cpu: Inside CGRA Execution else statement.
+112812500: system.cpu: Inside CGRA_Execution block.
+112812500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112812500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 39 ~~~~~~~
+112812500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112812500: system.cpu: Ins: 5335236608, 13e014000 @ PE 0
+112812500: global: Predictor bit: 1	 Opcode: 3
+112812500: global: 
+Input1 = 0	Input2 = 2
+112812500: global: 
+******** LDUI IN THIS PE 0************
+112812500: global: 
+************** WE *****************
+112812500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+112812500: global: R0: 2	R1: 1	R2: 632388	R3: 4
+112812500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+112812500: global: FPR0: 2	FPR1: 1	FPR2: 632388	FPR3: 4
+112812500: global: Writing output 632388 to register 2
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+112812500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112812500: global: Predictor bit: 0	 Opcode: 7
+112812500: global: CGRA: NOOP.Execute()
+112812500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112812500: system.cpu: CGRA advanceTime complete.
+112812500: system.cpu: *******IN ADVANCE PC******
+112812500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7bd0
+112812500: system.cpu: Passed Complete Drain().
+112812500: system.cpu: Make latency status=1.
+112812500: system.cpu: Inside status idle.
+112812500: system.cpu: Exiting schedule events
+112812500: system.cpu: We are here after Execution
+112813000: system.cpu: Inside CGRA Execution else statement.
+112813000: system.cpu: Inside CGRA_Execution block.
+112813000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112813000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 41 ~~~~~~~
+112813000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112813000: system.cpu: Ins: 4798400068, 11e01c644 @ PE 0
+112813000: global: Predictor bit: 1	 Opcode: 1
+112813000: global: 
+Input1 = 1604	Input2 = 2
+112813000: global: 
+******** LDI IN THIS PE 1604************
+112813000: global: 
+************** WE *****************
+112813000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112813000: global: R0: 2	R1: 1	R2: 632388	R3: 1604
+112813000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112813000: global: FPR0: 2	FPR1: 1	FPR2: 632388	FPR3: 1604
+112813000: global: Writing output 1604 to register 3
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+112813000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112813000: global: Predictor bit: 0	 Opcode: 7
+112813000: global: CGRA: NOOP.Execute()
+112813000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112813000: system.cpu: CGRA advanceTime complete.
+112813000: system.cpu: *******IN ADVANCE PC******
+112813000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7c50
+112813000: system.cpu: Passed Complete Drain().
+112813000: system.cpu: Make latency status=1.
+112813000: system.cpu: Inside status idle.
+112813000: system.cpu: Exiting schedule events
+112813000: system.cpu: We are here after Execution
+112813500: system.cpu: Inside CGRA Execution else statement.
+112813500: system.cpu: Inside CGRA_Execution block.
+112813500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112813500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 43 ~~~~~~~
+112813500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112813500: system.cpu: Ins: 5066834074, 12e01c09a @ PE 0
+112813500: global: Predictor bit: 1	 Opcode: 2
+112813500: global: 
+Input1 = 154	Input2 = 2
+112813500: global: 
+******** LDMI IN THIS PE 154************
+112813500: global: 
+************** WE *****************
+112813500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112813500: global: R0: 2	R1: 1	R2: 632388	R3: 632388
+112813500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112813500: global: FPR0: 2	FPR1: 1	FPR2: 632388	FPR3: 632388
+112813500: global: Writing output 632388 to register 3
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+112813500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112813500: global: Predictor bit: 0	 Opcode: 7
+112813500: global: CGRA: NOOP.Execute()
+112813500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112813500: system.cpu: CGRA advanceTime complete.
+112813500: system.cpu: *******IN ADVANCE PC******
+112813500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7cd0
+112813500: system.cpu: Passed Complete Drain().
+112813500: system.cpu: Make latency status=1.
+112813500: system.cpu: Inside status idle.
+112813500: system.cpu: Exiting schedule events
+112813500: system.cpu: We are here after Execution
+112814000: system.cpu: Inside CGRA Execution else statement.
+112814000: system.cpu: Inside CGRA_Execution block.
+112814000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112814000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 45 ~~~~~~~
+112814000: global: 
+******** DB INPUT2 ReadAddress = 0************
+112814000: system.cpu: Ins: 5335269376, 13e01c000 @ PE 0
+112814000: global: Predictor bit: 1	 Opcode: 3
+112814000: global: 
+Input1 = 0	Input2 = 2
+112814000: global: 
+******** LDUI IN THIS PE 0************
+112814000: global: 
+************** WE *****************
+112814000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112814000: global: R0: 2	R1: 1	R2: 632388	R3: 632388
+112814000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112814000: global: FPR0: 2	FPR1: 1	FPR2: 632388	FPR3: 632388
+112814000: global: Writing output 632388 to register 3
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+112814000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112814000: global: Predictor bit: 0	 Opcode: 7
+112814000: global: CGRA: NOOP.Execute()
+112814000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112814000: system.cpu: CGRA advanceTime complete.
+112814000: system.cpu: *******IN ADVANCE PC******
+112814000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7d50
+112814000: system.cpu: Passed Complete Drain().
+112814000: system.cpu: Make latency status=1.
+112814000: system.cpu: Inside status idle.
+112814000: system.cpu: Exiting schedule events
+112814000: system.cpu: We are here after Execution
+112814500: system.cpu: Inside CGRA Execution else statement.
+112814500: system.cpu: Inside CGRA_Execution block.
+112814500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112814500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 47 ~~~~~~~
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+112814500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112814500: global: Predictor bit: 0	 Opcode: 7
+112814500: global: CGRA: NOOP.Execute()
+112814500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112814500: system.cpu: CGRA advanceTime complete.
+112814500: system.cpu: *******IN ADVANCE PC******
+112814500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7dd0
+112814500: system.cpu: Passed Complete Drain().
+112814500: system.cpu: Make latency status=1.
+112814500: system.cpu: Inside status idle.
+112814500: system.cpu: Exiting schedule events
+112814500: system.cpu: We are here after Execution
+112815000: system.cpu: Inside CGRA Execution else statement.
+112815000: system.cpu: Inside CGRA_Execution block.
+112815000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112815000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 49 ~~~~~~~
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+112815000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112815000: global: Predictor bit: 0	 Opcode: 7
+112815000: global: CGRA: NOOP.Execute()
+112815000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112815000: system.cpu: CGRA advanceTime complete.
+112815000: system.cpu: *******IN ADVANCE PC******
+112815000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7e50
+112815000: system.cpu: Passed Complete Drain().
+112815000: system.cpu: Make latency status=1.
+112815000: system.cpu: Inside status idle.
+112815000: system.cpu: Exiting schedule events
+112815000: system.cpu: We are here after Execution
+112815500: system.cpu: Inside CGRA Execution else statement.
+112815500: system.cpu: Inside CGRA_Execution block.
+112815500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112815500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 51 ~~~~~~~
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+112815500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112815500: global: Predictor bit: 0	 Opcode: 7
+112815500: global: CGRA: NOOP.Execute()
+112815500: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112815500: system.cpu: CGRA advanceTime complete.
+112815500: system.cpu: *******IN ADVANCE PC******
+112815500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7ed0
+112815500: system.cpu: Passed Complete Drain().
+112815500: system.cpu: Make latency status=1.
+112815500: system.cpu: Inside status idle.
+112815500: system.cpu: Exiting schedule events
+112815500: system.cpu: We are here after Execution
+112816000: system.cpu: Inside CGRA Execution else statement.
+112816000: system.cpu: Inside CGRA_Execution block.
+112816000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112816000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 53 ~~~~~~~
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+112816000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+112816000: global: Predictor bit: 0	 Opcode: 7
+112816000: global: CGRA: NOOP.Execute()
+112816000: global: Distance is: 0
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+112816000: system.cpu: CGRA advanceTime complete.
+112816000: system.cpu: *******IN ADVANCE PC******
+112816000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1759,PC:a7f50
+112816000: system.cpu: Passed Complete Drain().
+112816000: system.cpu: Make latency status=1.
+112816000: system.cpu: Inside status idle.
+112816000: system.cpu: Exiting schedule events
+112816000: system.cpu: We are here after Execution
+112816500: system.cpu: Inside CGRA Execution else statement.
+112816500: system.cpu: Inside CGRA_Execution block.
+112816500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+112816500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 55 ~~~~~~~
+112816500: global: 
+******** DB INPUT2 ReadAddress = 0************
+112816500: global: 
+******** DB INPUT1 ReadAddress = 0************
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+112816500: global: Predictor bit: 0	 Opcode: 7
+112816500: global: CGRA: NOOP.Execute()
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 4798400136, 11e01c688 @ PE 13
+112816500: global: Predictor bit: 1	 Opcode: 1
+112816500: global: 
+Input1 = 1672	Input2 = 0
+112816500: global: 
+******** LDI IN THIS PE 1672************
+112816500: global: 
+************** WE *****************
+112816500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+112816500: global: R0: 0	R1: 0	R2: 0	R3: 1672
+112816500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+112816500: global: FPR0: 0	FPR1: 0	FPR2: 0	FPR3: 1672
+112816500: global: Writing output 1672 to register 3
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6037700608, 167e00000 @ PE 14
+112816500: global: Predictor bit: 0	 Opcode: 6
+112816500: global: 
+Input1 = 0	Input2 = 0
+112816500: global: 
+******** ASR IN THIS PE 0************
+112816500: global: Distance is: 0
+112816500: system.cpu: Ins: 6052388868, 168c02004 @ PE 15
+112816500: global: Predictor bit: 1	 Opcode: 6
+112816500: global: 
+Input1 = 0	Input2 = 4
+112816500: global: 
+******** ADDRESS GENERATED IN THIS PE 0************
+112816500: global: 
+*********Setting Address 0 ******
+112816500: global: Distance is: 0
+gem5.opt: build/ARM/mem/packet.hh:754: Addr Packet::getAddr() const: Assertion `flags.isSet(VALID_ADDR)' failed.
+
+************* MEM READ *************
+Row: 0 - address: 632424 - data: 32
+
+************* MEM READ *************
+Row: 1 - address: 632448 - data: 4
+Program aborted at tick 112816500
+--- BEGIN LIBC BACKTRACE ---
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x13981f0)[0x55a79bded1f0]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x13ac72e)[0x55a79be0172e]
+/lib/x86_64-linux-gnu/libpthread.so.0(+0x153c0)[0x7f630a1963c0]
+/lib/x86_64-linux-gnu/libc.so.6(gsignal+0xcb)[0x7f630977118b]
+/lib/x86_64-linux-gnu/libc.so.6(abort+0x12b)[0x7f6309750859]
+/lib/x86_64-linux-gnu/libc.so.6(+0x25729)[0x7f6309750729]
+/lib/x86_64-linux-gnu/libc.so.6(+0x36f36)[0x7f6309761f36]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x21c8acd)[0x55a79cc1dacd]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x218951f)[0x55a79cbde51f]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x14843e3)[0x55a79bed93e3]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x194df7a)[0x55a79c3a2f7a]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x19545f1)[0x55a79c3a95f1]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x1955d16)[0x55a79c3aad16]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x13a0269)[0x55a79bdf5269]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x13c1e08)[0x55a79be16e08]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x13c2bfd)[0x55a79be17bfd]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x542e20)[0x55a79af97e20]
+/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04/gem5/build/ARM/gem5.opt(+0x52ae61)[0x55a79af7fe61]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x2a8408)[0x7f630a44c408]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x8dd8)[0x7f630a221f48]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7f630a36ed3b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyFunction_Vectorcall+0x94)[0x7f630a44bde4]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7f630a218d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7d86)[0x7f630a220ef6]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x8006b)[0x7f630a22406b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7f630a218d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x12fd)[0x7f630a21a46d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7f630a36ed3b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyFunction_Vectorcall+0x94)[0x7f630a44bde4]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7f630a218d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7d86)[0x7f630a220ef6]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7f630a36ed3b]
+--- END LIBC BACKTRACE ---
+/home/local/ASUAD/quoclon1/sw/bin/cgraexe: line 66: 1056239 Aborted                 (core dumped) ${ccf_root}/gem5/build/ARM/gem5.opt --debug-flags=CGRA,CGRA_Detailed,CGRA_Execute ${ccf_root}/gem5/configs/example/se.py -n 1 --cpu-type "CGRA${X}x${Y}R${R}torus" -c ./${executable} -o ${args}

@@ -1,0 +1,49 @@
+digraph loop_26 { 
+{
+0 [shape=box, color=red, label="0"];
+
+1 [shape=box, color=red, label="1"];
+
+2 [color=black, label="2"];
+
+3 [shape=diamond, color=gray, label="3"];
+
+4 [color=black, label="4"];
+
+5 [color=black, label="5"];
+
+6 [color=black, label="6"];
+
+7 [color=black, label="gVar1"];
+
+10 [color=black, label="gVar2"];
+
+13 [color=black, label="gVar3"];
+
+16 [color=black, label="gVar4"];
+
+19 [color=black, label="ConstInt1"];
+
+20 [color=black, label="gVar5"];
+
+123 [color=black, label="gVar6"];
+5 -> 0 [style=bold, color=red, label=1] 
+7 -> 0 [color=orange, label=4] 
+4 -> 1 [style=bold, color=red, label=1] 
+10 -> 1 [color=orange, label=4] 
+0 -> 2
+13 -> 2 [color=orange, label=4] 
+2 -> 3 [color=green ]
+16 -> 3 [color=orange, label=4] 
+19 -> 3 [color=gray]
+3 -> 4
+1 -> 4
+0 -> 5
+19 -> 5 [color=gray]
+5 -> 6
+20 -> 6 [color=orange, label=4] 
+4 -> 123 [color=orange, label=4] 
+
+}
+
+}
