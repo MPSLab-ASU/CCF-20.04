@@ -1,0 +1,70 @@
+/home/local/ASUAD/quoclon1/publish_ccf/benchmarks/min_max
+5
+Simulation for CGRA for 4 x 4 with 4 registers per PE
+CPU frequency @ 2GHz
+CGRA frequency @ 0.7GHz
+CGRA4x4R4torus
+Global frequency set at 1000000000000 ticks per second
+warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+0: system.remote_gdb: listening for remote gdb on port 7000
+gem5 Simulator System.  http://gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 20.1.0.4
+gem5 compiled Aug 20 2021 18:45:51
+gem5 started Aug 22 2021 23:19:38
+gem5 executing on en4181851l, pid 2938338
+command line: /home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt --debug-flags=CGRA_Detailed,CGRA_Execute /home/local/ASUAD/quoclon1/publish_ccf/gem5/configs/example/se.py -n 1 --cpu-type CGRA4x4R4torus -c ./min_max -o 5
+
+**** REAL SIMULATION ****
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.master is deprecated. `master` is now called `mem_side_ports`
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+info: Entering event queue @ 0.  Starting simulation...
+info: Increasing stack size by one page.
+warn: ignoring syscall mprotect(...)
+createCGRA
+checkTotalLoops
+from cgra.c Initialize Parameters
+panic: panic condition !handled occurred: Page table fault when accessing virtual address 0
+Memory Usage: 648252 KBytes
+Program aborted at tick 9485000
+--- BEGIN LIBC BACKTRACE ---
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x21420c0)[0x561a372ea0c0]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x21565fe)[0x561a372fe5fe]
+/lib/x86_64-linux-gnu/libpthread.so.0(+0x153c0)[0x7fd9d5fa03c0]
+/lib/x86_64-linux-gnu/libc.so.6(gsignal+0xcb)[0x7fd9d557b18b]
+/lib/x86_64-linux-gnu/libc.so.6(abort+0x12b)[0x7fd9d555a859]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x4feae5)[0x561a356a6ae5]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x21958ee)[0x561a3733d8ee]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x180f1d7)[0x561a369b71d7]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x181e67c)[0x561a369c667c]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x214a139)[0x561a372f2139]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x216bcd8)[0x561a37313cd8]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x216cacd)[0x561a37314acd]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x7ccea0)[0x561a35974ea0]
+/home/local/ASUAD/quoclon1/publish_ccf/gem5/build/ARM/gem5.opt(+0x62e26f)[0x561a357d626f]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x2a8738)[0x7fd9d6256738]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x8dd8)[0x7fd9d602bf48]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7fd9d6178e3b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyFunction_Vectorcall+0x94)[0x7fd9d6256114]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7fd9d6022d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7d86)[0x7fd9d602aef6]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x8006b)[0x7fd9d602e06b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7fd9d6022d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x12fd)[0x7fd9d602446d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7fd9d6178e3b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyFunction_Vectorcall+0x94)[0x7fd9d6256114]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x74d6d)[0x7fd9d6022d6d]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7d86)[0x7fd9d602aef6]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8fb)[0x7fd9d6178e3b]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(PyEval_EvalCodeEx+0x42)[0x7fd9d61791c2]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(PyEval_EvalCode+0x1f)[0x7fd9d61795af]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x1cfbf1)[0x7fd9d617dbf1]
+/usr/lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x25f537)[0x7fd9d620d537]
+--- END LIBC BACKTRACE ---
+/home/local/ASUAD/quoclon1/sw/bin/cgraexe: line 66: 2938338 Aborted                 (core dumped) ${ccf_root}/gem5/build/ARM/gem5.opt --debug-flags=CGRA_Detailed,CGRA_Execute ${ccf_root}/gem5/configs/example/se.py -n 1 --cpu-type "CGRA${X}x${Y}R${R}torus" -c ./${executable} -o ${args}

@@ -1,0 +1,181 @@
+Mapping has started
+Curerent II: 4	rec_MII: 4
+
+Trying to schedule DDG at II: 4
+19
+1. src is: 8-8	target is: 10-9
+1. Edge points to NULL!
+20
+Redoing ASAP and ALAP
+20
+1. src is: 8-8	target is: 10-9
+1. Edge points to NULL!
+21
+Redoing ASAP and ALAP
+21
+1. src is: 0-3	target is: 29-10
+1. Edge points to NULL!
+1. src is: 0-3	target is: 1-8
+1. Edge points to NULL!
+22
+Redoing ASAP and ALAP
+22
+23
+Redoing ASAP and ALAP
+23
+1. src is: 4-7	target is: 10-9
+1. Edge points to NULL!
+24
+Redoing ASAP and ALAP
+24
+1. src is: 35-4	target is: 10-9
+1. Edge points to NULL!
+25
+Redoing ASAP and ALAP
+25
+1. src is: 0-3	target is: 29-10
+1. Edge points to NULL!
+26
+Redoing ASAP and ALAP
+26
+1. src is: 37-4	target is: 29-10
+1. Edge points to NULL!
+27
+Redoing ASAP and ALAP
+27
+1. src is: 38-5	target is: 29-10
+1. Edge points to NULL!
+28
+Redoing ASAP and ALAP
+28
+29
+Redoing ASAP and ALAP
+29
+1. src is: 7-7	target is: 8-8
+1. Edge points to NULL!
+1. src is: 7-6	target is: 8-8
+1. Edge points to NULL!
+30
+Redoing ASAP and ALAP
+30
+31
+Redoing ASAP and ALAP
+31
+32
+Redoing ASAP and ALAP
+32
+33
+Redoing ASAP and ALAP
+33
+34
+Redoing ASAP and ALAP
+34
+1. src is: 32-10	target is: 10-11
+1. Edge points to NULL!
+1. src is: 32-9	target is: 10-11
+1. Edge points to NULL!
+35
+Redoing ASAP and ALAP
+35
+1. src is: 39-6	target is: 29-12
+1. Edge points to NULL!
+36
+Redoing ASAP and ALAP
+36
+1. src is: 36-6	target is: 10-11
+1. Edge points to NULL!
+37
+Redoing ASAP and ALAP
+37
+1. src is: 47-7	target is: 29-12
+1. Edge points to NULL!
+38
+Redoing ASAP and ALAP
+38
+1. src is: 48-7	target is: 10-11
+1. Edge points to NULL!
+39
+Redoing ASAP and ALAP
+39
+1. src is: 49-8	target is: 29-12
+1. Edge points to NULL!
+40
+Redoing ASAP and ALAP
+40
+41
+Redoing ASAP and ALAP
+41
+42
+Redoing ASAP and ALAP
+42
+43
+Redoing ASAP and ALAP
+43
+44
+Redoing ASAP and ALAP
+44
+45
+Redoing ASAP and ALAP
+45
+45
+Feasible II is 4	Schedule Len is 12
+
+II after scheduling is: 4
+Start Placement for II = 4
+Node 0 is scheduled at 3 ASAP: 0  ALAP: 3 Mod: 3
+Node 1 is scheduled at 12 ASAP: 9  ALAP: 12 Mod: 0
+Node 2 is scheduled at 9 ASAP: 6  ALAP: 9 Mod: 1
+Node 3 is scheduled at 8 ASAP: 5  ALAP: 8 Mod: 0
+Node 4 is scheduled at 4 ASAP: 1  ALAP: 4 Mod: 0
+Node 5 is scheduled at 5 ASAP: 2  ALAP: 5 Mod: 1
+Node 6 is scheduled at 6 ASAP: 3  ALAP: 6 Mod: 2
+Node 7 is scheduled at 7 ASAP: 4  ALAP: 7 Mod: 3
+Node 8 is scheduled at 9 ASAP: 6  ALAP: 9 Mod: 1
+Node 9 is scheduled at 12 ASAP: 9  ALAP: 12 Mod: 0
+Node 10 is scheduled at 13 ASAP: 10  ALAP: 13 Mod: 1
+Node 11 is scheduled at 13 ASAP: 10  ALAP: 13 Mod: 1
+Node 16 is scheduled at 4 ASAP: 1  ALAP: 4 Mod: 0
+Node 17 is scheduled at 5 ASAP: 2  ALAP: 5 Mod: 1
+Node 24 is scheduled at 4 ASAP: 1  ALAP: 4 Mod: 0
+Node 26 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 27 is scheduled at 14 ASAP: 11  ALAP: 14 Mod: 2
+Node 28 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 29 is scheduled at 14 ASAP: 11  ALAP: 14 Mod: 2
+Node 31 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 32 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 33 is scheduled at 4 ASAP: 1  ALAP: 4 Mod: 0
+Node 34 is scheduled at 15 ASAP: 12  ALAP: 15 Mod: 3
+Node 35 is scheduled at 7 ASAP: 4  ALAP: 7 Mod: 3
+Node 36 is scheduled at 8 ASAP: 5  ALAP: 8 Mod: 0
+Node 37 is scheduled at 4 ASAP: 1  ALAP: 4 Mod: 0
+Node 38 is scheduled at 5 ASAP: 2  ALAP: 5 Mod: 1
+Node 39 is scheduled at 6 ASAP: 3  ALAP: 6 Mod: 2
+Node 40 is scheduled at 6 ASAP: 3  ALAP: 6 Mod: 2
+Node 41 is scheduled at 8 ASAP: 5  ALAP: 8 Mod: 0
+Node 42 is scheduled at 9 ASAP: 6  ALAP: 9 Mod: 1
+Node 43 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 44 is scheduled at 11 ASAP: 8  ALAP: 11 Mod: 3
+Node 45 is scheduled at 8 ASAP: 5  ALAP: 8 Mod: 0
+Node 46 is scheduled at 11 ASAP: 8  ALAP: 11 Mod: 3
+Node 47 is scheduled at 7 ASAP: 4  ALAP: 7 Mod: 3
+Node 48 is scheduled at 9 ASAP: 6  ALAP: 9 Mod: 1
+Node 49 is scheduled at 8 ASAP: 5  ALAP: 8 Mod: 0
+Node 50 is scheduled at 10 ASAP: 7  ALAP: 10 Mod: 2
+Node 51 is scheduled at 9 ASAP: 6  ALAP: 9 Mod: 1
+Node 52 is scheduled at 5 ASAP: 2  ALAP: 5 Mod: 1
+Node 53 is scheduled at 7 ASAP: 4  ALAP: 7 Mod: 3
+Node 54 is scheduled at 15 ASAP: 12  ALAP: 15 Mod: 3
+Node 55 is scheduled at 6 ASAP: 3  ALAP: 6 Mod: 2
+Node 56 is scheduled at 5 ASAP: 2  ALAP: 5 Mod: 1
+Graph has n = 720 vertices.
+Find a Clique of size at least k = 45
+Attempt total number 1, Clique Size: 40
+Attempt total number 1, Clique Size: 41
+Attempt total number 2, Clique Size: 39
+Attempt total number 2, Clique Size: 41
+Attempt total number 3, Clique Size: 38
+Attempt total number 3, Clique Size: 41
+Attempt total number 4, Clique Size: 38
+Attempt total number 4, Clique Size: 41
+Attempt total number 5, Clique Size: 38
+Attempt total number 5, Clique Size: 41
