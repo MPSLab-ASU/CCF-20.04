@@ -1041,7 +1041,8 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       //  cgra_PEs[i * CGRA_YDim + j].DExecute();
         
       Conditional_Reg = (Conditional_Reg & cgra_PEs[i * CGRA_YDim + j].getController_Reg() );
-      //if(!Conditional_Reg && Len==0) DPRINTF(CGRA_Detailed, "Conditional_Reg reset -> moving to EPILOG\n");
+       DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len); 
+      if(!Conditional_Reg && Len==0) DPRINTF(CGRA_Detailed, "Conditional_Reg reset -> moving to EPILOG\n");
     }
   }
 

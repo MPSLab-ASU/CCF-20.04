@@ -419,8 +419,8 @@ void CGRA_PE::IExecute()
     {
       //write the result to the controller bus
       //(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
-      (this->Controller_Reg) = !Output;
-      if(Output) DPRINTF(CGRA_Detailed, "Controller_Reg reset\n");
+      (this->Controller_Reg) = Output;
+      DPRINTF(CGRA_Detailed, "Controller_Reg reset\n");
     }
   }
   else
