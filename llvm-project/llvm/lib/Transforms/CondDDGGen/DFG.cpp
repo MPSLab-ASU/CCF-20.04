@@ -297,11 +297,11 @@ std::string NODE::Op_To_String(){
   case cmpULT:	return "CMPULT";
   case cmpULEQ:	return "CMPULEQ";
   case cmpUGEQ:	return "CMPUGEQ";
-  case ld_add:	return "LD_ADD";
+  case ld_add:	return "LD_ADDRESS";
   case ld_data:	return "LD_DATA";
-  case st_add:	return "ST_ADD";
+  case st_add:	return "ST_ADDRESS";
   case st_data:	return "ST_DATA";
-  case ld_add_cond:	return "LD_ADD_COND";
+  case ld_add_cond:	return "LD_ADDRESS_COND";
   case ld_data_cond:	return "LD_DATA_COND";
   case loopctrl:	return "LOOPCTRL";
   case cond_select:	return "COND_SELECT";
