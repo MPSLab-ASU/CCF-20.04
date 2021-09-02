@@ -305,7 +305,7 @@ std::string NODE::Op_To_String(){
   case ld_data_cond:	return "LD_DATA_COND";
   case loopctrl:	return "LOOPCTRL";
   case cond_select:	return "COND_SELECT";
-  case cgra_select:	return "CGRA_SELECT";
+  case cgra_select:	return "PHI";
   case rem: return "REM";
   case sext: return "SIGNEXT";
   default: return "";
