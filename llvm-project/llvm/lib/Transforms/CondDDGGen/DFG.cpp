@@ -237,6 +237,30 @@ bool NODE::is_Mem_Operation()
   return ((Operation == ld_add) || (Operation == ld_data) || (Operation == st_add) || (Operation == st_data));
 }
 
+bool NODE::is_Add_Operation(){
+  return ((Operation == add));
+}
+
+bool NODE::is_Mult_Operation(){
+  return ((Operation == mult));
+}
+
+bool NODE::is_Comp_Operation(){
+  return ((Operation > 8 && Operation < 19));
+}
+
+bool NODE::is_Sub_Operation(){
+  return ((Operation == sub));
+}
+
+bool NODE::is_Div_Operation(){
+  return ((Operation == division));
+}
+
+bool NODE::is_Binary_Operation(){
+  return ((Operation > 3 && Operation < 9) || Operation == 34);
+}
+
 bool NODE::is_Routing_Operation()
 {
   return ((Operation == route));
@@ -250,6 +274,42 @@ bool NODE::is_Phi_Operation()
 bool NODE::is_ConditionalSelect_Operation()
 {
   return ((Operation == cond_select));
+}
+
+std::string NODE::Op_To_String(){
+  switch(Operation){
+  case add: return "Add";
+  case sub: return "Subtract";
+  case mult: return "Multiply";
+  case division: return "Division";
+  case shiftl: return "Shiftl";
+  case shiftr: return "Shiftr";
+  case andop: return "AND";
+  case orop: return "OR";
+  case xorop: return "XOR";
+  case cmpSGT: return "CMPSGT";
+  case cmpEQ: return "CMPEQ";
+  case cmpNEQ: return "CMPNEQ";
+  case cmpSLT: return "CMPSLT";
+  case cmpSLEQ: return "CMPSLEQ";
+  case cmpSGEQ:	return "CMPSGEQ";
+  case cmpUGT:	return "CMPUGT";
+  case cmpULT:	return "CMPULT";
+  case cmpULEQ:	return "CMPULEQ";
+  case cmpUGEQ:	return "CMPUGEQ";
+  case ld_add:	return "LD_ADD";
+  case ld_data:	return "LD_DATA";
+  case st_add:	return "ST_ADD";
+  case st_data:	return "ST_DATA";
+  case ld_add_cond:	return "LD_ADD_COND";
+  case ld_data_cond:	return "LD_DATA_COND";
+  case loopctrl:	return "LOOPCTRL";
+  case cond_select:	return "COND_SELECT";
+  case cgra_select:	return "CGRA_SELECT";
+  case rem: return "REM";
+  case sext: return "SIGNEXT";
+  default: return "";
+  }
 }
 
 NODE* NODE::get_Related_Node()
@@ -588,7 +648,7 @@ void DFG::Dot_Print_DFG(std::string filename)
   {
     if (_node_Set[i]->is_Mem_Operation())
     {
-      dotFile << "\n" << _node_Set[i]->get_ID() << " [color=blue, label=\"" << _node_Set[i]->get_Name() << "\"];\n";
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [color=blue, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
     }
     else if (_node_Set[i]->is_Routing_Operation())
     {
@@ -596,15 +656,27 @@ void DFG::Dot_Print_DFG(std::string filename)
     }
     else if (_node_Set[i]->is_Phi_Operation())
     {
-      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=box, color=red, label=\"" << _node_Set[i]->get_Name() << "\"];\n";
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=box, color=red, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
     }
     else if (_node_Set[i]->is_ConditionalSelect_Operation())
     {
-      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=diamond, color=gray, label=\"" << _node_Set[i]->get_Name() << "\"];\n";
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=diamond, color=gray, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
+    }
+    else if(_node_Set[i]->is_Add_Operation() || _node_Set[i]->is_Sub_Operation()){
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=polygon, color=purple, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
+    }
+    else if(_node_Set[i]->is_Mult_Operation() || _node_Set[i]->is_Div_Operation()){
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=house, color=purple, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
+    }
+    else if(_node_Set[i]->is_Comp_Operation()){
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=trapezium, color=orange, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
+    }
+    else if(_node_Set[i]->is_Binary_Operation()){
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [shape=triangle, color=purple, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
     }
     else
     {
-      dotFile << "\n" << _node_Set[i]->get_ID() << " [color=black, label=\"" << _node_Set[i]->get_Name() << "\"];\n";
+      dotFile << "\n" << _node_Set[i]->get_ID() << " [color=black, label=\"" << _node_Set[i]->get_Name() << "\\n" << _node_Set[i]->Op_To_String() << "\"];\n";
     }
   }
 
