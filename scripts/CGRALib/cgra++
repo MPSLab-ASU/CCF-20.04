@@ -21,10 +21,12 @@ LIB="";
 
 #Check if file exists
 if [ ! -f ./simplified.ll ]; then 
-clang++ -L/home/mahesh/git_repos/ccf/llvm/build/include/ -w -O3 -g -fno-unroll-loops -fno-slp-vectorize -fno-vectorize --target=armv7a-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.cpp -S -o - -emit-llvm -o from_clang.ll
-opt -loop-simplify -redundant-dbg-inst-elim from_clang.ll -o simplified.bc
-llvm-dis -f simplified.bc -o simplified.ll
+    clang++ -L${ccf_root}/llvm-project/build/include/ -w -O3 -g -fno-unroll-loops -fno-slp-vectorize -fno-vectorize --target=armv7a-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.cpp -S -o - -emit-llvm -o from_clang.ll
+    opt -loop-simplify -redundant-dbg-inst-elim from_clang.ll -o simplified.bc
+    llvm-dis -f simplified.bc -o simplified.ll
 fi
+
+cp simplified.ll combinedIR.ll
 
 j=1;
 for i in "$@"
@@ -87,7 +89,7 @@ else
 	    srcIR+=" -o temp.ll"
 	fi
 	$srcIR
-	llvm-link temp.ll simplified.ll -S -o combinedIR.ll
+	llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
 	exit
 fi
 
@@ -125,7 +127,7 @@ then
 	    srcNew+=" $i"
             srcNew+=" -o temp.ll"
 	    $srcNew
-	    llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll 
+	    llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
 	fi
     done
 else
@@ -153,6 +155,11 @@ else
 fi
 
 $ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
+
+if [ ! -d "CGRAExec" ]; then
+    echo "Loop was not compiled for CGRA"
+    exit 1
+fi
 
 llvm-dis CGRAGen.bc -o CGRAGen.ll
 

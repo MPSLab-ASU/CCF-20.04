@@ -3,6 +3,9 @@
 #include "cgra.h"
 #include <string.h>
 #include <limits.h>
+#ifdef __cplusplus
+#include <iostream>
+#endif
 
 #define DEBUG 1
 
