@@ -146,6 +146,13 @@ namespace llvm
 			bool is_Routing_Operation();
 			bool is_Phi_Operation();
 			bool is_ConditionalSelect_Operation();
+	  bool is_Add_Operation();
+	  bool is_Sub_Operation();
+	  bool is_Mult_Operation();
+	  bool is_Div_Operation();
+	  bool is_Comp_Operation();
+	  bool is_Binary_Operation();
+	  std::string Op_To_String();
 
 			NODE* get_Related_Node();
 

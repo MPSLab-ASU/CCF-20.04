@@ -141,7 +141,7 @@ using namespace std;
 std::multimap< std::pair<int,int>, int > nodeid_type;
 
 //a vector of routing nodes
-std::vector<int> routingNodes;
+std::set<int> routingNodes;
 
 //map for ddgs node id and name
 std::map<int,string> nodeid_names;
@@ -957,7 +957,7 @@ int getRouteSrc(int id)
   if(getNodeType(it->second) != route)
     return it->second;
   else
-    getRouteSrc(it->second);
+    return getRouteSrc(it->second);
 }
 
 void storeNonRecurringVal(unsigned int addr_array, int reg_num, int pe)
@@ -1082,11 +1082,11 @@ void updateOperandOrder()
    *  routing node to the destination of the edge.
    *  update the operand order map with
    */
-  for(int i=0;i<routingNodes.size();++i)
-  {
-    int node = routingNodes[i];
-    int src = getRouteSrc(node);
-
+  //for(int i=0;i<routingNodes.size();++i)
+  //{
+   for(auto node : routingNodes)
+   {	   
+    int src = getRouteSrc(node);    
     std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> ret;
     ret = out_edge.equal_range(node);
     for (std::multimap<int,int>::iterator it=ret.first; it!=ret.second; ++it)
@@ -3238,6 +3238,7 @@ void generateINITinstructions(char* objfile)
         {
           unsigned int addrOfLargeconst = getVariableAddress(nodename,objfile);
           printf("Generating Instructions To Store Address (Hex) %x\n",addrOfLargeconst);
+	  cout << nodename << endl;
           storeNonRecurringVal(addrOfLargeconst, reg_num, pe);
           Datatype DType = (Datatype)(getNodeDataType(node)); 
 
@@ -3943,7 +3944,8 @@ int main(int argc, char* argv[])
       std::pair<int,int> e2(nodeID,node_type);
       nodeid_type.insert(std::pair<std::pair<int, int>,int>(e2, node_datatype));
       if(node_type == route)
-        routingNodes.push_back(nodeID);
+	  routingNodes.insert(nodeID);    
+        //routingNodes.push_back(nodeID);
     }
   }
   finalnodefile.close();

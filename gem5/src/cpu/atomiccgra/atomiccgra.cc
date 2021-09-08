@@ -11,7 +11,6 @@
  * terms below provided that you ensure that this notice is replicated
  * unmodified and in its entirety in all distributions of the software,
  * modified or unmodified, in source code or in binary form.
- *
  * Copyright (c) 2002-2005 The Regents of The University of Michigan
  * All rights reserved.
  *
@@ -70,6 +69,8 @@
 #include "params/AtomicCGRA.hh"
 using namespace std;
 using namespace TheISA;
+
+volatile unsigned long cgraCycles = 0;
 
 void
 AtomicCGRA::init()
@@ -331,6 +332,7 @@ AtomicCGRA::activateContext(ThreadID thread_num)
     Cycles delta = ticksToCycles(threadInfo[thread_num]->thread->lastActivate -
                                  threadInfo[thread_num]->thread->lastSuspend);
     numCycles += delta;
+    cgraCycles += delta;
 
     if (!tickEvent.scheduled()) {
         //Make sure ticks are still on multiples of cycles
@@ -975,7 +977,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
 {
   DPRINTF(SimpleCPU, "CGRA Pipeline\n");
   Fault fault = NoFault;
-
+  DPRINTF(CGRA_Execute, "\n\n ~~~~~~ CGRA_Execution @ numCycles = %d ~~~~~~~\n", cgraCycles);
   // received a response from the icache: execute the received instruction
   //DPRINTF(CGRA, "Length %d\n", Len);
   //DPRINTF(Instruction_print, "Fault print number: %d\n", (int)fault);
@@ -984,6 +986,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
   {
     _status = BaseCGRA::Running;
     numCycles++;
+    cgraCycles++;
     // DPRINTF(CGRA_Execute, "CGRA.CGRA_Exec(): numCycles = %d\n", numCycles);
     //DPRINTF(CGRA_Detailed, "CGRA.Exec(): numCycles = %d\n", numCycles);
     //printf("CGRA.Exec(): numCycles = %d\n", numCycles);
@@ -1025,12 +1028,11 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
 
   //*********EXECUTE********************
   // Support for multiple datatypes added in exec unit.
-  printf("\n*********** CGRA EXECUTE - PRINT C ****************\n\n");
   for (int i = 0; i < CGRA_XDim; i++)
   {
     for (int j = 0; j < CGRA_YDim; j++)
     {      
-      DPRINTF(CGRA_Execute, "Ins: %ld, %lx @ PE %d\n", CGRA_instructions[i*CGRA_YDim + j], CGRA_instructions[i*CGRA_YDim + j], (i*CGRA_YDim)+j);
+      DPRINTF(CGRA_Detailed, "Ins: %ld, %lx @ PE %d\n", CGRA_instructions[i*CGRA_YDim + j], CGRA_instructions[i*CGRA_YDim + j], (i*CGRA_YDim)+j);
       if(cgra_PEs[i * CGRA_YDim + j].GetDatatype() == character || cgra_PEs[i * CGRA_YDim + j].GetDatatype() == int32) //; int16
         cgra_PEs[i * CGRA_YDim + j].IExecute();
       else if(cgra_PEs[i * CGRA_YDim + j].GetDatatype() == float32)
@@ -1039,7 +1041,8 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       //  cgra_PEs[i * CGRA_YDim + j].DExecute();
         
       Conditional_Reg = (Conditional_Reg & cgra_PEs[i * CGRA_YDim + j].getController_Reg() );
-      //DPRINTF(Conditional_DEBUG, "conditional_reg: %d\n", Conditional_Reg); 
+       DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len); 
+      if(!Conditional_Reg && Len==0) DPRINTF(CGRA_Detailed, "Conditional_Reg reset -> moving to EPILOG\n");
     }
   }
 
@@ -1060,7 +1063,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
   {
     ;
   }
-
+ 
   //*********WRITE BACK********************
   for (int i = 0; i < CGRA_XDim; i++)
     for (int j = 0; j < CGRA_YDim; j++)
@@ -1094,8 +1097,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
         DPRINTF(CGRA_Detailed, "In writing INT %d\t to address:%lx\t -- &Data: %lx\t and uint: %lx\n" , MemData[i], MemAddress[i], &MemData[i], (uint8_t *) &MemData[i]);
 
 
-	/****************************/
-
+	/****************************/	
 	///////////////////////////////////
 	/*
 	printf("\n********** STARTING READ/WRITE TEST ************\n\n");
@@ -1182,12 +1184,6 @@ void AtomicCGRA::CGRA_advanceTime()
 void
 AtomicCGRA::tick()
 {
-  //DPRINTF(CGRA_Execute, "CGRA Tick\n");
-  const std::vector<bool> be;
-  int memdata;
-  readMem((Addr) 632388, (uint8_t *) &memdata, (unsigned)4, (unsigned) 163, be, 0);
-  //printf("\n********* MEM DATA in TICK = %d **************\n\n", memdata);
-  
     // Change thread if multi-threaded
     swapActiveThread();
 
@@ -1210,6 +1206,7 @@ AtomicCGRA::tick()
         if(!is_CPU())
         {
             numCycles++;
+	    cgraCycles++;
             //DPRINTF(CGRA_Execute, "CGRA.Tick(): numCycles = %d\n", numCycles);
 	    //printf("CGRA.Tick(): numCycles = %d\n", numCycles);
             updateCycleCounters(BaseCPU::CPU_STATE_ON);

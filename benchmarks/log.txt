@@ -1,0 +1,6 @@
+Working benchmarks:
+  - Primality check
+  - Power function
+  - Simple_loop
+  - Bin2dec: gem5 error - seg fault
+  - Factorial: gem5/mapping error - infinite loop

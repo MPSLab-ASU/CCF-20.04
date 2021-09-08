@@ -5,13 +5,13 @@
 #Expected arguments or inputs - .c or .cpp files
 
 #Set Paths
-ccf_root="/home/local/ASUAD/aabuyaz1/documents/code/ins3"
-install_path="/home/local/ASUAD/aabuyaz1/sw"
+ccf_root="/home/local/ASUAD/mbalasu2/CCF-20.04"
+install_path="/home/local/ASUAD/mbalasu2/sw"
 obj="obj"
 objFound=0;
 searchstring=".o"
-src="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
-srcIR="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
+src="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
+srcIR="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
 linkModule="";
 combineObj=0;
 objNum=0;
@@ -22,13 +22,11 @@ zero=0
 
 #-fno-unroll-loops
 #Check if file exists
-if [ ! -f ./simplified.ll ]; then 
-	clang -w -O3 -g -fno-unroll-loops -fno-slp-vectorize -fno-vectorize --target=armv7a-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
+if [ ! -f ./combinedIR.ll ]; then 
+	clang -w -O3 -g -fno-unroll-loops -fno-slp-vectorize -fno-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
 	opt -loop-simplify -redundant-dbg-inst-elim from_clang.ll -o simplified.bc
-	llvm-dis -f simplified.bc -o simplified.ll
+	llvm-dis -f simplified.bc -o combinedIR.ll
 fi
-
-cp simplified.ll combinedIR.ll
 
 j=1;
 for i in "$@"
@@ -54,6 +52,7 @@ do
 	fi
 	((j = j + 1))
 done
+
 
 if [[ $objFound -gt $zero ]]
 then
@@ -109,7 +108,6 @@ then
     $src	
     for i in "$@"
     do 
-
 	if [ $objFound -eq 1 ] && [ ! -f "$i" ]
 	then
 	    LIB+=" $i"
@@ -131,6 +129,7 @@ then
 	    srcNew+=" $i"
             srcNew+=" -o temp.ll"
 	    $srcNew
+      
 	    llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
 	fi
     done
@@ -158,11 +157,13 @@ else
     done	
 fi
 
+
 $ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
 
-if [ ! -d "CGRAExec" ]; then
-    echo "Loop was not compiled for CGRA"
-    exit 1
+llvm-dis CGRAGen.bc -o CGRAGen.ll
+
+if [ ! -f "CGRAGen.ll" ]; then
+	exit 1
 fi
 
 llvm-dis CGRAGen.bc -o CGRAGen.ll
@@ -170,7 +171,7 @@ llvm-dis CGRAGen.bc -o CGRAGen.ll
 llc -march="arm" CGRAGen.ll
 
 #apply remaining optimizations here such as vectoirize
-clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -pthread -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
+clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
 
 #Delete temporary files
 rm *.s *.bc #*.ll
