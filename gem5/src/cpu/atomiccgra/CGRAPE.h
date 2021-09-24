@@ -19,6 +19,7 @@
 #include "CGRAFPRegisterFile.h"
 #include "CGRAInstruction.h"
 #include "debug/PE_DEBUG.hh"
+#include "debug/CGRA_Execute.hh"
 //#include "CGRA_MemoryPort.h"
 
 #ifndef PE_H_
@@ -145,7 +146,9 @@ public:
 	void setAddressBus(uint64_t * addr);
 	void setRWStatusBus(int * status);
 	void setAlignmentBus(unsigned *alignment);
-  void setDatatypeBus(int * dt); 
+  void setDatatypeBus(int * dt);
+
+  bool isNOOP();
 };
 
 

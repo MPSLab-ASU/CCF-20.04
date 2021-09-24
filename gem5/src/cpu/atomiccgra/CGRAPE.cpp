@@ -74,6 +74,10 @@ Datatype CGRA_PE::GetDatatype()
   return dt; 
 }
 
+bool CGRA_PE::isNOOP(){
+  return ins->getOpCode() == NOOP;
+}
+
 void CGRA_PE::Decode()
 {
   DPRINTF(PE_DEBUG, "Inside Decode()\n");
@@ -419,8 +423,8 @@ void CGRA_PE::IExecute()
     {
       //write the result to the controller bus
       //(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
-      (this->Controller_Reg) = Output;
-      DPRINTF(CGRA_Detailed, "Controller_Reg reset\n");
+      (this->Controller_Reg) = !Output;
+      DPRINTF(CGRA_Execute, "CGRAPE.cpp::IExecute: Controller_Reg = %d\n", !Output);
     }
   }
   else
@@ -498,6 +502,7 @@ void CGRA_PE::IExecute()
       {
         // If LoopExit is True then, controller reg should be false.
 	(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
+	DPRINTF(CGRA_Execute, "CGRAPE.cpp::IEloopexit: Controller_Reg = %d\n", this->Controller_Reg);
       }
 
       //TODO: Fix Micro-architecture for P-type (PredMux) rather than controlling write enable.
@@ -1141,6 +1146,7 @@ void CGRA_PE::SetController_Reg()
 
 bool CGRA_PE::getController_Reg()
 {
+  DPRINTF(CGRA_Execute, "CGRAPE.cpp::getController_Reg: Controller_Reg = %d\n", this->Controller_Reg);
   return this->Controller_Reg;
 }
 

@@ -1,0 +1,4412 @@
+/home/local/ASUAD/quoclon1/publish_ccf_github/benchmarks/pow
+6
+Simulation for CGRA for 4 x 4 with 4 registers per PE
+CPU frequency @ 2GHz
+CGRA frequency @ 0.7GHz
+CGRA4x4R4torus
+Global frequency set at 1000000000000 ticks per second
+warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+0: system.remote_gdb: listening for remote gdb on port 7000
+gem5 Simulator System.  http://gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 20.1.0.4
+gem5 compiled Sep 24 2021 12:05:29
+gem5 started Sep 24 2021 12:07:03
+gem5 executing on en4181851l, pid 3250833
+command line: /home/local/ASUAD/quoclon1/publish_ccf_github/gem5/build/ARM/gem5.opt --debug-flags=CGRA_Detailed,CGRA_Execute /home/local/ASUAD/quoclon1/publish_ccf_github/gem5/configs/example/se.py -n 1 --cpu-type CGRA4x4R4torus -c ./pow -o 6
+
+**** REAL SIMULATION ****
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.slave is deprecated. `slave` is now called `cpu_side_ports`
+warn: membus.master is deprecated. `master` is now called `mem_side_ports`
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+info: Entering event queue @ 0.  Starting simulation...
+info: Increasing stack size by one page.
+warn: ignoring syscall mprotect(...)
+createCGRA
+checkTotalLoops
+from cgra.c Initialize Parameters
+
+**********EPISIZE 64*********
+
+**********PROSIZE 352*********
+
+**********KERNSIZE 32*********
+
+******SIZE OF UNSIGNED LONG4*****
+
+******SIZE OF UNSIGNED LONG LONG8*****
+
+************XDIM and YDim are 4, 4
+Loop Count: -2
+From FILE: PROLOGPC= a4870, EPILOGPC=a4668,  KernelPC=a5378
+Main thread calling CGRA thread...
+
+
+accelerateOnCGRA
+configureCGRA
+
+loopno = 1
+newTC = -2 + 5
+Core will execute loop 1 on CGRA
+
+
+runOnCGRA
+38056500: system.cpu: CGRA PARAMETERS: PROLOG= 22, EPILOG=4, II=2, KernelCounter=3 TCdynamic=0
+38056500: system.cpu: CGRA PARAMETERS: PROLOGPC= a4870, EPILOGPC=a4668,  KernelPC=a5378
+38057000: system.cpu: Inside CGRA Execution else statement.
+38057000: system.cpu: Inside CGRA_Execution block.
+38057000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38057000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 1 ~~~~~~~
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 0
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 1
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 2
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 3
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 4
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 5
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 6
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 7
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 8
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 9
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 10
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 11
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 12
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 13
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 14
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Ins: 4529864704, 10e004000 @ PE 15
+38057000: global: Predictor bit: 1	 Opcode: 0
+38057000: global: 
+Input1 = 0	Input2 = 0
+38057000: global: 
+******** Setting Configuration as 0************
+38057000: global: 
+************** WE *****************
+38057000: global: Distance is: 0
+38057000: system.cpu: Cond Reg = 1
+38057000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: Conditional reg is 1 : Len = 21
+38057000: system.cpu: CGRA advanceTime complete.
+38057000: system.cpu: *******IN ADVANCE PC******
+38057000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4870
+38057000: system.cpu: Passed Complete Drain().
+38057000: system.cpu: Make latency status=1.
+38057000: system.cpu: Inside status idle.
+38057000: system.cpu: Exiting schedule events
+38057000: system.cpu: We are here after Execution
+38057500: system.cpu: Inside CGRA Execution else statement.
+38057500: system.cpu: Inside CGRA_Execution block.
+38057500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38057500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 2 ~~~~~~~
+38057500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38057500: system.cpu: Ins: 4798332929, 11e00c001 @ PE 0
+38057500: global: Predictor bit: 1	 Opcode: 1
+38057500: global: 
+Input1 = 1	Input2 = 0
+38057500: global: 
+******** LDI IN THIS PE 1************
+38057500: global: 
+************** WE *****************
+38057500: global: 
+WRITE: REG NUMBER: 1 dist: 0
+38057500: global: R0: 0	R1: 1	R2: 0	R3: 0
+38057500: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+38057500: global: FPR0: 0	FPR1: 1	FPR2: 0	FPR3: 0
+38057500: global: Writing output 1 to register 1
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 4798301760, 11e004640 @ PE 2
+38057500: global: Predictor bit: 1	 Opcode: 1
+38057500: global: 
+Input1 = 1600	Input2 = 0
+38057500: global: 
+******** LDI IN THIS PE 1600************
+38057500: global: 
+************** WE *****************
+38057500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38057500: global: R0: 1600	R1: 0	R2: 0	R3: 0
+38057500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38057500: global: FPR0: 1600	FPR1: 0	FPR2: 0	FPR3: 0
+38057500: global: Writing output 1600 to register 0
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38057500: global: Predictor bit: 0	 Opcode: 7
+38057500: global: CGRA: NOOP.Execute()
+38057500: global: Distance is: 0
+38057500: system.cpu: Cond Reg = 1
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: Conditional reg is 1 : Len = 20
+38057500: system.cpu: CGRA advanceTime complete.
+38057500: system.cpu: *******IN ADVANCE PC******
+38057500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a48f0
+38057500: system.cpu: Passed Complete Drain().
+38057500: system.cpu: Make latency status=1.
+38057500: system.cpu: Inside status idle.
+38057500: system.cpu: Exiting schedule events
+38057500: system.cpu: We are here after Execution
+38058000: system.cpu: Inside CGRA Execution else statement.
+38058000: system.cpu: Inside CGRA_Execution block.
+38058000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38058000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 3 ~~~~~~~
+38058000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38058000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38058000: system.cpu: Ins: 5066768384, 12e00c000 @ PE 0
+38058000: global: Predictor bit: 1	 Opcode: 2
+38058000: global: 
+Input1 = 0	Input2 = 0
+38058000: global: 
+******** LDMI IN THIS PE 0************
+38058000: global: 
+************** WE *****************
+38058000: global: 
+WRITE: REG NUMBER: 1 dist: 0
+38058000: global: R0: 0	R1: 1	R2: 0	R3: 0
+38058000: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+38058000: global: FPR0: 0	FPR1: 1	FPR2: 0	FPR3: 0
+38058000: global: Writing output 1 to register 1
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 5066735770, 12e00409a @ PE 2
+38058000: global: Predictor bit: 1	 Opcode: 2
+38058000: global: 
+Input1 = 154	Input2 = 1600
+38058000: global: 
+******** LDMI IN THIS PE 154************
+38058000: global: 
+************** WE *****************
+38058000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38058000: global: R0: 632384	R1: 0	R2: 0	R3: 0
+38058000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38058000: global: FPR0: 632384	FPR1: 0	FPR2: 0	FPR3: 0
+38058000: global: Writing output 632384 to register 0
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38058000: global: Predictor bit: 0	 Opcode: 7
+38058000: global: CGRA: NOOP.Execute()
+38058000: global: Distance is: 0
+38058000: system.cpu: Cond Reg = 1
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: Conditional reg is 1 : Len = 19
+38058000: system.cpu: CGRA advanceTime complete.
+38058000: system.cpu: *******IN ADVANCE PC******
+38058000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4970
+38058000: system.cpu: Passed Complete Drain().
+38058000: system.cpu: Make latency status=1.
+38058000: system.cpu: Inside status idle.
+38058000: system.cpu: Exiting schedule events
+38058000: system.cpu: We are here after Execution
+38058500: system.cpu: Inside CGRA Execution else statement.
+38058500: system.cpu: Inside CGRA_Execution block.
+38058500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38058500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 4 ~~~~~~~
+38058500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38058500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38058500: system.cpu: Ins: 5335203840, 13e00c000 @ PE 0
+38058500: global: Predictor bit: 1	 Opcode: 3
+38058500: global: 
+Input1 = 0	Input2 = 0
+38058500: global: 
+******** LDUI IN THIS PE 0************
+38058500: global: 
+************** WE *****************
+38058500: global: 
+WRITE: REG NUMBER: 1 dist: 0
+38058500: global: R0: 0	R1: 1	R2: 0	R3: 0
+38058500: global: 
+WRITE: FPREG NUMBER: 1 dist: 0
+38058500: global: FPR0: 0	FPR1: 1	FPR2: 0	FPR3: 0
+38058500: global: Writing output 1 to register 1
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 5335171072, 13e004000 @ PE 2
+38058500: global: Predictor bit: 1	 Opcode: 3
+38058500: global: 
+Input1 = 0	Input2 = 632384
+38058500: global: 
+******** LDUI IN THIS PE 0************
+38058500: global: 
+************** WE *****************
+38058500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38058500: global: R0: 632384	R1: 0	R2: 0	R3: 0
+38058500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38058500: global: FPR0: 632384	FPR1: 0	FPR2: 0	FPR3: 0
+38058500: global: Writing output 632384 to register 0
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38058500: global: Predictor bit: 0	 Opcode: 7
+38058500: global: CGRA: NOOP.Execute()
+38058500: global: Distance is: 0
+38058500: system.cpu: Cond Reg = 1
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: Conditional reg is 1 : Len = 18
+38058500: system.cpu: CGRA advanceTime complete.
+38058500: system.cpu: *******IN ADVANCE PC******
+38058500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a49f0
+38058500: system.cpu: Passed Complete Drain().
+38058500: system.cpu: Make latency status=1.
+38058500: system.cpu: Inside status idle.
+38058500: system.cpu: Exiting schedule events
+38058500: system.cpu: We are here after Execution
+38059000: system.cpu: Inside CGRA Execution else statement.
+38059000: system.cpu: Inside CGRA_Execution block.
+38059000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38059000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 5 ~~~~~~~
+38059000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38059000: global: 
+******** DB INPUT1 ReadAddress = 0************
+38059000: system.cpu: Ins: 4798367300, 11e014644 @ PE 0
+38059000: global: Predictor bit: 1	 Opcode: 1
+38059000: global: 
+Input1 = 1604	Input2 = 0
+38059000: global: 
+******** LDI IN THIS PE 1604************
+38059000: global: 
+************** WE *****************
+38059000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+38059000: global: R0: 0	R1: 1	R2: 1604	R3: 0
+38059000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+38059000: global: FPR0: 0	FPR1: 1	FPR2: 1604	FPR3: 0
+38059000: global: Writing output 1604 to register 2
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6052388868, 168c02004 @ PE 2
+38059000: global: Predictor bit: 1	 Opcode: 6
+38059000: global: 
+Input1 = 632384	Input2 = 4
+38059000: global: 
+******** ADDRESS GENERATED IN THIS PE 632384************
+38059000: global: 
+*********Setting Address 9a640 ******
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38059000: global: Predictor bit: 0	 Opcode: 7
+38059000: global: CGRA: NOOP.Execute()
+38059000: global: Distance is: 0
+38059000: system.cpu: Cond Reg = 1
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+38059000: system.cpu: Conditional reg is 1 : Len = 17
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38059000: system.cpu: CGRA advanceTime complete.
+38059000: system.cpu: *******IN ADVANCE PC******
+38059000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4a70
+38059000: system.cpu: Passed Complete Drain().
+38059000: system.cpu: Make latency status=1.
+38059000: system.cpu: Inside status idle.
+38059000: system.cpu: Exiting schedule events
+38059000: system.cpu: We are here after Execution
+38059500: system.cpu: Inside CGRA Execution else statement.
+38059500: system.cpu: Inside CGRA_Execution block.
+38059500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38059500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 6 ~~~~~~~
+38059500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38059500: global: 
+******** DB INPUT1 = 6************
+38059500: system.cpu: Ins: 5066801306, 12e01409a @ PE 0
+38059500: global: Predictor bit: 1	 Opcode: 2
+38059500: global: 
+Input1 = 154	Input2 = 0
+38059500: global: 
+******** LDMI IN THIS PE 154************
+38059500: global: 
+************** WE *****************
+38059500: global: 
+WRITE: REG NUMBER: 2 dist: 0
+38059500: global: R0: 0	R1: 1	R2: 632388	R3: 0
+38059500: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+38059500: global: FPR0: 0	FPR1: 1	FPR2: 632388	FPR3: 0
+38059500: global: Writing output 632388 to register 2
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 4391452672, 105c04000 @ PE 2
+38059500: global: Predictor bit: 0	 Opcode: 0
+38059500: global: 
+Input1 = 6	Input2 = 0
+38059500: global: 
+******** SUM IN THIS PE 6************
+38059500: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38059500: global: R0: 6	R1: 0	R2: 0	R3: 0
+38059500: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38059500: global: FPR0: 6	FPR1: 0	FPR2: 0	FPR3: 0
+38059500: global: Writing output 6 to register 0
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38059500: global: Predictor bit: 0	 Opcode: 7
+38059500: global: CGRA: NOOP.Execute()
+38059500: global: Distance is: 0
+38059500: system.cpu: Cond Reg = 1
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+38059500: system.cpu: Conditional reg is 1 : Len = 16
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38059500: system.cpu: CGRA advanceTime complete.
+38059500: system.cpu: *******IN ADVANCE PC******
+38059500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4af0
+38059500: system.cpu: Passed Complete Drain().
+38059500: system.cpu: Make latency status=1.
+38059500: system.cpu: Inside status idle.
+38059500: system.cpu: Exiting schedule events
+38059500: system.cpu: We are here after Execution
+38060000: system.cpu: Inside CGRA Execution else statement.
+38060000: system.cpu: Inside CGRA_Execution block.
+38060000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38060000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 7 ~~~~~~~
+38060000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38060000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38060000: system.cpu: Ins: 5335236608, 13e014000 @ PE 0
+38060000: global: Predictor bit: 1	 Opcode: 3
+38060000: global: 
+Input1 = 0	Input2 = 0
+38060000: global: 
+******** LDUI IN THIS PE 0************
+38060000: global: 
+************** WE *****************
+38060000: global: 
+WRITE: REG NUMBER: 2 dist: 0
+38060000: global: R0: 0	R1: 1	R2: 632388	R3: 0
+38060000: global: 
+WRITE: FPREG NUMBER: 2 dist: 0
+38060000: global: FPR0: 0	FPR1: 1	FPR2: 632388	FPR3: 0
+38060000: global: Writing output 632388 to register 2
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 4798400064, 11e01c640 @ PE 2
+38060000: global: Predictor bit: 1	 Opcode: 1
+38060000: global: 
+Input1 = 1600	Input2 = 6
+38060000: global: 
+******** LDI IN THIS PE 1600************
+38060000: global: 
+************** WE *****************
+38060000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38060000: global: R0: 6	R1: 0	R2: 0	R3: 1600
+38060000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38060000: global: FPR0: 6	FPR1: 0	FPR2: 0	FPR3: 1600
+38060000: global: Writing output 1600 to register 3
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38060000: global: Predictor bit: 0	 Opcode: 7
+38060000: global: CGRA: NOOP.Execute()
+38060000: global: Distance is: 0
+38060000: system.cpu: Cond Reg = 1
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+38060000: system.cpu: Conditional reg is 1 : Len = 15
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38060000: system.cpu: CGRA advanceTime complete.
+38060000: system.cpu: *******IN ADVANCE PC******
+38060000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4b70
+38060000: system.cpu: Passed Complete Drain().
+38060000: system.cpu: Make latency status=1.
+38060000: system.cpu: Inside status idle.
+38060000: system.cpu: Exiting schedule events
+38060000: system.cpu: We are here after Execution
+38060500: system.cpu: Inside CGRA Execution else statement.
+38060500: system.cpu: Inside CGRA_Execution block.
+38060500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38060500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 8 ~~~~~~~
+38060500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38060500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38060500: system.cpu: Ins: 4798400068, 11e01c644 @ PE 0
+38060500: global: Predictor bit: 1	 Opcode: 1
+38060500: global: 
+Input1 = 1604	Input2 = 0
+38060500: global: 
+******** LDI IN THIS PE 1604************
+38060500: global: 
+************** WE *****************
+38060500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38060500: global: R0: 0	R1: 1	R2: 632388	R3: 1604
+38060500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38060500: global: FPR0: 0	FPR1: 1	FPR2: 632388	FPR3: 1604
+38060500: global: Writing output 1604 to register 3
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 5066834074, 12e01c09a @ PE 2
+38060500: global: Predictor bit: 1	 Opcode: 2
+38060500: global: 
+Input1 = 154	Input2 = 6
+38060500: global: 
+******** LDMI IN THIS PE 154************
+38060500: global: 
+************** WE *****************
+38060500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38060500: global: R0: 6	R1: 0	R2: 0	R3: 632384
+38060500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38060500: global: FPR0: 6	FPR1: 0	FPR2: 0	FPR3: 632384
+38060500: global: Writing output 632384 to register 3
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38060500: global: Predictor bit: 0	 Opcode: 7
+38060500: global: CGRA: NOOP.Execute()
+38060500: global: Distance is: 0
+38060500: system.cpu: Cond Reg = 1
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+38060500: system.cpu: Conditional reg is 1 : Len = 14
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38060500: system.cpu: CGRA advanceTime complete.
+38060500: system.cpu: *******IN ADVANCE PC******
+38060500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4bf0
+38060500: system.cpu: Passed Complete Drain().
+38060500: system.cpu: Make latency status=1.
+38060500: system.cpu: Inside status idle.
+38060500: system.cpu: Exiting schedule events
+38060500: system.cpu: We are here after Execution
+38061000: system.cpu: Inside CGRA Execution else statement.
+38061000: system.cpu: Inside CGRA_Execution block.
+38061000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38061000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 9 ~~~~~~~
+38061000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38061000: global: 
+******** DB INPUT2 ReadAddress = 0************
+38061000: system.cpu: Ins: 5066834074, 12e01c09a @ PE 0
+38061000: global: Predictor bit: 1	 Opcode: 2
+38061000: global: 
+Input1 = 154	Input2 = 0
+38061000: global: 
+******** LDMI IN THIS PE 154************
+38061000: global: 
+************** WE *****************
+38061000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38061000: global: R0: 0	R1: 1	R2: 632388	R3: 632388
+38061000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38061000: global: FPR0: 0	FPR1: 1	FPR2: 632388	FPR3: 632388
+38061000: global: Writing output 632388 to register 3
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 5335269376, 13e01c000 @ PE 2
+38061000: global: Predictor bit: 1	 Opcode: 3
+38061000: global: 
+Input1 = 0	Input2 = 6
+38061000: global: 
+******** LDUI IN THIS PE 0************
+38061000: global: 
+************** WE *****************
+38061000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38061000: global: R0: 6	R1: 0	R2: 0	R3: 632384
+38061000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38061000: global: FPR0: 6	FPR1: 0	FPR2: 0	FPR3: 632384
+38061000: global: Writing output 632384 to register 3
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38061000: global: Predictor bit: 0	 Opcode: 7
+38061000: global: CGRA: NOOP.Execute()
+38061000: global: Distance is: 0
+38061000: system.cpu: Cond Reg = 1
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+38061000: system.cpu: Conditional reg is 1 : Len = 13
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38061000: system.cpu: CGRA advanceTime complete.
+38061000: system.cpu: *******IN ADVANCE PC******
+38061000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4c70
+38061000: system.cpu: Passed Complete Drain().
+38061000: system.cpu: Make latency status=1.
+38061000: system.cpu: Inside status idle.
+38061000: system.cpu: Exiting schedule events
+38061000: system.cpu: We are here after Execution
+38061500: system.cpu: Inside CGRA Execution else statement.
+38061500: system.cpu: Inside CGRA_Execution block.
+38061500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38061500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 10 ~~~~~~~
+38061500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38061500: global: 
+******** DB INPUT1 ReadAddress = 3************
+38061500: system.cpu: Ins: 5335269376, 13e01c000 @ PE 0
+38061500: global: Predictor bit: 1	 Opcode: 3
+38061500: global: 
+Input1 = 0	Input2 = 0
+38061500: global: 
+******** LDUI IN THIS PE 0************
+38061500: global: 
+************** WE *****************
+38061500: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38061500: global: R0: 0	R1: 1	R2: 632388	R3: 632388
+38061500: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38061500: global: FPR0: 0	FPR1: 1	FPR2: 632388	FPR3: 632388
+38061500: global: Writing output 632388 to register 3
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6053961732, 168d82004 @ PE 2
+38061500: global: Predictor bit: 1	 Opcode: 6
+38061500: global: 
+Input1 = 632384	Input2 = 4
+38061500: global: 
+******** ADDRESS GENERATED IN THIS PE 632384************
+38061500: global: 
+*********Setting Address 9a640 ******
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38061500: global: Predictor bit: 0	 Opcode: 7
+38061500: global: CGRA: NOOP.Execute()
+38061500: global: Distance is: 0
+38061500: system.cpu: Cond Reg = 1
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+38061500: system.cpu: Conditional reg is 1 : Len = 12
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38061500: system.cpu: CGRA advanceTime complete.
+38061500: system.cpu: *******IN ADVANCE PC******
+38061500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4cf0
+38061500: system.cpu: Passed Complete Drain().
+38061500: system.cpu: Make latency status=1.
+38061500: system.cpu: Inside status idle.
+38061500: system.cpu: Exiting schedule events
+38061500: system.cpu: We are here after Execution
+38062000: system.cpu: Inside CGRA Execution else statement.
+38062000: system.cpu: Inside CGRA_Execution block.
+38062000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38062000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 11 ~~~~~~~
+38062000: global: 
+******** DB INPUT1 = 6************
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 4391550976, 105c1c000 @ PE 2
+38062000: global: Predictor bit: 0	 Opcode: 0
+38062000: global: 
+Input1 = 6	Input2 = 0
+38062000: global: 
+******** SUM IN THIS PE 6************
+38062000: global: 
+WRITE: REG NUMBER: 3 dist: 0
+38062000: global: R0: 6	R1: 0	R2: 0	R3: 6
+38062000: global: 
+WRITE: FPREG NUMBER: 3 dist: 0
+38062000: global: FPR0: 6	FPR1: 0	FPR2: 0	FPR3: 6
+38062000: global: Writing output 6 to register 3
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38062000: global: Predictor bit: 0	 Opcode: 7
+38062000: global: CGRA: NOOP.Execute()
+38062000: global: Distance is: 0
+38062000: system.cpu: Cond Reg = 1
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+38062000: system.cpu: Conditional reg is 1 : Len = 11
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38062000: system.cpu: CGRA advanceTime complete.
+38062000: system.cpu: *******IN ADVANCE PC******
+38062000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4d70
+38062000: system.cpu: Passed Complete Drain().
+38062000: system.cpu: Make latency status=1.
+38062000: system.cpu: Inside status idle.
+38062000: system.cpu: Exiting schedule events
+38062000: system.cpu: We are here after Execution
+38062500: system.cpu: Inside CGRA Execution else statement.
+38062500: system.cpu: Inside CGRA_Execution block.
+38062500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38062500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 12 ~~~~~~~
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38062500: global: Predictor bit: 0	 Opcode: 7
+38062500: global: CGRA: NOOP.Execute()
+38062500: global: Distance is: 0
+38062500: system.cpu: Cond Reg = 1
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+38062500: system.cpu: Conditional reg is 1 : Len = 10
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38062500: system.cpu: CGRA advanceTime complete.
+38062500: system.cpu: *******IN ADVANCE PC******
+38062500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4df0
+38062500: system.cpu: Passed Complete Drain().
+38062500: system.cpu: Make latency status=1.
+38062500: system.cpu: Inside status idle.
+38062500: system.cpu: Exiting schedule events
+38062500: system.cpu: We are here after Execution
+38063000: system.cpu: Inside CGRA Execution else statement.
+38063000: system.cpu: Inside CGRA_Execution block.
+38063000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38063000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 13 ~~~~~~~
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38063000: global: Predictor bit: 0	 Opcode: 7
+38063000: global: CGRA: NOOP.Execute()
+38063000: global: Distance is: 0
+38063000: system.cpu: Cond Reg = 1
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+38063000: system.cpu: Conditional reg is 1 : Len = 9
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38063000: system.cpu: CGRA advanceTime complete.
+38063000: system.cpu: *******IN ADVANCE PC******
+38063000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4e70
+38063000: system.cpu: Passed Complete Drain().
+38063000: system.cpu: Make latency status=1.
+38063000: system.cpu: Inside status idle.
+38063000: system.cpu: Exiting schedule events
+38063000: system.cpu: We are here after Execution
+38063500: system.cpu: Inside CGRA Execution else statement.
+38063500: system.cpu: Inside CGRA_Execution block.
+38063500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38063500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 14 ~~~~~~~
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38063500: global: Predictor bit: 0	 Opcode: 7
+38063500: global: CGRA: NOOP.Execute()
+38063500: global: Distance is: 0
+38063500: system.cpu: Cond Reg = 1
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+38063500: system.cpu: Conditional reg is 1 : Len = 8
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38063500: system.cpu: CGRA advanceTime complete.
+38063500: system.cpu: *******IN ADVANCE PC******
+38063500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4ef0
+38063500: system.cpu: Passed Complete Drain().
+38063500: system.cpu: Make latency status=1.
+38063500: system.cpu: Inside status idle.
+38063500: system.cpu: Exiting schedule events
+38063500: system.cpu: We are here after Execution
+38064000: system.cpu: Inside CGRA Execution else statement.
+38064000: system.cpu: Inside CGRA_Execution block.
+38064000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38064000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 15 ~~~~~~~
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38064000: global: Predictor bit: 0	 Opcode: 7
+38064000: global: CGRA: NOOP.Execute()
+38064000: global: Distance is: 0
+38064000: system.cpu: Cond Reg = 1
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+38064000: system.cpu: Conditional reg is 1 : Len = 7
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38064000: system.cpu: CGRA advanceTime complete.
+38064000: system.cpu: *******IN ADVANCE PC******
+38064000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4f70
+38064000: system.cpu: Passed Complete Drain().
+38064000: system.cpu: Make latency status=1.
+38064000: system.cpu: Inside status idle.
+38064000: system.cpu: Exiting schedule events
+38064000: system.cpu: We are here after Execution
+38064500: system.cpu: Inside CGRA Execution else statement.
+38064500: system.cpu: Inside CGRA_Execution block.
+38064500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38064500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 16 ~~~~~~~
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT1 ReadAddress = 0************
+38064500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38064500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38064500: global: Predictor bit: 0	 Opcode: 7
+38064500: global: CGRA: NOOP.Execute()
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38064500: global: Predictor bit: 0	 Opcode: 7
+38064500: global: CGRA: NOOP.Execute()
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 2
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 6	Input2 = 6
+38064500: global: 
+******** SUM IN THIS PE 12************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 3
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 4
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 5
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 6
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 7
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 8
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 9
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 10
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 11
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 12
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 13
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 14
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Ins: 0, 0 @ PE 15
+38064500: global: Predictor bit: 0	 Opcode: 0
+38064500: global: 
+Input1 = 0	Input2 = 0
+38064500: global: 
+******** SUM IN THIS PE 0************
+38064500: global: Distance is: 0
+38064500: system.cpu: Cond Reg = 1
+38064500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+38064500: system.cpu: Conditional reg is 1 : Len = 6
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38064500: system.cpu: CGRA advanceTime complete.
+38064500: system.cpu: *******IN ADVANCE PC******
+38064500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4ff0
+38064500: system.cpu: Passed Complete Drain().
+38064500: system.cpu: Make latency status=1.
+38064500: system.cpu: Inside status idle.
+38064500: system.cpu: Exiting schedule events
+38064500: system.cpu: We are here after Execution
+38065000: system.cpu: Inside CGRA Execution else statement.
+38065000: system.cpu: Inside CGRA_Execution block.
+38065000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38065000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 17 ~~~~~~~
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38065000: global: Predictor bit: 0	 Opcode: 7
+38065000: global: CGRA: NOOP.Execute()
+38065000: global: Distance is: 0
+38065000: system.cpu: Cond Reg = 1
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+38065000: system.cpu: Conditional reg is 1 : Len = 5
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38065000: system.cpu: CGRA advanceTime complete.
+38065000: system.cpu: *******IN ADVANCE PC******
+38065000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5070
+38065000: system.cpu: Passed Complete Drain().
+38065000: system.cpu: Make latency status=1.
+38065000: system.cpu: Inside status idle.
+38065000: system.cpu: Exiting schedule events
+38065000: system.cpu: We are here after Execution
+38065500: system.cpu: Inside CGRA Execution else statement.
+38065500: system.cpu: Inside CGRA_Execution block.
+38065500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38065500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 18 ~~~~~~~
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38065500: global: Predictor bit: 0	 Opcode: 7
+38065500: global: CGRA: NOOP.Execute()
+38065500: global: Distance is: 0
+38065500: system.cpu: Cond Reg = 1
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+38065500: system.cpu: Conditional reg is 1 : Len = 4
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38065500: system.cpu: CGRA advanceTime complete.
+38065500: system.cpu: *******IN ADVANCE PC******
+38065500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a50f0
+38065500: system.cpu: Passed Complete Drain().
+38065500: system.cpu: Make latency status=1.
+38065500: system.cpu: Inside status idle.
+38065500: system.cpu: Exiting schedule events
+38065500: system.cpu: We are here after Execution
+38066000: system.cpu: Inside CGRA Execution else statement.
+38066000: system.cpu: Inside CGRA_Execution block.
+38066000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38066000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 19 ~~~~~~~
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38066000: global: Predictor bit: 0	 Opcode: 7
+38066000: global: CGRA: NOOP.Execute()
+38066000: global: Distance is: 0
+38066000: system.cpu: Cond Reg = 1
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+38066000: system.cpu: Conditional reg is 1 : Len = 3
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38066000: system.cpu: CGRA advanceTime complete.
+38066000: system.cpu: *******IN ADVANCE PC******
+38066000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5170
+38066000: system.cpu: Passed Complete Drain().
+38066000: system.cpu: Make latency status=1.
+38066000: system.cpu: Inside status idle.
+38066000: system.cpu: Exiting schedule events
+38066000: system.cpu: We are here after Execution
+38066500: system.cpu: Inside CGRA Execution else statement.
+38066500: system.cpu: Inside CGRA_Execution block.
+38066500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38066500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 20 ~~~~~~~
+38066500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38066500: global: 
+******** DB INPUT2 ReadAddress = 0************
+38066500: system.cpu: Ins: 4798283777, 11e000001 @ PE 0
+38066500: global: Predictor bit: 1	 Opcode: 1
+38066500: global: 
+Input1 = 1	Input2 = 0
+38066500: global: 
+******** LDI IN THIS PE 1************
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 4798283777, 11e000001 @ PE 1
+38066500: global: Predictor bit: 1	 Opcode: 1
+38066500: global: 
+Input1 = 1	Input2 = 0
+38066500: global: 
+******** LDI IN THIS PE 1************
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38066500: global: Predictor bit: 0	 Opcode: 7
+38066500: global: CGRA: NOOP.Execute()
+38066500: global: Distance is: 0
+38066500: system.cpu: Cond Reg = 1
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+38066500: system.cpu: Conditional reg is 1 : Len = 2
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38066500: system.cpu: CGRA advanceTime complete.
+38066500: system.cpu: *******IN ADVANCE PC******
+38066500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a51f0
+38066500: system.cpu: Passed Complete Drain().
+38066500: system.cpu: Make latency status=1.
+38066500: system.cpu: Inside status idle.
+38066500: system.cpu: Exiting schedule events
+38066500: system.cpu: We are here after Execution
+38067000: system.cpu: Inside CGRA Execution else statement.
+38067000: system.cpu: Inside CGRA_Execution block.
+38067000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38067000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 21 ~~~~~~~
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6471827457, 181c04001 @ PE 2
+38067000: global: Predictor bit: 0	 Opcode: 8
+38067000: global: 
+Input1 = 1	Input2 = 1
+38067000: global: 
+******** ASL IN THIS PE 2************
+38067000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38067000: global: R0: 2	R1: 0	R2: 0	R3: 6
+38067000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38067000: global: FPR0: 2	FPR1: 0	FPR2: 0	FPR3: 6
+38067000: global: Writing output 2 to register 0
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 4341104641, 102c00001 @ PE 3
+38067000: global: Predictor bit: 0	 Opcode: 0
+38067000: global: 
+Input1 = 1	Input2 = 1
+38067000: global: 
+******** SUM IN THIS PE 2************
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38067000: global: Predictor bit: 0	 Opcode: 7
+38067000: global: CGRA: NOOP.Execute()
+38067000: global: Distance is: 0
+38067000: system.cpu: Cond Reg = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+38067000: system.cpu: Conditional reg is 1 : Len = 1
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38067000: system.cpu: CGRA advanceTime complete.
+38067000: system.cpu: *******IN ADVANCE PC******
+38067000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5270
+38067000: system.cpu: Passed Complete Drain().
+38067000: system.cpu: Make latency status=1.
+38067000: system.cpu: Inside status idle.
+38067000: system.cpu: Exiting schedule events
+38067000: system.cpu: We are here after Execution
+38067500: system.cpu: Inside CGRA Execution else statement.
+38067500: system.cpu: Inside CGRA_Execution block.
+38067500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38067500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 22 ~~~~~~~
+38067500: global: 
+******** DB INPUT2 ReadAddress = 3************
+38067500: system.cpu: Ins: 4726980608, 119c00000 @ PE 0
+38067500: global: Predictor bit: 1	 Opcode: 1
+38067500: global: 
+Input1 = 2	Input2 = 0
+38067500: global: 
+******** LDI IN THIS PE 2************
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 4743757824, 11ac00000 @ PE 1
+38067500: global: Predictor bit: 1	 Opcode: 1
+38067500: global: 
+Input1 = 2	Input2 = 0
+38067500: global: 
+******** LDI IN THIS PE 2************
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 7550140416, 1c2060000 @ PE 2
+38067500: global: Predictor bit: 0	 Opcode: 12
+38067500: global: 
+Input1 = 2	Input2 = 6
+38067500: global: 
+******** EQUALS IN THIS PE 0************
+38067500: global: CGRAPE.cpp::IExecute: Controller_Reg = 1
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38067500: global: Predictor bit: 0	 Opcode: 7
+38067500: global: CGRA: NOOP.Execute()
+38067500: global: Distance is: 0
+38067500: system.cpu: Cond Reg = 1
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+38067500: system.cpu: Conditional reg is 1 : Len = 0
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38067500: system.cpu: CGRA advanceTime complete.
+38067500: system.cpu: *******IN ADVANCE PC******
+38067500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a52f0
+38067500: system.cpu: 
+PROLOG->KERNEL
+38067500: system.cpu: Passed Complete Drain().
+38067500: system.cpu: Make latency status=1.
+38067500: system.cpu: Inside status idle.
+38067500: system.cpu: Exiting schedule events
+38067500: system.cpu: We are here after Execution
+38068000: system.cpu: Inside CGRA Execution else statement.
+38068000: system.cpu: Inside CGRA_Execution block.
+38068000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38068000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 23 ~~~~~~~
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6471827457, 181c04001 @ PE 2
+38068000: global: Predictor bit: 0	 Opcode: 8
+38068000: global: 
+Input1 = 2	Input2 = 1
+38068000: global: 
+******** ASL IN THIS PE 4************
+38068000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38068000: global: R0: 4	R1: 0	R2: 0	R3: 6
+38068000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38068000: global: FPR0: 4	FPR1: 0	FPR2: 0	FPR3: 6
+38068000: global: Writing output 4 to register 0
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 4341104641, 102c00001 @ PE 3
+38068000: global: Predictor bit: 0	 Opcode: 0
+38068000: global: 
+Input1 = 2	Input2 = 1
+38068000: global: 
+******** SUM IN THIS PE 3************
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38068000: global: Predictor bit: 0	 Opcode: 7
+38068000: global: CGRA: NOOP.Execute()
+38068000: global: Distance is: 0
+38068000: system.cpu: Cond Reg = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+38068000: system.cpu: Conditional reg is 1 : Len = 1
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38068000: system.cpu: CGRA advanceTime complete.
+38068000: system.cpu: *******IN ADVANCE PC******
+38068000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5378
+38068000: system.cpu: Passed Complete Drain().
+38068000: system.cpu: Make latency status=1.
+38068000: system.cpu: Inside status idle.
+38068000: system.cpu: Exiting schedule events
+38068000: system.cpu: We are here after Execution
+38068500: system.cpu: Inside CGRA Execution else statement.
+38068500: system.cpu: Inside CGRA_Execution block.
+38068500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38068500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 24 ~~~~~~~
+38068500: global: 
+******** DB INPUT2 ReadAddress = 3************
+38068500: system.cpu: Ins: 4726980608, 119c00000 @ PE 0
+38068500: global: Predictor bit: 1	 Opcode: 1
+38068500: global: 
+Input1 = 3	Input2 = 0
+38068500: global: 
+******** LDI IN THIS PE 3************
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 4743757824, 11ac00000 @ PE 1
+38068500: global: Predictor bit: 1	 Opcode: 1
+38068500: global: 
+Input1 = 4	Input2 = 0
+38068500: global: 
+******** LDI IN THIS PE 4************
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 7550140416, 1c2060000 @ PE 2
+38068500: global: Predictor bit: 0	 Opcode: 12
+38068500: global: 
+Input1 = 3	Input2 = 6
+38068500: global: 
+******** EQUALS IN THIS PE 0************
+38068500: global: CGRAPE.cpp::IExecute: Controller_Reg = 1
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38068500: global: Predictor bit: 0	 Opcode: 7
+38068500: global: CGRA: NOOP.Execute()
+38068500: global: Distance is: 0
+38068500: system.cpu: Cond Reg = 1
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+38068500: system.cpu: Conditional reg is 1 : Len = 0
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38068500: system.cpu: CGRA advanceTime complete.
+38068500: system.cpu: *******IN ADVANCE PC******
+38068500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a53f8
+38068500: system.cpu: Passed Complete Drain().
+38068500: system.cpu: Make latency status=1.
+38068500: system.cpu: Inside status idle.
+38068500: system.cpu: Exiting schedule events
+38068500: system.cpu: We are here after Execution
+38069000: system.cpu: Inside CGRA Execution else statement.
+38069000: system.cpu: Inside CGRA_Execution block.
+38069000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38069000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 25 ~~~~~~~
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6471827457, 181c04001 @ PE 2
+38069000: global: Predictor bit: 0	 Opcode: 8
+38069000: global: 
+Input1 = 4	Input2 = 1
+38069000: global: 
+******** ASL IN THIS PE 8************
+38069000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38069000: global: R0: 8	R1: 0	R2: 0	R3: 6
+38069000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38069000: global: FPR0: 8	FPR1: 0	FPR2: 0	FPR3: 6
+38069000: global: Writing output 8 to register 0
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 4341104641, 102c00001 @ PE 3
+38069000: global: Predictor bit: 0	 Opcode: 0
+38069000: global: 
+Input1 = 3	Input2 = 1
+38069000: global: 
+******** SUM IN THIS PE 4************
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38069000: global: Predictor bit: 0	 Opcode: 7
+38069000: global: CGRA: NOOP.Execute()
+38069000: global: Distance is: 0
+38069000: system.cpu: Cond Reg = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+38069000: system.cpu: Conditional reg is 1 : Len = 1
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38069000: system.cpu: CGRA advanceTime complete.
+38069000: system.cpu: *******IN ADVANCE PC******
+38069000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5378
+38069000: system.cpu: Passed Complete Drain().
+38069000: system.cpu: Make latency status=1.
+38069000: system.cpu: Inside status idle.
+38069000: system.cpu: Exiting schedule events
+38069000: system.cpu: We are here after Execution
+38069500: system.cpu: Inside CGRA Execution else statement.
+38069500: system.cpu: Inside CGRA_Execution block.
+38069500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38069500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 26 ~~~~~~~
+38069500: global: 
+******** DB INPUT2 ReadAddress = 3************
+38069500: system.cpu: Ins: 4726980608, 119c00000 @ PE 0
+38069500: global: Predictor bit: 1	 Opcode: 1
+38069500: global: 
+Input1 = 4	Input2 = 0
+38069500: global: 
+******** LDI IN THIS PE 4************
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 4743757824, 11ac00000 @ PE 1
+38069500: global: Predictor bit: 1	 Opcode: 1
+38069500: global: 
+Input1 = 8	Input2 = 0
+38069500: global: 
+******** LDI IN THIS PE 8************
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 7550140416, 1c2060000 @ PE 2
+38069500: global: Predictor bit: 0	 Opcode: 12
+38069500: global: 
+Input1 = 4	Input2 = 6
+38069500: global: 
+******** EQUALS IN THIS PE 0************
+38069500: global: CGRAPE.cpp::IExecute: Controller_Reg = 1
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38069500: global: Predictor bit: 0	 Opcode: 7
+38069500: global: CGRA: NOOP.Execute()
+38069500: global: Distance is: 0
+38069500: system.cpu: Cond Reg = 1
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+38069500: system.cpu: Conditional reg is 1 : Len = 0
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38069500: system.cpu: CGRA advanceTime complete.
+38069500: system.cpu: *******IN ADVANCE PC******
+38069500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a53f8
+38069500: system.cpu: Passed Complete Drain().
+38069500: system.cpu: Make latency status=1.
+38069500: system.cpu: Inside status idle.
+38069500: system.cpu: Exiting schedule events
+38069500: system.cpu: We are here after Execution
+38070000: system.cpu: Inside CGRA Execution else statement.
+38070000: system.cpu: Inside CGRA_Execution block.
+38070000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38070000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 27 ~~~~~~~
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6471827457, 181c04001 @ PE 2
+38070000: global: Predictor bit: 0	 Opcode: 8
+38070000: global: 
+Input1 = 8	Input2 = 1
+38070000: global: 
+******** ASL IN THIS PE 16************
+38070000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38070000: global: R0: 16	R1: 0	R2: 0	R3: 6
+38070000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38070000: global: FPR0: 16	FPR1: 0	FPR2: 0	FPR3: 6
+38070000: global: Writing output 16 to register 0
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 4341104641, 102c00001 @ PE 3
+38070000: global: Predictor bit: 0	 Opcode: 0
+38070000: global: 
+Input1 = 4	Input2 = 1
+38070000: global: 
+******** SUM IN THIS PE 5************
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38070000: global: Predictor bit: 0	 Opcode: 7
+38070000: global: CGRA: NOOP.Execute()
+38070000: global: Distance is: 0
+38070000: system.cpu: Cond Reg = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+38070000: system.cpu: Conditional reg is 1 : Len = 1
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38070000: system.cpu: CGRA advanceTime complete.
+38070000: system.cpu: *******IN ADVANCE PC******
+38070000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a5378
+38070000: system.cpu: Passed Complete Drain().
+38070000: system.cpu: Make latency status=1.
+38070000: system.cpu: Inside status idle.
+38070000: system.cpu: Exiting schedule events
+38070000: system.cpu: We are here after Execution
+38070500: system.cpu: Inside CGRA Execution else statement.
+38070500: system.cpu: Inside CGRA_Execution block.
+38070500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38070500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 28 ~~~~~~~
+38070500: global: 
+******** DB INPUT2 ReadAddress = 3************
+38070500: system.cpu: Ins: 4726980608, 119c00000 @ PE 0
+38070500: global: Predictor bit: 1	 Opcode: 1
+38070500: global: 
+Input1 = 5	Input2 = 0
+38070500: global: 
+******** LDI IN THIS PE 5************
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 4743757824, 11ac00000 @ PE 1
+38070500: global: Predictor bit: 1	 Opcode: 1
+38070500: global: 
+Input1 = 16	Input2 = 0
+38070500: global: 
+******** LDI IN THIS PE 16************
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 7550140416, 1c2060000 @ PE 2
+38070500: global: Predictor bit: 0	 Opcode: 12
+38070500: global: 
+Input1 = 5	Input2 = 6
+38070500: global: 
+******** EQUALS IN THIS PE 0************
+38070500: global: CGRAPE.cpp::IExecute: Controller_Reg = 1
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38070500: global: Predictor bit: 0	 Opcode: 7
+38070500: global: CGRA: NOOP.Execute()
+38070500: global: Distance is: 0
+38070500: system.cpu: Cond Reg = 1
+38070500: system.cpu: Conditional reg is 1 : Len = 0
+38070500: system.cpu: Conditional reg is 0 : Len = 0
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38070500: system.cpu: CGRA advanceTime complete.
+38070500: system.cpu: *******IN ADVANCE PC******
+38070500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a53f8
+38070500: system.cpu: 
+KERNEL->EPILOG
+38070500: system.cpu: Passed Complete Drain().
+38070500: system.cpu: Make latency status=1.
+38070500: system.cpu: Inside status idle.
+38070500: system.cpu: Exiting schedule events
+38070500: system.cpu: We are here after Execution
+38071000: system.cpu: Inside CGRA Execution else statement.
+38071000: system.cpu: Inside CGRA_Execution block.
+38071000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38071000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 29 ~~~~~~~
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6471827457, 181c04001 @ PE 2
+38071000: global: Predictor bit: 0	 Opcode: 8
+38071000: global: 
+Input1 = 16	Input2 = 1
+38071000: global: 
+******** ASL IN THIS PE 32************
+38071000: global: 
+WRITE: REG NUMBER: 0 dist: 0
+38071000: global: R0: 32	R1: 0	R2: 0	R3: 6
+38071000: global: 
+WRITE: FPREG NUMBER: 0 dist: 0
+38071000: global: FPR0: 32	FPR1: 0	FPR2: 0	FPR3: 6
+38071000: global: Writing output 32 to register 0
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 4341104641, 102c00001 @ PE 3
+38071000: global: Predictor bit: 0	 Opcode: 0
+38071000: global: 
+Input1 = 5	Input2 = 1
+38071000: global: 
+******** SUM IN THIS PE 6************
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38071000: global: Predictor bit: 0	 Opcode: 7
+38071000: global: CGRA: NOOP.Execute()
+38071000: global: Distance is: 0
+38071000: system.cpu: Cond Reg = 0
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+38071000: system.cpu: Conditional reg is 0 : Len = 3
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38071000: system.cpu: CGRA advanceTime complete.
+38071000: system.cpu: *******IN ADVANCE PC******
+38071000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4668
+38071000: system.cpu: Passed Complete Drain().
+38071000: system.cpu: Make latency status=1.
+38071000: system.cpu: Inside status idle.
+38071000: system.cpu: Exiting schedule events
+38071000: system.cpu: We are here after Execution
+38071500: system.cpu: Inside CGRA Execution else statement.
+38071500: system.cpu: Inside CGRA_Execution block.
+38071500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38071500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 30 ~~~~~~~
+38071500: global: 
+******** DB INPUT2 ReadAddress = 3************
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 7550140416, 1c2060000 @ PE 2
+38071500: global: Predictor bit: 0	 Opcode: 12
+38071500: global: 
+Input1 = 6	Input2 = 6
+38071500: global: 
+******** EQUALS IN THIS PE 1************
+38071500: global: CGRAPE.cpp::IExecute: Controller_Reg = 0
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38071500: global: Predictor bit: 0	 Opcode: 7
+38071500: global: CGRA: NOOP.Execute()
+38071500: global: Distance is: 0
+38071500: system.cpu: Cond Reg = 0
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+38071500: system.cpu: Conditional reg is 0 : Len = 2
+
+************* MEM READ *************
+Row: 0 - address: 632384 - data: 6
+38071500: system.cpu: CGRA advanceTime complete.
+38071500: system.cpu: *******IN ADVANCE PC******
+38071500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a46e8
+38071500: system.cpu: Passed Complete Drain().
+38071500: system.cpu: Make latency status=1.
+38071500: system.cpu: Inside status idle.
+38071500: system.cpu: Exiting schedule events
+38071500: system.cpu: We are here after Execution
+38072000: system.cpu: Inside CGRA Execution else statement.
+38072000: system.cpu: Inside CGRA_Execution block.
+38072000: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38072000: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 31 ~~~~~~~
+38072000: global: 
+******** DB INPUT1 ReadAddress = 3************
+38072000: global: 
+******** DB INPUT1 ReadAddress = 0************
+38072000: system.cpu: Ins: 6053961732, 168d82004 @ PE 0
+38072000: global: Predictor bit: 1	 Opcode: 6
+38072000: global: 
+Input1 = 632388	Input2 = 4
+38072000: global: 
+******** ADDRESS GENERATED IN THIS PE 632388************
+38072000: global: 
+*********Setting Address 9a644 ******
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 1
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 4307554304, 100c01000 @ PE 2
+38072000: global: Predictor bit: 0	 Opcode: 0
+38072000: global: 
+Input1 = 32	Input2 = 0
+38072000: global: 
+******** SUM IN THIS PE 32************
+38072000: global: 
+******** DB Output 32************
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: global: CGRAPE.cpp::getController_Reg: Controller_Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38072000: global: Predictor bit: 0	 Opcode: 7
+38072000: global: CGRA: NOOP.Execute()
+38072000: global: Distance is: 0
+38072000: system.cpu: Cond Reg = 0
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: Conditional reg is 0 : Len = 1
+38072000: system.cpu: In Memwrite with membus: 1
+38072000: system.cpu: In writing INT 32	 to address:9a644	 -- &Data: 0x558bbbfd8610	 and uint:  
+38072000: system.cpu: CGRA advanceTime complete.
+38072000: system.cpu: *******IN ADVANCE PC******
+38072000: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a4768
+38072000: system.cpu: Passed Complete Drain().
+38072000: system.cpu: Make latency status=1.
+38072000: system.cpu: Inside status idle.
+38072000: system.cpu: Exiting schedule events
+38072000: system.cpu: We are here after Execution
+38072500: system.cpu: Inside CGRA Execution else statement.
+38072500: system.cpu: Inside CGRA_Execution block.
+38072500: system.cpu: 
+CALL IN NOW CGRA_Execution.
+38072500: system.cpu: 
+
+ ~~~~~~ CGRA_Execution @ numCycles = 32 ~~~~~~~
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 0
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 1
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 2
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 3
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 4
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 5
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 6
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 7
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 8
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 9
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 10
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 11
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 12
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 13
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 14
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Ins: 6306136064, 177e00000 @ PE 15
+38072500: global: Predictor bit: 0	 Opcode: 7
+38072500: global: CGRA: NOOP.Execute()
+38072500: global: Distance is: 0
+38072500: system.cpu: Cond Reg = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: Conditional reg is 0 : Len = 0
+38072500: system.cpu: In Memwrite with membus: 1
+38072500: system.cpu: In writing INT 32	 to address:9a644	 -- &Data: 0x558bbbfd8610	 and uint:  
+38072500: system.cpu: CGRA advanceTime complete.
+38072500: system.cpu: *******IN ADVANCE PC******
+38072500: system.cpu: build/ARM/cpu/atomiccgra/atomiccgra.cc,CGRA_advancePC,1761,PC:a47e8
+38072500: system.cpu: Passed Complete Drain().
+38072500: system.cpu: Make latency status=1.
+38072500: system.cpu: Inside status idle.
+38072500: system.cpu: Exiting schedule events
+38072500: system.cpu: We are here after Execution
+38073000: system.cpu: Inside CGRA Execution else statement.
+***** 2^6 = 32 *****
+
+deleting cgra
+Exiting @ tick 40238500 because exiting with last active thread context

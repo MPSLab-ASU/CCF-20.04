@@ -1,0 +1,20 @@
+digraph iso_graph { 
+{
+0 [color=red ];
+
+1 [color=red ];
+
+2 [color=red ];
+
+3 [color=red ];
+
+4 [color=red ];
+3 -> 0 [style=bold, color=red, label=1] 
+2 -> 1 [style=bold, color=red, label=1] 
+1 -> 2
+0 -> 3
+3 -> 4
+
+}
+
+}

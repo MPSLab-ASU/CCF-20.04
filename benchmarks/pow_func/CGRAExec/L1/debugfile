@@ -1,0 +1,41 @@
+Mapping has started
+Operating mode:3
+Starting II: 2	rec_MII: 2
+node_set size: 5
+Node: 2
+
+Node: 2	type:2	ASAP: 1	ALAP:2	random try_time: 1
+Node: 1
+
+Node: 1	type:29	ASAP: 0	ALAP:0	random try_time: 0
+Node: 4
+
+Node: 4	type:10	ASAP: 2	ALAP:3	random try_time: 2
+Node: 3
+
+Node: 3	type:0	ASAP: 1	ALAP:1	random try_time: 1
+Node: 0
+
+Node: 0	type:29	ASAP: 0	ALAP:0	random try_time: 0
+Feasible II is 2	Schedule Len is 4
+Node: 0	 ASAP: 0	ALAP: 0	 is init: 1	sched @ 0	 mod: 0
+Node: 1	 ASAP: 0	ALAP: 0	 is init: 1	sched @ 0	 mod: 0
+Node: 2	 ASAP: 1	ALAP: 2	 is init: 1	sched @ 1	 mod: 1
+Node: 3	 ASAP: 1	ALAP: 1	 is init: 1	sched @ 1	 mod: 1
+Node: 4	 ASAP: 2	ALAP: 3	 is init: 1	sched @ 2	 mod: 0
+Left Nodes Are: 0	
+Left Nodes Are: 1	
+Left Nodes Are: 2	
+K : 1
+distance: 1
+ adding nodes between: 2-->1
+Left Nodes Are: 3	
+K : 1
+distance: 1
+ adding nodes between: 3-->0
+Successfully inserted routing nodes to the scheduled DFG.
+attempt=0
+rec_MII=0	resMII=1	II:2
+Start Placement for II = 2
+MII = 2	 Current II=2
+Mapping is completed and successfull

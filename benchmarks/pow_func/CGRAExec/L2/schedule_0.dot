@@ -1,0 +1,42 @@
+digraph schedule { 
+{
+0 [color=red ];
+
+1 [color=red ];
+
+2 [color=red ];
+
+3 [color=red ];
+
+4 [color=red ];
+3 -> 0 [style=bold, color=red, label=1] 
+2 -> 1 [style=bold, color=red, label=1] 
+1 -> 2
+0 -> 3
+3 -> 4
+
+}
+
+{
+ node [shape=plaintext]; 
+ T0  -> T1 -> T2 -> T3 -> T4;
+}{ rank = source; 
+T0;
+ }; 
+{ rank = same; 
+0; 1; T0;
+ }; 
+{ rank = same; 
+2; 3; T1;
+ }; 
+{ rank = same; 
+4; T2;
+ }; 
+{ rank = same; 
+
+ }; 
+{ rank = same; 
+
+ }; 
+
+}

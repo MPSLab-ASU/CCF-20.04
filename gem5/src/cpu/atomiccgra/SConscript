@@ -49,6 +49,7 @@ if 'AtomicCGRA' in env['CPU_MODELS']:
     DebugFlag('Register_Debug')
     DebugFlag('Instruction_print')
     DebugFlag('Conditional_DEBUG')
+    DebugFlag('Cycles')
     Source('CGRAException.cpp')
     Source('CGRAInstruction.cpp')
     #Source('CGRADecoder.cpp')

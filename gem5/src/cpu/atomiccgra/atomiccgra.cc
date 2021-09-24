@@ -65,12 +65,14 @@
 #include "debug/ExecFaulting.hh"
 #include "debug/SimpleCPU.hh"
 #include "debug/Instruction_print.hh"
+#include "debug/Cycles.hh"
 
 #include "params/AtomicCGRA.hh"
 using namespace std;
 using namespace TheISA;
 
 volatile unsigned long cgraCycles = 0;
+unsigned long debugCycles = 0;
 
 void
 AtomicCGRA::init()
@@ -333,6 +335,7 @@ AtomicCGRA::activateContext(ThreadID thread_num)
                                  threadInfo[thread_num]->thread->lastSuspend);
     numCycles += delta;
     cgraCycles += delta;
+    debugCycles += delta;
 
     if (!tickEvent.scheduled()) {
         //Make sure ticks are still on multiples of cycles
@@ -985,8 +988,8 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
   Len--;
   {
     _status = BaseCGRA::Running;
-    numCycles++;
-    cgraCycles++;
+    //numCycles++;
+    //cgraCycles++;
     // DPRINTF(CGRA_Execute, "CGRA.CGRA_Exec(): numCycles = %d\n", numCycles);
     //DPRINTF(CGRA_Detailed, "CGRA.Exec(): numCycles = %d\n", numCycles);
     //printf("CGRA.Exec(): numCycles = %d\n", numCycles);
@@ -1039,10 +1042,11 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
         cgra_PEs[i * CGRA_YDim + j].FExecute();
       //else if(cgra_PEs[i * CGRA_YDim + j].GetDatatype() == float64)
       //  cgra_PEs[i * CGRA_YDim + j].DExecute();
-        
-      Conditional_Reg = (Conditional_Reg & cgra_PEs[i * CGRA_YDim + j].getController_Reg() );
-       DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len); 
-      if(!Conditional_Reg && Len==0) DPRINTF(CGRA_Detailed, "Conditional_Reg reset -> moving to EPILOG\n");
+
+      DPRINTF(CGRA_Detailed, "Cond Reg = %d\n", Conditional_Reg);
+      if(!cgra_PEs[i * CGRA_YDim + j].isNOOP())
+	Conditional_Reg = (Conditional_Reg & cgra_PEs[i * CGRA_YDim + j].getController_Reg());
+      DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len);
     }
   }
 
@@ -1058,10 +1062,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       Conditional_Reg = 0;
     else
       Conditional_Reg = 1;
-  }
-  else
-  {
-    ;
+    DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len);
   }
  
   //*********WRITE BACK********************
@@ -1203,12 +1204,12 @@ AtomicCGRA::tick()
     Tick latency = 0;
 
     for (int i = 0; i < width || locked; ++i) {
-        if(!is_CPU())
+        numCycles++;
+	debugCycles++;
+	DPRINTF(Cycles, "numCycles = %d\n", debugCycles);
+	if(!is_CPU())
         {
-            numCycles++;
 	    cgraCycles++;
-            //DPRINTF(CGRA_Execute, "CGRA.Tick(): numCycles = %d\n", numCycles);
-	    //printf("CGRA.Tick(): numCycles = %d\n", numCycles);
             updateCycleCounters(BaseCPU::CPU_STATE_ON);
         }
 
@@ -1695,7 +1696,7 @@ void AtomicCGRA::Setup_CGRA_Parameters()
   if(KernelCounter <= 0) isTCdynamic = true;
 
   DPRINTF(CGRA,"CGRA PARAMETERS: PROLOG= %d, EPILOG=%d, II=%d, KernelCounter=%d\n",Prolog,EPILog,II,KernelCounter);
-  DPRINTF(CGRA_Execute,"CGRA PARAMETERS: PROLOG= %d, EPILOG=%d, II=%d, KernelCounter=%d\n",Prolog,EPILog,II,KernelCounter);
+  DPRINTF(CGRA_Execute,"CGRA PARAMETERS: PROLOG= %d, EPILOG=%d, II=%d, KernelCounter=%d TCdynamic=%d\n",Prolog,EPILog,II,KernelCounter,isTCdynamic);
   DPRINTF(CGRA,"CGRA PARAMETERS: PROLOGPC= %lx, EPILOGPC=%lx,  KernelPC=%lx\n",(unsigned int)PROLogPC,(unsigned int)EPILogPC,(unsigned int)KernelPC);
   DPRINTF(CGRA_Execute,"CGRA PARAMETERS: PROLOGPC= %lx, EPILOGPC=%lx,  KernelPC=%lx\n",(unsigned int)PROLogPC,(unsigned int)EPILogPC,(unsigned int)KernelPC);
 }
@@ -1775,7 +1776,7 @@ void AtomicCGRA::CGRA_advancePC(SimpleThread* thread)
     }
     else if(state==KERN)
     {
-      if(Conditional_Reg)
+      if(Conditional_Reg && cgraCycles <= 100) // cap iterations at 100 cycles
       {
         Len=II;
         newPC=KernelPC;
