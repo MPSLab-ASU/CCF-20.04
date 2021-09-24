@@ -1,0 +1,14 @@
+Global frequency set at 1000000000000 ticks per second
+gem5 Simulator System.  http://gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 20.1.0.4
+gem5 compiled Sep 23 2021 18:19:24
+gem5 started Sep 23 2021 18:31:43
+gem5 executing on en4181851l, pid 3135753
+command line: ../../gem5/build/ARM/gem5.opt -d CPU/ ../../gem5/configs/example/se.py -c pow_cpu -o 5
+
+**** REAL SIMULATION ****
+Base = 2 - Pow = 5
+***** 2^5 = 32 *****
+Exiting @ tick 6420000 because exiting with last active thread context

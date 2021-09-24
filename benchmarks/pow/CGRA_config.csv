@@ -6,7 +6,7 @@ Cclock,0.7
 CPUclock,2
 Mem,8GB
 MODE,0
-ALGO,RAMP
+ALGO,GraphMinor
 MSA,10
 MAPII,10
 MAX_MAP,1000

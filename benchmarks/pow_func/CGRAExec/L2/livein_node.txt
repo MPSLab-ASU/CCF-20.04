@@ -1,4 +1,0 @@
-4	10	4	1
-7	30	gVar6	1
-108	19	ld_add_gVar6	1
-109	20	ld_data_gVar6	1
