@@ -149,18 +149,26 @@ int configureCGRA(unsigned int loopID)
   if(kernelCount <= 0)
   {
     int newTC = kernelCount + dynamicTCVal;
+    printf("newTC = %d + %d\n", kernelCount, dynamicTCVal);
     *(initCGRA + 7*(loopID-1) + 5) = newTC; 
   }
 
-  char initCGRAfile[40] = "./CGRAExec/L1";
-  strcat(initCGRAfile,"/initCGRA.txt");
-  count = fopen(initCGRAfile, "wb");
+  //char initCGRAfile[40] = "./CGRAExec/L1";
+  //strcat(initCGRAfile,"/initCGRA.txt");
+  //count = fopen(initCGRAfile, "wb");
+  strcat(directoryPath,"/initCGRA.txt");
+  count = fopen(directoryPath, "wb");
+  
   for(i=0; i<7; i++)
     fprintf(count, "%d\n", *(initCGRA + 7*(loopID-1) + i));
   fprintf(count, "%ld\n", (unsigned long long) epilogPtr[loopID-1]);
   fprintf(count, "%ld\n", (unsigned long long) prologPtr[loopID-1]);
   fprintf(count, "%ld\n", (unsigned long long) kernelPtr[loopID-1]);
   fclose(count);
+
+  FILE* execLoop = fopen("./CGRAExec/LoopID.txt", "wb");
+  fprintf(execLoop, "L%d", loopID);
+  fclose(execLoop);
   
   //printf("Exiting cgra.c configureCGRA\n");	
   return 0;
