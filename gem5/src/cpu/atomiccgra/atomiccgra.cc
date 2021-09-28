@@ -1043,7 +1043,6 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       //else if(cgra_PEs[i * CGRA_YDim + j].GetDatatype() == float64)
       //  cgra_PEs[i * CGRA_YDim + j].DExecute();
 
-      DPRINTF(CGRA_Detailed, "Cond Reg = %d\n", Conditional_Reg);
       if(!cgra_PEs[i * CGRA_YDim + j].isNOOP())
 	Conditional_Reg = (Conditional_Reg & cgra_PEs[i * CGRA_YDim + j].getController_Reg());
       DPRINTF(CGRA_Detailed, "Conditional reg is %d : Len = %d\n", Conditional_Reg, Len);
@@ -1085,7 +1084,7 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       printf("\n************* MEM READ *************\n");
       printf("Row: %d - address: %d - data: %d\n", i, MemAddress[i], MemData[i]);
       //x_dim=0;
-      MemBusStatus[i] == CGRA_MEMORY_RESET;
+      MemBusStatus[i] = CGRA_MEMORY_RESET;
     }
     else if (MemBusStatus[i] == CGRA_MEMORY_WRITE)
     {
@@ -1131,9 +1130,9 @@ void AtomicCGRA::CGRA_Execution(SimpleExecContext& t_info)
       }
       MemAccessCount++;
       //x_dim=0;
-      MemBusStatus[i] == CGRA_MEMORY_RESET;
+      MemBusStatus[i] = CGRA_MEMORY_RESET;
     }
-    MemBusStatus[i] == CGRA_MEMORY_RESET;
+    MemBusStatus[i] = CGRA_MEMORY_RESET;
   }
 
   CGRA_advanceTime();
@@ -1653,8 +1652,12 @@ void AtomicCGRA::Setup_CGRA_Parameters()
   std::ostringstream osLoopID;
   osLoopID << TotalLoops;
 
-  // Need to modify this for multiple performance critical loops
-  std::string directoryPath = "./CGRAExec/L1/initCGRA.txt";
+  ifstream execLoop;
+  execLoop.open("./CGRAExec/LoopID.txt");
+  std::string loopID;
+  execLoop >> loopID;
+  
+  std::string directoryPath = "./CGRAExec/" + loopID + "/initCGRA.txt";
 
   unsigned long temp;
   ifstream initCGRAFile;
@@ -1776,7 +1779,7 @@ void AtomicCGRA::CGRA_advancePC(SimpleThread* thread)
     }
     else if(state==KERN)
     {
-      if(Conditional_Reg && cgraCycles <= 100) // cap iterations at 100 cycles
+      if(Conditional_Reg && cgraCycles <= 100) // cap iterations at 100 cycles -> FOR INF LOOP DEBUG ONLY
       {
         Len=II;
         newPC=KernelPC;
