@@ -197,6 +197,7 @@ void accelerateOnCGRA(unsigned int loopNo)
     printf("\n\naccelerateOnCGRA\n");
     int result = 0; 
     //loopNo = 1;
+    int initializeloop = initializeParameters(loopNo);
     int configure = configureCGRA(loopNo);
     //if(DEBUG) printf("configure = %d, loopNo = %d\n", configure, loopNo);
     if(configure == -1)
@@ -245,10 +246,10 @@ void createCGRA()
   //pthread_mutex_lock(&mutex);
   //result = pthread_create(&pth, NULL, (void*) &runOnCGRA, NULL);
 
-  for(i = 1; i <= totalLoops; i++)
-  {
-      initializeParameters(i);
-  }
+  //for(i = 1; i <= totalLoops; i++)
+  //{
+  //    initializeParameters(i);
+  //}
     
   //pthread_mutex_init(&mutex, NULL);
   printf("Main thread calling CGRA thread...\n");
