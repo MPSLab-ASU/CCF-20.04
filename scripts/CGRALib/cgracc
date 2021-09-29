@@ -5,8 +5,8 @@
 #Expected arguments or inputs - .c or .cpp files
 
 #Set Paths
-ccf_root="/home/local/ASUAD/mbalasu2/CCF-20.04"
-install_path="/home/local/ASUAD/mbalasu2/sw"
+ccf_root="/home/local/ASUAD/quoclon1/ccf9_27"
+install_path="/home/local/ASUAD/quoclon1/sw"
 obj="obj"
 objFound=0;
 searchstring=".o"
@@ -174,7 +174,7 @@ llc -march="arm" CGRAGen.ll
 clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
 
 #Delete temporary files
-rm *.s *.bc #*.ll
+rm *.s *.bc *.ll
 
 # Check if CGRAExec exists.
 if [ -d "CGRAExec" ]; then

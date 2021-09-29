@@ -5,9 +5,7 @@ R=0
 IC=0
 CGRAclock=0
 CPUClock=0
-ccf_root="/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04"
-
-pwd
+ccf_root="/home/local/ASUAD/quoclon1/ccf9_27"
 
 executable=$1
 shift

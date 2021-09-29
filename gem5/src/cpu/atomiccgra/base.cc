@@ -555,13 +555,13 @@ BaseCGRA::preExecute()
 
     //If we decoded an instruction this "tick", record information about it.
     if (curStaticInst) {
-#if TRACING_ON
+      //#ifdef TRACING_ON
         traceData = tracer->getInstRecord(curTick(), thread->getTC(),
                 curStaticInst, thread->pcState(), curMacroStaticInst);
 
         DPRINTF(Decode,"Decode: Decoded %s instruction: %#x\n",
-                curStaticInst->getName(), curStaticInst->machInst);
-#endif // TRACING_ON
+	       curStaticInst->getName(), curStaticInst->machInst);
+	//#endif // TRACING_ON
     }
 
     if (branchPred && curStaticInst &&

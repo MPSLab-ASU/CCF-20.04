@@ -74,6 +74,10 @@ Datatype CGRA_PE::GetDatatype()
   return dt; 
 }
 
+bool CGRA_PE::isNOOP(){
+  return ins->getOpCode() == NOOP;
+}
+
 void CGRA_PE::Decode()
 {
   DPRINTF(PE_DEBUG, "Inside Decode()\n");
@@ -419,8 +423,7 @@ void CGRA_PE::IExecute()
     {
       //write the result to the controller bus
       //(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
-      (this->Controller_Reg) = Output;
-      DPRINTF(CGRA_Detailed, "Controller_Reg reset\n");
+      (this->Controller_Reg) = !Output;
     }
   }
   else
@@ -1134,9 +1137,7 @@ onehopy2In = OneHopY2;
 
 void CGRA_PE::SetController_Reg()
 {
-  DPRINTF(PE_DEBUG, "Inside Set_cntrl_Reg()\n");
   Controller_Reg = true;
-  DPRINTF(PE_DEBUG, "Exiting Set_cntrl_Reg()\n");
 }
 
 bool CGRA_PE::getController_Reg()

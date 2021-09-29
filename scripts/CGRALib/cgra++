@@ -5,7 +5,7 @@
 #Expected arguments or inputs - .c or .cpp files
 
 #Set Paths
-ccf_root="/home/local/ASUAD/quoclon1/ccf2_git/CCF-20.04"
+ccf_root="/home/local/ASUAD/quoclon1/ccf9_27"
 install_path="/home/local/ASUAD/quoclon1/sw"
 obj="obj"
 objFound=0;
