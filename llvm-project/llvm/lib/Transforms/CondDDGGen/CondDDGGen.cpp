@@ -171,6 +171,7 @@ namespace llvm
   struct CondDDGGen: public LoopPass
   {
     static char ID;        // Pass identification, replacement for typeid
+    Function *hook; 
     CondDDGGen() :
       LoopPass(ID)
     {
@@ -233,9 +234,15 @@ namespace llvm
 
     bool isTCknownAtLoopEntry(std::vector<BasicBlock *> bbs)
     {
+      if(DEBUG)
+	     errs() << "inside isTCknownatLoopEntry\n";
+
       Value *val1 = loopExitCond->getOperand(0);
+      if(DEBUG) errs() << "val: " << val1->getName() << "\n";
       Instruction *Op1 = dyn_cast<Instruction>(val1);
       Instruction *Op2 = dyn_cast<Instruction>(loopExitCond->getOperand(1));
+      //if(DEBUG) errs() << "op1: " << *Op1 << "\top2:" << *Op2 << "\n";
+      //if(DEBUG) exit(1);
       if((Op1) && (Op2))
       {
         if(( std::find(bbs.begin(), bbs.end(), Op1->getParent()) != bbs.end()) &&
@@ -3948,6 +3955,7 @@ Default:
 
     virtual bool runOnLoop(Loop *L, LPPassManager &LPM)
     {
+      dynamicTC = true; 
       //errs() << "loop id: " << L->getLoopID() << "\n"; 
 
       //if(HasBeenVisited(L->getLoopID()))
@@ -3974,11 +3982,18 @@ Default:
       if (!Preheader) {
         return false;
       }
+      else {
+	if(DEBUG)
+		errs() << "preheader function name: " << Preheader->getParent()->getName() << "\n";
+      }
 
       // If LoopSimplify form is not available, stay out of trouble.
       if (!L->hasDedicatedExits()) {
         return false;
       }
+
+
+      errs() << "loop id: " << L->getLoopID() << "\n";
 
       SmallVector<BasicBlock *, 4> ExitBlocks;
       L->getExitingBlocks(ExitBlocks);
@@ -4062,7 +4077,7 @@ Default:
           }
         }
       }  
-      //errs() << "Update livein complete\n";
+      errs() << "Update livein complete\n";
       for (int i = 0; i < (int) bbs.size(); i++)
       {
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
@@ -4075,7 +4090,7 @@ Default:
         }
       }
 
-      //errs() << "completed update data dependency\n";
+      errs() << "completed update data dependency\n";
       //if(!Update_Control_Dependencies(myDFG, bbs, L->getLoopLatch(), L->getHeader() ))
       //	return false;
 
@@ -4098,12 +4113,18 @@ Default:
       lpTCfile << TripCount;
       lpTCfile.close();
 
-      //errs() << "closed all files\n";
+      if(DEBUG) {
+      errs() << "closed all files\n";
+      errs() << "Trip Count: " << TripCount << "\n"; 
+      errs() << "dynamicTC: " << dynamicTC << "\n";
+      }
       if(dynamicTC)
       {
         // TODO: If there are multiple exiting blocks, how to find the condition variable for dynamic TC loops
         // May be a hierarchy of select operations can help
         // In such case, need to exit even if a single condition is true, ensuring we exit from loop
+	if(DEBUG)
+	errs() << "before getLoopExitBranch\n";
         getLoopExitBranch(ExitBlocks[0]);
 
         // Need to determine if trip-count is known at run-time
@@ -4115,9 +4136,12 @@ Default:
           calculateTCDynamically(indsvar, bbs, Preheader);
           dynamicTC = false;
         }
-      } 
+      }  
 
-      //errs() << "completed dynamic TC\n"; 
+      // NOTE: Comparison and testing for dynamicTCVal. Debug calculateTCDynamically.
+      // What happens if TCVal was not able to execute? 
+
+      errs() << "completed dynamic TC\n"; 
       for (int i = 0; i < (int) bbs.size(); i++)
       {
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
@@ -4136,7 +4160,7 @@ Default:
         }
       } 
 
-      //errs() << "completed update liveout\n";
+      errs() << "completed update liveout\n";
       liveoutNodefile.close();
       liveoutEdgefile.close();
       collectAllBranchInfo(bbs,L->getLoopLatch());
@@ -4149,6 +4173,135 @@ Default:
       directoryPath = directoryPath + "DFG.dot";
       newPath = "./CGRAExec/L" + osLoopID.str() + "/" + directoryPath;
       std::rename(directoryPath.c_str(), newPath.c_str());
+
+
+      // InvokeCGRA pass added here.
+      // * The osLoopID is unique for the loop. When DFG is created it is safe to extract the loop
+      //   here with the respective loopID than call Invoke CGRA pass to do that.
+      // * Calling another pass, we may lose the information of the loopID. 
+      // * Recomputing the loopID can create problems when doing multiple pragmas.  
+      //
+      //
+
+      M = L->getLoopPreheader()->getParent()->getParent();
+
+      // Now that we know the removal is safe, remove the loop by changing the
+      // branch from the preheader to go to the single exit block.
+      //
+      // Because we're deleting a large chunk of code at once, the sequence in which
+      // we remove things is very important to avoid invalidation issues.
+
+      // If we have an LPM updater, tell it about the loop being removed.
+      //if (Updater)
+      //  Updater->markLoopAsDeleted(*L);
+
+      DominatorTree &DT1 = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+      ScalarEvolution &SE1 = getAnalysis<ScalarEvolutionWrapperPass>().getSE();
+      LoopInfo &LI1 = getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
+
+      // Tell ScalarEvolution that the loop is deleted. Do this before
+      // deleting the loop so that ScalarEvolution can look at the loop
+      // to determine what it needs to clean up.
+      SE1.forgetLoop(L);
+
+      // Connect the preheader directly to the newly created block.
+      if(DEBUG) errs() << "Finding Terminator for Preheaders\n";
+      auto *TI = Preheader->getTerminator();
+      BasicBlock *newBB;
+      newBB = newBB->Create(Preheader->getContext(), "", Preheader->getParent(), nullptr);
+
+      newBB->moveAfter(Preheader);
+      TI->replaceUsesOfWith(L->getHeader(), newBB);
+      // insert branch to destinationBB
+      BranchInst *newBranchInst;
+      newBranchInst->Create(ExitBlk, newBB); //ExitBlock
+
+      newBB->replaceSuccessorsPhiUsesWith(ExitBlk);
+
+      // Rewrite phis in the exit block to get their inputs from
+      // the newBB instead of the exiting block.
+      if(DEBUG) errs() << "Attempting to rewrite PHI nodes in exit block\n";
+      BasicBlock *ExitingBlock = ExitingBlocks[0];
+      BasicBlock::iterator BI = ExitBlk->begin();
+      while (PHINode *P = dyn_cast<PHINode>(BI)) {
+        int j = P->getBasicBlockIndex(ExitingBlock);
+        assert(j >= 0 && "Can't find exiting block in exit block's phi node!");
+        P->setIncomingBlock(j, newBB);
+        for (unsigned i = 1; i < ExitingBlocks.size(); ++i)
+          P->removeIncomingValue(ExitingBlocks[i]);
+        ++BI;
+      }
+
+      // Update the dominator tree and remove the instructions and blocks that will
+      // be deleted from the reference counting scheme.
+      if(DEBUG) errs() << "Updating dominator tree and removing instructions\n";
+      SmallVector<DomTreeNode*, 8> ChildNodes;
+      for (Loop::block_iterator LI1 = L->block_begin(), LE = L->block_end();
+           LI1 != LE; ++LI1) {
+        // Move all of the block's children to be children of the Preheader, which
+        // allows us to remove the domtree entry for the block.
+        ChildNodes.insert(ChildNodes.begin(), DT1[*LI1]->begin(), DT1[*LI1]->end());
+        for (DomTreeNode *ChildNode : ChildNodes) {
+          DT1.changeImmediateDominator(ChildNode, DT1[Preheader]);
+        }
+
+        BasicBlock * bb = *LI1;
+        for(BasicBlock::iterator II = bb->begin(); II != bb->end(); ++II) {
+           if(DEBUG) errs() << "Dropping references\n";
+           Instruction * insII = &(*II);
+           insII->dropAllReferences();
+        }
+
+        ChildNodes.clear();
+        DT1.eraseNode(*LI1);
+
+        // Remove the block from the reference counting scheme, so that we can
+        // delete it freely later.
+        (*LI1)->dropAllReferences();
+      }
+
+      // Erase the instructions and the blocks without having to worry
+      // about ordering because we already dropped the references.
+      // NOTE: This iteration is safe because erasing the block does not remove its
+      // entry from the loop's block list.  We do that in the next section.
+      if(DEBUG) errs() << "Erasing instructions without caring about references\n";
+      for (Loop::block_iterator LI1 = L->block_begin(), LE = L->block_end();
+           LI1 != LE; ++LI1)
+        (*LI1)->eraseFromParent();
+
+      // Finally, erase the blocks from loopinfo.
+      // This has to happen late because
+      // otherwise our loop iterators won't work.
+      if(DEBUG) errs() << "Erasing loopinfo\n";
+      SmallPtrSet<BasicBlock *, 8> blocks;
+      blocks.insert(L->block_begin(), L->block_end());
+      for (BasicBlock *BB : blocks)
+        LI1.removeBlock(BB);
+
+      // The last step is to update LoopInfo now that we've eliminated this loop.
+      //LI1.erase(L); //TODO
+
+      //Now we have deleted loop successfully
+      //Let's insert function call in place of the loop
+      Constant *hookFunc;
+      hookFunc = M->getFunction("accelerateOnCGRA");
+      if(DEBUG) errs() << "hookFunc is " << hookFunc << "\n";
+      hook= cast<Function>(hookFunc);
+      Value *LoopNumber = ConstantInt::get(Type::getInt32Ty(M->getContext()), TotalLoops);
+      if(DEBUG) errs() << "Loop Number is " << *LoopNumber << "\n";
+      Instruction *newInst = CallInst::Create(hook, LoopNumber, "");
+      if(DEBUG) errs() << "newInst = " << newInst << "\n";
+      if(DEBUG) errs() << "the BB = " << &newBB->getInstList() << "\n";
+      newBB->getInstList().push_front(newInst);
+
+      // Update total Number of Loops
+      std::ofstream totalLoopsfile;
+      std::string totalLoopsfilefilename = "./CGRAExec/total_loops.txt";
+      totalLoopsfile.open(totalLoopsfilefilename.c_str());
+      totalLoopsfile << TotalLoops;
+      totalLoopsfile.close();
+
+      if(DEBUG) errs() << "runOnLoop went well\n"; 
 
       delete myDFG;return true; //retVal;
     }

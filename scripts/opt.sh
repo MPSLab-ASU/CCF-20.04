@@ -26,13 +26,20 @@ fi
 llvm-dis CondDDGGen.bc -o CondDDGGen.ll
 cp CondDDGGen.bc $name.bc
 
-# Check whether the directory CGRAExec exists
 if [ -d "CGRAExec" ]; then
-    echo "InvokeCGRA Pass" 
-	opt -enable-new-pm=0 -load ${install_path}/lib/LLVMInvokeCGRA.so -InvokeCGRA CondDDGGen.bc -o InvokeCGRA.bc
-	llvm-dis InvokeCGRA.bc -o InvokeCGRA.ll
-    echo "CGRAGen Pass" 
-	opt -enable-new-pm=0 -load ${install_path}/lib/LLVMCGRAGen.so -CGRAGen InvokeCGRA.bc -o CGRAGen.bc
-    echo "CGRAGen Pass Complete"
+	echo "CGRAGen Pass" 
+        opt -enable-new-pm=0 -load ${install_path}/lib/LLVMCGRAGen.so -CGRAGen CondDDGGen.bc -o CGRAGen.bc
+    	echo "CGRAGen Pass Complete"
+
 fi
+
+# Check whether the directory CGRAExec exists
+#if [ -d "CGRAExec" ]; then
+#    echo "InvokeCGRA Pass" 
+#	opt -enable-new-pm=0 -load ${install_path}/lib/LLVMInvokeCGRA.so -InvokeCGRA CondDDGGen.bc -o InvokeCGRA.bc
+#	llvm-dis InvokeCGRA.bc -o InvokeCGRA.ll
+#    echo "CGRAGen Pass" 
+#	opt -enable-new-pm=0 -load ${install_path}/lib/LLVMCGRAGen.so -CGRAGen InvokeCGRA.bc -o CGRAGen.bc
+#    echo "CGRAGen Pass Complete"
+#fi
 exit 0
