@@ -174,7 +174,7 @@ llc -march="arm" CGRAGen.ll
 clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
 
 #Delete temporary files
-rm *.s *.bc #*.ll
+rm *.s *.bc *.ll
 
 # Check if CGRAExec exists.
 if [ -d "CGRAExec" ]; then
