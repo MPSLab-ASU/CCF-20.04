@@ -1779,7 +1779,7 @@ void AtomicCGRA::CGRA_advancePC(SimpleThread* thread)
     }
     else if(state==KERN)
     {
-      if(Conditional_Reg && cgraCycles <= 100) // cap iterations at 100 cycles -> FOR INF LOOP DEBUG ONLY
+      if(Conditional_Reg)
       {
         Len=II;
         newPC=KernelPC;
