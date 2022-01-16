@@ -7,7 +7,7 @@ mapping_debug=1
 # ==============================================================================
 # Installing OpenSSL if necessary 
 
-#openssl_version="$(openssl version | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -1)"
+openssl_version="$(openssl version | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -1)"
 openssl_exist=$(which openssl)
 if [ $(echo "$openssl_version > 1.1" | bc) -eq 0 -o -z "$openssl_exist" ]; then
     echo Installing OpenSSL 1.1.1j in case CMake 3.19.5 needs it
@@ -26,7 +26,7 @@ fi
 
 # ==============================================================================
 # Installing CMake'
-#cmake_version="$(cmake -version | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -1)"
+cmake_version="$(cmake -version | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -1)"
 cmake_exist=$(which cmake)
 if [ $(echo "$cmake_version > 3.19" | bc) -eq 0 -o -z "$cmake_exist" ]; then
     echo Installing CMake 3.19.5
