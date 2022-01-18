@@ -604,22 +604,17 @@ AtomicCGRA::readMem(Addr addr, uint8_t * data, unsigned size,
 	                                       BaseTLB::Execute);
         }
 
-	//printf("\tPredicate = %d - fault = %d - getFlags = %d - size_left = %d\n", predicate, fault == NoFault, !req->getFlags().isSet(Request::NO_ACCESS), size_left);
 	//printf("ReadMem(): Req = %d\n", req);
 	
         // Now do the access.
-	fault = NoFault;
         if (predicate && fault == NoFault &&
             !req->getFlags().isSet(Request::NO_ACCESS)) {
-	  //printf("ReadMem(): pkt -> ");
 	    Packet pkt(req, Packet::makeReadCmd(req));
-	    //printf("dataStatic -> ");
 	    pkt.dataStatic(data);
 
             if (req->isLocalAccess()) {
                 dcache_latency += req->localAccessor(thread->getTC(), &pkt);
             } else {
-	      //printf("sendPacket -> ");
                 dcache_latency += sendPacket(dcachePort, &pkt);
             }
 	    //printf("done read\n");
@@ -630,7 +625,6 @@ AtomicCGRA::readMem(Addr addr, uint8_t * data, unsigned size,
             if (req->isLLSC()) {
                 TheISA::handleLockedRead(thread, req);
             }
-	    //printf("\treadMem(): data = %d\n", *data);
         }
 
         //If there's a fault, return it
@@ -643,7 +637,6 @@ AtomicCGRA::readMem(Addr addr, uint8_t * data, unsigned size,
         }
 
         // If we don't need to access further cache lines, stop now.
-	if(addr = 632388) size_left = 0;
         if (size_left == 0) {
             if (req->isLockedRMW() && fault == NoFault) {
                 assert(!locked);
