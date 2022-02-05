@@ -46,7 +46,7 @@
 #include <iostream>
 #include <fstream>
 
-#define DEBUG   1 
+#define DEBUG   0
 //DEBUG flag for update store
 #define DEBUG1  0
 using namespace llvm;
