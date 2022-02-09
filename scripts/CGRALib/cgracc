@@ -10,8 +10,8 @@ install_path="/home/local/ASUAD/quoclon1/sw"
 obj="obj"
 objFound=0;
 searchstring=".o"
-src="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
-srcIR="clang -w -g -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
+src="clang -w -g -O3 -fno-unroll-loops -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
+srcIR="clang -w -g -O3 -fno-unroll-loops -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
 linkModule="";
 combineObj=0;
 objNum=0;
@@ -23,7 +23,7 @@ zero=0
 #-fno-unroll-loops
 #Check if file exists
 if [ ! -f ./combinedIR.ll ]; then 
-	clang -w -O3 -g -fno-unroll-loops -fno-slp-vectorize -fno-vectorize --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
+	clang -w -O3 -g --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
 	opt -loop-simplify -redundant-dbg-inst-elim from_clang.ll -o simplified.bc
 	llvm-dis -f simplified.bc -o combinedIR.ll
 fi
@@ -171,7 +171,7 @@ llvm-dis CGRAGen.bc -o CGRAGen.ll
 llc -march="arm" CGRAGen.ll
 
 #apply remaining optimizations here such as vectoirize
-clang  -w -O3 -static -fno-unroll-loops -fno-slp-vectorize -fno-vectorize -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
+clang  -w -O3 -static -fno-unroll-loops -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
 
 #Delete temporary files
 rm *.s *.bc *.ll
