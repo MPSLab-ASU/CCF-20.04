@@ -8,7 +8,7 @@ llfile="$name.ll"
 
 toolchain="$3"
 
-opt -loop-simplify -strip-debug -O3 $llfile -o temp.bc
+opt -loop-simplify -strip-debug -O3 -force-vector-width=1 $llfile -o temp.bc
 llvm-dis temp.bc -o $llfile
 
 echo "CondDDGGen Pass" 
