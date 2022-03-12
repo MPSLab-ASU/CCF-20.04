@@ -1278,11 +1278,7 @@ PEInputMux getLMuxSelector(int nodeID, exec_state state)
       {
         int operand1 = operands[0];
         int opType = getNodeType(operand1);
-        if(opType == constant)
-        {
-          result = Immediate;
-          return result;
-        }
+        
         if(isScheduledMoreThanACycleApart(nodeID,operand1))
         {
           nodesThatReadRotatingRF.insert(nodeID);
@@ -1298,6 +1294,12 @@ PEInputMux getLMuxSelector(int nodeID, exec_state state)
           //FixMe: Make Provision For Operand Providing Store Address, Which Is Not Mapped As Part Of Kernel
           pe2 = getMappedPE(operand1,state);
           result = getRelativePosition(pe1,pe2);
+          return result;
+        }
+	
+	if(opType == constant)
+        {
+          result = Immediate;
           return result;
         }
       }
