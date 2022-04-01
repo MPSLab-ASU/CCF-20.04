@@ -10,8 +10,8 @@ install_path="/home/local/ASUAD/quoclon1/sw"
 obj="obj"
 objFound=0;
 searchstring=".o"
-src="clang -w -g -O3 -fno-unroll-loops -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
-srcIR="clang -w -g -O3 -fno-unroll-loops -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
+src="clang -w -g -O3 -mllvm -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
+srcIR="clang -w -g -O3 -mllvm -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
 linkModule="";
 combineObj=0;
 objNum=0;
