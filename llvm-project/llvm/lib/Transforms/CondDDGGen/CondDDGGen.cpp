@@ -1323,6 +1323,14 @@ Default:
         else
           dt = float32;
       }
+      else if(T->isVectorTy()){
+        Type* element_type = T->getScalarType();
+        while(element_type->isVectorTy())
+          element_type = element_type->getScalarType();
+	  
+	return get_Datatype(element_type, bit_width);
+      }
+      else return int32;
 
       return dt; 
     }
