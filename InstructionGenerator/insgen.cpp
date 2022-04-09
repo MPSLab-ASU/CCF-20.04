@@ -3944,6 +3944,8 @@ int main(int argc, char* argv[])
     {
       istringstream strout(line);
       strout >> nodeID >> other_nodeID >> distance >> dependencyType >> operandOrder;
+	    
+      if(dependencyType.compare("LCE") == 0) continue;
 
       if(getNodeType(nodeID) == constant)
       {
