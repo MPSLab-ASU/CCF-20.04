@@ -1,7 +1,4 @@
-// Author: Mahdi Hamzeh
-
-// Last edited: 4 March 2017
-// Author: Shail Dave
+// Author: Mahesh
 
 #include <math.h>
 //#include "RAMP.h"
@@ -26,7 +23,7 @@ int schedule_id=0;
 int map_id=0;
 
 ofstream debugfile;
-std::string debugfilename = "debugfile";
+std::string debugfilename = "FalconCrimson_debug.txt";
 
 int main(int argc, char *argv[])
 {

@@ -6,6 +6,9 @@
 *
 * Last edited: June 1, 2017
 * Author: Shail Dave
+* 
+* Last edited: Mar 25 2022
+* Author: Vinh TA
 */
 
 #include "Parser.h"
@@ -143,13 +146,17 @@ bool Parser::ParseDFG(DFG* myDFG)
       {
         myDFG->make_Arc(node1, node2, arcID++, distance, MemoryDep, operandorder);
       }
+      else if (!strcmp(edge_type, "LCE")){
+        node1->set_node_mode(2);
+	node2->set_node_mode(1);
+	cout << "ParseDFG: parsing loop control edge\n Node1: " << node1->getName() << " - Node2: " << node2->getName() << endl;
+	//cout << "Skipping LCE - node1: " << node1->getName() << " - node2: " << node2->getName() << endl;
+      }
       else
       {
         //allow live-in as true-data dependency to perform register allocation
         myDFG->make_Arc(node1, node2, arcID++, distance, TrueDep, operandorder);
-
       }
-
     }
   }
   else
