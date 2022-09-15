@@ -98,8 +98,8 @@ public:
 
 	void Fetch(CGRA_Instruction* ins);
 	void Decode();
-	void IExecute();
-  void FExecute();
+	unsigned IExecute();
+  unsigned FExecute();
   void DExecute();
 	void WriteBack();
 

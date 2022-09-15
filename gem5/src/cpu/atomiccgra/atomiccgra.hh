@@ -54,6 +54,28 @@
 #define KERN 2
 #define EPI 3
 #define FINISH 4
+
+#define CGRA_STATE_REG 0
+#define CPU_STATE_REG 12
+#define SIM_CLOCK_REG 12
+#define CGRA_LOOPID_REG 11
+
+#define CGRA_ACTIVATE 0xefefefef  // Previously 15
+#define CGRA_DEACTIVATE 0xdfffffff  // Previously 17
+#define CGRA_SWITCH 0xcfcfcfcf  // Previously 16
+#define CGRA_EXEC_OVER 0xbfffffff  // Previously 66
+#define SYS_CLOCK 0xafffffff
+
+
+//#define DEBUG_BINARY  // Print binary inst and PC for CPU exec
+
+//#define PC_DEBUG  // Print set of 14 regiters at selected PC range
+#ifdef PC_DEBUG
+  #define PC_DEBUG_BASE 0x36a48
+  #define PC_DEBUG_TOP  0x377b8
+#endif
+
+#define MAX_INSTRUCTION_SIZE 32000
 /*CGRA RELATED INCLUDES AND DEFINES END*/
 
 enum ConnectionType {Simple_Connection, Diagonal_Connection, Hop_Connection, Only_Hop_Connection};
@@ -85,8 +107,9 @@ class AtomicCGRA: public BaseCGRA
 
     //uint32_t *CGRA_instructions;
     uint64_t *CGRA_instructions;
-    unsigned int FetchedInstuction;
+    int loopID;
     void fetchInstructions(unsigned int *InstMem);
+  //void fetch_CGRA_inst(long, uint64_t*);
 
     /*AtomicCGRA related CGRA functions. This is replaced by tick() in atomic mode
        due to the functionality of atomic mode in gem5.*/
@@ -143,12 +166,16 @@ class AtomicCGRA: public BaseCGRA
     unsigned II;
     unsigned EPILog;
     unsigned Prolog;
+    unsigned Prolog_extension_cycle;
+    unsigned Prolog_version_cycle;
     unsigned Len;
     int originalLen;
     int KernelCounter;
     unsigned CycleCounter;
     int LiveVar_St_Epilog;
     unsigned long long TotalLoops = 0;
+
+    unsigned callback_reg;
 
     unsigned short state;
 
@@ -157,11 +184,13 @@ class AtomicCGRA: public BaseCGRA
     int operand1;
 
     bool Conditional_Reg;
+    unsigned Prolog_Branch_Cycle;
     //bool * PE_Conditional_Reg[CGRA_XDim*CGRA_YDim];
     bool ** PE_Conditional_Reg;
     bool isTCdynamic = false;
     //std::vector<CGRA_PE> cgra_PEs;    
-    CGRA_PE* cgra_PEs; 
+    CGRA_PE* cgra_PEs;
+    uint64_t fetched_instructions[MAX_INSTRUCTION_SIZE];
 
     TheISA::PCState backPC;
     /*CGRA DEFINITIONS END*/

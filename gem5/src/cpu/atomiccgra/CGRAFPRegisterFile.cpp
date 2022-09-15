@@ -50,13 +50,13 @@ void CGRA_FPRegisterFile::setFPRF(int regfilesize)
 
 float CGRA_FPRegisterFile::Read(int address)
 {
-    DPRINTF(FPRegfile_DEBUG, "Inside Register file Read()\n");
+    DPRINTF(FPRegfile_DEBUG, "Inside Register file reading address: %d\n", address);
   	if (address >= REGFILESIZE)
   	{
 			DPRINTF(CGRA_Detailed,"Requested Register is: %d\n",address);
   		throw new CGRAException("Register access out of range");
   	}
-    DPRINTF(CGRA_Detailed,"\nIN READ FPREGFILE FPR0 = %f\n",data_RF[0]);
+    //DPRINTF(CGRA_Detailed,"\nIN READ FPREGFILE FPR0 = %f\n",data_RF[0]);
     DPRINTF(CGRA_Detailed,"FPR0: %f\tFPR1: %f\tFPR2: %f\tFPR3: %f\n",data_RF[0],data_RF[1],data_RF[2],data_RF[3]);
     if(address < config_boundary)
     {
@@ -67,6 +67,8 @@ float CGRA_FPRegisterFile::Read(int address)
     }
     else
     {
+      DPRINTF(CGRA_Detailed,"\nREAD: FPREG NUMBER: %d dist: %d\n",address,distance);
+	    DPRINTF(CGRA_Detailed,"Rotating FPREGS data: %d\tREG: %d\n",data_RF[(address+distance)%config_boundary],(address+distance)%config_boundary);
       DPRINTF(FPRegfile_DEBUG, "Exiting Register file Read()\n");
        return data_RF[address];
     }
@@ -77,6 +79,7 @@ void CGRA_FPRegisterFile::Write(int address, float value)
     DPRINTF(FPRegfile_DEBUG, "Inside Register file Write()\n");
   	if (address >= REGFILESIZE)
   	{
+	  DPRINTF(CGRA_Detailed,"Requested Write Register is: %d\n",address);
   		throw new CGRAException("Register access out of range");
   	}
 

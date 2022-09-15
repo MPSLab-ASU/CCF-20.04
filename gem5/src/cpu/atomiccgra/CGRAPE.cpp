@@ -65,6 +65,7 @@ bool CGRA_PE::getPredOutput()
 void CGRA_PE::Fetch(CGRA_Instruction* ins)
 {
   DPRINTF(PE_DEBUG, "Inside Fetch()\n");
+  //delete ins;
   this->ins = ins;
   DPRINTF(PE_DEBUG, "Exiting Fetch()\n");
 }
@@ -86,7 +87,7 @@ void CGRA_PE::Decode()
   //cout << "predictor bit: " << ins->getPredicator() << "\topcode: " << ins->getOpCode() << endl; 
   // we don't need to separately decode fields in HW implementation
   //ins->decode_CGRA_Instruction();
-  dt = ins->getDatatype();  
+  dt = ins->getDatatype();
 
   if(dt == character || dt == int16 || dt == int32)
   {
@@ -166,17 +167,18 @@ void CGRA_PE::Decode()
         case Register:
           InputP = (bool)RegFile.Read(predIns->getReadRegAddressP());
           break;
+	  // 1.9.2022 fix: pred*In -> *In
         case Left:
-          InputP = (*PredleftIn);
+          InputP = (*leftIn);
           break;
         case Right:
-          InputP = (*PredrightIn);
+          InputP = (*rightIn);
           break;
         case Up:
-          InputP = (*PredupIn);
+          InputP = (*upIn);
           break;
         case Down:
-          InputP = (*PreddownIn);
+          InputP = (*downIn);
           break;
         case Immediate:
           InputP=(ins->getImmediateValue()==1)? true : false;
@@ -193,68 +195,135 @@ void CGRA_PE::Decode()
   {
     if((ins->getOpCode()!=NOOP))
     {
-      switch (ins->getLeftMuxSelector())
-      {
-        case Register:
-          DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 ReadAddress%d************\n",ins->getReadRegAddress1());
-          FPInput1 = FPRegFile.Read(ins->getReadRegAddress1());
-          break;
-        case Left:
-          FPInput1 = (*FPleftIn);
-          break;
-        case Right:
-          FPInput1 = *(FPrightIn);
-          break;
-        case Up:
-          FPInput1 = *(FPupIn);
-          break;
-        case Down:
-          FPInput1 = *(FPdownIn);
-          break;
-        case DataBus:
-          FPInput1 = *(FdataBs);
-          DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 %f************\n",Input1);
-          break;
-        case Immediate:
-          FPInput1=ins->getImmediateValue();
-          break;
-        case Self:
-          FPInput1=FPOutput;
-          break;
-        default:
-          throw new CGRAException("CGRA Left Mux selector out of range");
-      }
+      if(ins->getOpCode() != address_generator){
+	switch (ins->getLeftMuxSelector())
+	{
+          case Register:
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 ReadAddress%d************\n",ins->getReadRegAddress1());
+	    FPInput1 = FPRegFile.Read(ins->getReadRegAddress1());
+	    break;
+          case Left:
+	    FPInput1 = (*FPleftIn);
+	    break;
+          case Right:
+	    FPInput1 = *(FPrightIn);
+	    break;
+          case Up:
+	    FPInput1 = *(FPupIn);
+	    break;
+          case Down:
+	    FPInput1 = *(FPdownIn);
+	    break;
+          case DataBus:
+	    FPInput1 = *(FdataBs);
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 %f************\n",Input1);
+	    break;
+          case Immediate:
+	    FPInput1=ins->getImmediateValue();
+	    break;
+          case Self:
+	    FPInput1=FPOutput;
+	    break;
+          default:
+	    throw new CGRAException("CGRA Left Mux selector out of range");
+	}
 
-      switch (ins->getRightMuxSelector())
-      {
-        case Register:
-          DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 ReadAddress%d************\n",ins->getReadRegAddress2());
-          FPInput2 = FPRegFile.Read(ins->getReadRegAddress2());
-          break;
-        case Left:
-          FPInput2 = (*FPleftIn);
-          break;
-        case Right:
-          FPInput2 = *(FPrightIn);
-          break;
-        case Up:
-          FPInput2 = *(FPupIn);
-          break;
-        case Down:
-          FPInput2 = *(FPdownIn);
-          break;
-        case DataBus:
-          FPInput2 = *(FdataBs);
-          DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 %f************\n",FPInput2);
-          break;
-        case Immediate:
-          FPInput2=(float)(ins->getImmediateValue());
-          break;
-        case Self:
-          FPInput2=FPOutput;
-          break;
-        default:
-          throw new CGRAException("CGRA Right Mux selector out of range");
+	switch (ins->getRightMuxSelector())
+	{
+	  case Register:
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 ReadAddress%d************\n",ins->getReadRegAddress2());
+	    FPInput2 = FPRegFile.Read(ins->getReadRegAddress2());
+	    break;
+	  case Left:
+	    FPInput2 = (*FPleftIn);
+	    break;
+	  case Right:
+	    FPInput2 = *(FPrightIn);
+	    break;
+	  case Up:
+	    FPInput2 = *(FPupIn);
+	    break;
+	  case Down:
+	    FPInput2 = *(FPdownIn);
+	    break;
+	  case DataBus:
+	    FPInput2 = *(FdataBs);
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 %f************\n",FPInput2);
+	    break;
+	  case Immediate:
+	    FPInput2=(float)(ins->getImmediateValue());
+	    break;
+	  case Self:
+	    FPInput2=FPOutput;
+	    break;
+	  default:
+	    throw new CGRAException("CGRA Right Mux selector out of range");
+	}
+      
+      } else {
+	switch (ins->getLeftMuxSelector())
+	{
+	  case Register:
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 ReadAddress%d************\n",ins->getReadRegAddress1());
+	    Input1 = FPRegFile.Read(ins->getReadRegAddress1()); // Inspect me: should I be RegFile or FPRegFile?
+	    break;
+          case Left:
+	    Input1 = (*leftIn);
+	    break;
+          case Right:
+	    Input1 = *(rightIn);
+	    break;
+          case Up:
+	    Input1 = *(upIn);
+	    break;
+          case Down:
+	    Input1 = *(downIn);
+	    break;
+          case DataBus:
+	    Input1 = *(dataBs);
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT1 %f************\n",Input1);  // Inspect me: should I be dataBs or FdataBs?
+	    break;
+          case Immediate:
+	    Input1=ins->getImmediateValue();
+	    break;
+          case Self:
+	    Input1=Output;
+	    break;
+          default:
+	    throw new CGRAException("CGRA Left Mux selector out of range");
+	}
+
+	switch (ins->getRightMuxSelector())
+	{
+	  case Register:
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 ReadAddress%d************\n",ins->getReadRegAddress2());
+	    FPInput2 = FPRegFile.Read(ins->getReadRegAddress2());
+	    break;
+	  case Left:
+	    FPInput2 = (*FPleftIn);
+	    break;
+	  case Right:
+	    FPInput2 = *(FPrightIn);
+	    break;
+	  case Up:
+	    FPInput2 = *(FPupIn);
+	    break;
+	  case Down:
+	    FPInput2 = *(FPdownIn);
+	    break;
+	  case DataBus:
+	    FPInput2 = *(FdataBs);
+	    DPRINTF(CGRA_Detailed,"\n******** DB FPINPUT2 %f************\n",FPInput2);
+	    break;
+	  case Immediate:
+	    FPInput2=(float)(ins->getImmediateValue());
+	    break;
+	  case Self:
+	    FPInput2=FPOutput;
+	    break;
+	  default:
+	    throw new CGRAException("CGRA Right Mux selector out of range");
+	}
       }
     }
 
@@ -295,18 +364,23 @@ void CGRA_PE::Decode()
           throw new CGRAException("CGRA Pred Mux selector out of range");
       }
     }
-
   }  
   DPRINTF(PE_DEBUG, "Exiting Decode()\n");
 }
 
 
-void CGRA_PE::IExecute()
+unsigned CGRA_PE::IExecute()
 {
   DPRINTF(PE_DEBUG, "Inside Execute()\n");
   int ins_opcode=ins->getOpCode();
-  bool predicate_bit = ins->getPredicator(); 
-  DPRINTF(CGRA_Detailed, "Predictor bit: %d\t Opcode: %d\n" , (int) predicate_bit, ins_opcode); 
+  bool predicate_bit = ins->getPredicator();
+  bool LE_bit = ins->getLE();
+  unsigned branch_offset = 0;
+  
+  /*DPRINTF(CGRA_Detailed, "Predictor bit: %d\t Opcode: %d\n" , (int) predicate_bit, ins_opcode); 
+  if(ins->getLeftMuxSelector() == Register || ins->getRightMuxSelector() == Register){
+    DPRINTF(CGRA_Execute, "Register file content:\n"
+  }*/
 
   if(!predicate_bit)
   {
@@ -419,12 +493,32 @@ void CGRA_PE::IExecute()
       DPRINTF(CGRA_Detailed,"Writing output %d to register %d\n",Output,writeRegisterNumber);
     }
 
-    if(ins_opcode==EQ || ins_opcode==NEQ || ins_opcode==GT || ins_opcode==LT)
+    if(LE_bit){
+      LE_Instruction temp(ins->getInsWord());
+      LE_Instruction *LE_Ins = &temp;
+
+      DPRINTF(CGRA_Execute, "LE Branch: %lx\n", LE_Ins->getBranchOffset());
+      if(LE_Ins->getBranchOffset() == 0x3ff){
+	if(ins_opcode == NEQ || ins_opcode == LT || ins_opcode == AND || ins_opcode == OR || ins_opcode == XOR)
+	  (this->Controller_Reg) = Output;  // Output = 0 to exit
+	else this->Controller_Reg = !Output;  // Output = 1 to exit
+      }
+      else{
+	if(ins_opcode == NEQ || ins_opcode == LT || ins_opcode == AND || ins_opcode == OR || ins_opcode == XOR) // Fix me: should NEQ be false to branch?
+	  branch_offset = (!Output)? LE_Ins->getBranchOffset():0;
+	else
+	  branch_offset = (Output == 1)? LE_Ins->getBranchOffset():0;
+	DPRINTF(CGRA_Detailed, "\n***LE Instruction - branching %d cycles***\n", branch_offset);
+      }
+    }
+
+    /*else if(ins_opcode==EQ || ins_opcode==NEQ || ins_opcode==GT || ins_opcode==LT)
+    //else if(ins_opcode == EQ) // Modified only for simple_loop benchmark!
     {
       //write the result to the controller bus
       //(this->Controller_Reg) = !((Input1 == 1) && (Input2 == 0));
-      (this->Controller_Reg) = !Output;
-    }
+      (this->Controller_Reg) = (ins_opcode == EQ)? !Output:Output;
+      }*/
   }
   else
   { 
@@ -454,7 +548,7 @@ void CGRA_PE::IExecute()
         DPRINTF(CGRA_Detailed,"\n******** LDUI IN THIS PE %d************\n",Output);
         break;
       case sel:
-        Output = (InputP == false) ? Input1 : Input2;
+        Output = (InputP == true) ? Input1 : Input2;
         DPRINTF(CGRA_Detailed,"\nInput1 = %d\tInput2 = %d\tInputP = %d\n",Input1, Input2, (int)InputP);
         DPRINTF(CGRA_Detailed,"\n******** Selection IN THIS PE %d************\n",Output);
         break;
@@ -525,7 +619,7 @@ void CGRA_PE::IExecute()
     }
   }
 
-  if (ins->getSelectDataMemoryDataBus() && (!predicate_bit))
+  if (ins->getSelectDataMemoryDataBus() && (!predicate_bit) && (!LE_bit))
   {
     DPRINTF(CGRA_Detailed,"\n******** DB Output %d************\n",Output);
     (*dataBs) = Output;
@@ -533,14 +627,18 @@ void CGRA_PE::IExecute()
   }
   DPRINTF(CGRA_Detailed,"Distance is: %d\n",RegFile.distance);
   DPRINTF(PE_DEBUG, "Exiting Execute()\n");
+
+  return branch_offset;
 }
 
 
-void CGRA_PE::FExecute()
+unsigned CGRA_PE::FExecute()
 {
   DPRINTF(PE_DEBUG, "Inside Execute()\n");
   int ins_opcode=ins->getOpCode();
-  bool predicate_bit = ins->getPredicator(); 
+  bool predicate_bit = ins->getPredicator();
+  bool LE_bit = ins->getLE();
+  unsigned branch_offset = 0;
   //DPRINTF(CGRA_Detailed, "Predictor bit: %d\n", (int) predicate_bit); 
 
   if(!predicate_bit)
@@ -654,11 +752,36 @@ void CGRA_PE::FExecute()
       DPRINTF(CGRA_Detailed,"Writing output %f to register %d\n",FPOutput,writeRegisterNumber);
     }
 
-    if(ins_opcode==EQ || ins_opcode==NEQ || ins_opcode==GT || ins_opcode==LT)
+    if(LE_bit){
+      LE_Instruction temp(ins->DecodeInstruction(ins));
+      LE_Instruction *LE_Ins = &temp;
+
+      if(LE_Ins->getBranchOffset() == 0x3ff){
+	if(ins_opcode == NEQ || ins_opcode == LT || ins_opcode == GT || ins_opcode == AND || ins_opcode == OR || ins_opcode == XOR)
+	  (this->Controller_Reg) = (Output != 0)? 1:0;
+	else this->Controller_Reg = (Output == 0)? 1:0;
+      }
+      else{
+	if(ins_opcode == NEQ || ins_opcode == LT || ins_opcode == GT || ins_opcode == AND || ins_opcode == OR || ins_opcode == XOR) // Fix me: should NEQ be false to branch?
+	  branch_offset = (Output == 0)? LE_Ins->getBranchOffset():0;
+	else
+	  branch_offset = (Output != 0)? LE_Ins->getBranchOffset():0;
+	DPRINTF(CGRA_Detailed, "\n***LE Instruction - branching %d cycles***\n", branch_offset);
+      }
+    }
+
+    
+    /*if(LE_bit){
+      LE_Instruction temp(ins->DecodeInstruction(ins));
+      LE_Instruction *LE_Ins = &temp;
+      branch_offset = (FPOutput != 0)? LE_Ins->getBranchOffset():0;
+      DPRINTF(CGRA_Detailed, "\nLE Instruction - branching %d cycles\n", branch_offset);
+    }
+    else if(ins_opcode==EQ || ins_opcode==NEQ || ins_opcode==GT || ins_opcode==LT)
     {
       //write the result to the controller bus
       DPRINTF(CGRA_Detailed,"\nCOMPARE INSTRUCTION OUTPUT = %f\n",FPOutput);
-    }
+      }*/
   }
   else
   {
@@ -698,9 +821,10 @@ void CGRA_PE::FExecute()
         DPRINTF(CGRA_Detailed,"\n******** Loop Exit Control IN THIS PE %f************\n",FPOutput);
         break;
       case address_generator:
-        FPOutput=(int)FPInput1;
-        DPRINTF(CGRA_Detailed,"\nFPInput1 = %f\tFPInput2 = %f\n",FPInput1, FPInput2);
-        DPRINTF(CGRA_Detailed,"\n******** ADDRESS GENERATED IN THIS PE %f************\n",FPOutput);
+        Output=(int)Input1;
+        DPRINTF(CGRA_Detailed,"\nInput1 = %d\tInput2 = %d\n",Input1, Input2);
+	DPRINTF(CGRA_Detailed,"\nFPInput1 = %f\tFPInput2 = %f\n",FPInput1, FPInput2);
+        DPRINTF(CGRA_Detailed,"\n******** ADDRESS GENERATED IN THIS PE %d************\n",Output);
         break;
       case signExtend:
         {
@@ -761,11 +885,11 @@ void CGRA_PE::FExecute()
     {
       if (ins->getSelectDataMemoryAddressBus())
       {
-        DPRINTF(CGRA_Detailed,"\n*********Setting Address %lx ******\n",(unsigned int)FPOutput);
-        (*addressBs) = (int)FPOutput;
+        DPRINTF(CGRA_Detailed,"\n*********Setting Address %lx ******\n",(unsigned int)Output);
+        (*addressBs) = (unsigned int)Output;
         (*BsStatus) = CGRA_MEMORY_READ;
         (*BsDatatype) = CGRA_MEMORY_FP;
-        (*alignmentBs) = FPInput2;
+        (*alignmentBs) = (int) FPInput2;
       }
     }
   }
@@ -778,6 +902,8 @@ void CGRA_PE::FExecute()
   }
   DPRINTF(CGRA_Detailed,"Distance is: %d\n",RegFile.distance);
   DPRINTF(PE_DEBUG, "Exiting Execute()\n");
+
+  return branch_offset;
 }
 
 
@@ -1025,7 +1151,8 @@ void CGRA_PE::WriteBack()
 {
   DPRINTF(PE_DEBUG, "Inside WB()\n");
   bool ins_predicate = ins->getPredicator();
-  if(!ins_predicate) {
+  bool LE_bit = ins->getLE();
+  if(!ins_predicate && !LE_bit) {
 
     if (ins->getSelectDataMemoryDataBus())
       {
@@ -1039,6 +1166,7 @@ void CGRA_PE::WriteBack()
       }
     DPRINTF(PE_DEBUG, "Exiting WB()\n");
   }
+  delete ins;
 }
 
 void CGRA_PE::SetNeighbours(int* Left,int* Right,int* Up,int* Down)

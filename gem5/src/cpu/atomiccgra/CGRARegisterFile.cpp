@@ -42,6 +42,7 @@ void CGRA_RegisterFile::setRF(int regfilesize)
     DPRINTF(Regfile_DEBUG, "Inside Register file setRF() %d\n",regfilesize);
     REGFILESIZE = regfilesize;
     //data_RF.reserve(REGFILESIZE);
+    //delete[] data_RF;
     data_RF = new int[REGFILESIZE];
     for(int i=0; i < regfilesize; i++)
       data_RF[i] = 0; 
@@ -56,8 +57,8 @@ int CGRA_RegisterFile::Read(int address)
 			DPRINTF(CGRA_Detailed,"Requested Register is: %d\n",address);
   		throw new CGRAException("Register access out of range");
   	}
-	//DPRINTF(CGRA_Detailed,"\nIN READ REGFILE R0 = %d\n",data_RF[0]);
-	//DPRINTF(CGRA_Detailed,"R0: %d\tR1: %d\tR2: %d\tR3: %d\n",data_RF[0],data_RF[1],data_RF[2],data_RF[3]);
+  	
+	DPRINTF(CGRA_Detailed,"R0: %d\tR1: %d\tR2: %d\tR3: %d\n",data_RF[0],data_RF[1],data_RF[2],data_RF[3]);
     if(address < config_boundary)
     {
       DPRINTF(CGRA_Detailed,"\nREAD: REG NUMBER: %d dist: %d\n",address,distance);
@@ -77,6 +78,7 @@ void CGRA_RegisterFile::Write(int address, int value)
     DPRINTF(Regfile_DEBUG, "Inside Register file Write()\n");
   	if (address >= REGFILESIZE)
   	{
+	  DPRINTF(CGRA_Detailed,"Requested Write Register is: %d\n",address);
   		throw new CGRAException("Register access out of range");
   	}
 
