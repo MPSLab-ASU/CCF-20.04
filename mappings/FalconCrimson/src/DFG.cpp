@@ -10,6 +10,8 @@
  * Last edited on: 6, Nov 2019
  * Author: Mahesh Balasubramanian
  *
+ * Last edited on: 25 Mar 2022
+ * Author: Vinh TA
  */
 
 #include "DFG.h"
@@ -46,6 +48,7 @@ DFG* DFG::Copy()
   {
     tempNode = new Node(_node_Set[i]->get_Instruction(), _node_Set[i]->get_Latency(), _node_Set[i]->get_ID(), _node_Set[i]->getName());
     tempNode->hasLargeConst = _node_Set[i]->hasLargeConst;
+    tempNode->set_node_mode(_node_Set[i]->get_node_mode());
     retVal->insert_Node(tempNode);
     tempNode->setDatatype(_node_Set[i]->getDatatype()); 
   }
@@ -678,6 +681,8 @@ void DFG::Dump_Edges(std::string filename)
       depname = "MEM";
     else if(_ARC_Set[i]->get_Dependency() == PredDep)
       depname = "PRE";
+    else if(_ARC_Set[i]->get_Dependency() == LoopControlDep)
+      depname = "LCE";
 
     if(_ARC_Set[i]->get_Dependency()!=MemoryDep)
     {
@@ -750,6 +755,9 @@ void DFG::Dot_Print_DFG(string filename, int ID)
       case MemoryDep:
         dotFile << _ARC_Set[i]->get_From_Node()->get_ID() << " -> " << _ARC_Set[i]->get_To_Node()->get_ID() << " [style=dotted, color=green, label=" << _ARC_Set[i]->get_Distance() << "] \n";
         break;
+    case LoopControlDep:
+      dotFile << _ARC_Set[i]->get_From_Node()->get_ID() << " -> " << _ARC_Set[i]->get_To_Node()->get_ID() << " [color=blueviolet] \n";
+      break;
       default:
         FATAL(true, "What kind of dependency can it be?");
         break;
@@ -1842,6 +1850,7 @@ int DFG::Schedule(int id, int number_of_resources)
 
 int DFG::Schedule_CRIMSON(int id, int number_of_resources)
 {
+  cout << "DFG::Schedule_CRIMSON\n";
   // find current resMII relative to available resources
   int resMII = ( (int)_node_Set.size() - 1) / number_of_resources;
   resMII++;
@@ -1849,31 +1858,30 @@ int DFG::Schedule_CRIMSON(int id, int number_of_resources)
   if (resMII > II)
     return resMII; 
 
-  cout << "II: " << II << endl;
+  cout << "  II: " << II << endl;
   // ASAP Schedule
   int last_time = Schedule_ASAP();
   vector<Node*> set = _node_Set;
   Schedule_ALAP(last_time);
 
   last_time = Schedule_ASAP_Feasible(number_of_resources, II);
+  cout << "  Schedule_ASAP_Feasible done - last_time: " << last_time << endl;
   MAX_SCHEDULE_LEN = last_time;
 
   if (!Schedule_ALAP_Feasible(last_time, number_of_resources, II))
   {
+    cout << "  Schedule_ALAP_Feasible failed\n";
     return -1;
   }
-
+  
   bool redo = true;
   int II_attempt = 0;
   while (redo && II_attempt < MAPPING_POLICY.MODULO_SCHEDULING_ATTEMPTS)
   {
     redo = false;
- 
     // find a feasible modulo schedule
-    debugfile << "node_set size: " << _node_Set.size() << endl;
     bool modulo_schedule = false; 
     modulo_schedule = Modulo_Schedule_2(redo, number_of_resources);
-
     if (modulo_schedule)
     {
       schedule_len = last_time;
@@ -2465,6 +2473,13 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
         if (has_Node_Conflict_Feasible_ASAP(to_be_scheduled[i], j))
           continue;
 
+	//Check if the node is liveOut: ASAP of liveOut > ALAP of loopCtrl
+	if(to_be_scheduled[i]->get_node_mode() == 1){
+	  cout << "DFG::Schedule_ASAP_Feasible::Init iteration: node_" << to_be_scheduled[i]->getName() << " is liveOut -> pushing back\n";
+	  not_scheduled.push_back(to_be_scheduled[i]);
+	  break;
+	}
+
         //allocate resource
         Total_Resources_asap[j]++;
 
@@ -2582,6 +2597,7 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
                   change = true;
                   DEBUG_FEASIBLE_ASAP_SCHEDULING("Node %d is scheduled at time %d", rest[i]->get_ID(), time);
                   DEBUG_FEASIBLE_ASAP_SCHEDULING("Node %d is scheduled at time %d", rest[i]->get_Related_Node()->get_ID(), time + 1);
+		  
                   //if current time is greater than schedule length, update schedule length
                   if (time + 1 > latest_time)
                     latest_time = time + 1;
@@ -2594,9 +2610,16 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
             //if node is load data read
             else if (rest[i]->is_Load_Data_Bus_Read())
             {
+	      debugfile << "    is_Load_Data_Bus_Read\n";
               //is the related node, (address generation) is ready to be scheduled? at what cycle?
               if (rest[i]->get_Related_Node()->is_ready_to_schedule_Feasible_ASAP(schedule_time_2, II))
               {
+		debugfile << "Schedule_Feasible_ASAP node: " << rest[i]->get_ID() << " - schedule_time: " << time << endl;
+		if(time == 0){
+		  debugfile << "  Load_data_bus_read has time 0 -> pushing back\n";
+		  time++;
+		  continue;
+		}
                 //if its schedule is greater than time - 1 > change time and try again
                 if (schedule_time_2 > (time - 1))
                 {
@@ -2668,6 +2691,28 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
                   DEBUG_FEASIBLE_ASAP_SCHEDULING("Related Conflict");
                   continue;
                 }
+		// Check for liveOut node constraints
+		if(rest[i]->get_node_mode() == 1){
+		  cout << "DFG::Schedule_ASAP_Feasible::store_node_" << rest[i]->getName() << " is a liveOut\n";
+		  vector<Node*> loopCtrl_set = get_set_loopCtrl();
+		  int constraint_violated = 0; // 0 for none, 1 to increment scheduling time, 2 to skip node
+		  for(int i=0; i<loopCtrl_set.size(); i++){
+		    if(loopCtrl_set[i]->get_Sched_Info()->is_Feasible_ASAP_Initiated()){
+		      if(loopCtrl_set[i]->get_Sched_Info()->get_Feasible_ASAP() >= time){
+			cout << " loopCtrl node_" << loopCtrl_set[i]->getName() << " has ASAP scheduled after current time\n";
+			constraint_violated = 1;
+		      }
+		    } else {
+		      cout << " loopCtrl node_" << loopCtrl_set[i]->getName() << " has yet to be scheduled -> pushing back\n";
+		      constraint_violated = 2; break;
+		    }
+		  }
+		  if(constraint_violated == 1) continue;
+		  else if(constraint_violated == 2) break;
+		  else cout << " Constraint satisfied\n";
+		}
+
+
                 DEBUG_FEASIBLE_ASAP_SCHEDULING("Check for Memory resources");
                 //is there enough resources to schedule both operations
                 if (HAS_ENOUGH_RESOURCES_FOR_STORE_INSTRUCTION_AT_CYCLE(time, Address_BUS_asap, Data_BUS_asap, Total_Resources_asap, number_of_resources))
@@ -2701,9 +2746,31 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
             //if node is a regular operation
             else
             {
-              //is there any conflict with scheduled operations?
+	      //is there any conflict with scheduled operations?
               if (has_Node_Conflict_Feasible_ASAP(rest[i], time))
                 continue;
+
+	      //if node is liveOut or loopCtrl, check if constraint satisfied
+	      if(rest[i]->get_node_mode() == 1){ // Node is liveOut
+		cout << "DFG::Schedule_ASAP_Feasible::regular_node_" << rest[i]->getName() << " is liveOut\n";
+		vector<Node*> loopCtrl_set = get_set_loopCtrl();
+		int constraint_violation = 0; // 0 for no violation, 1 to increase time, 2 to push back
+		for(int i=0; i<loopCtrl_set.size(); i++){
+		  if(loopCtrl_set[i]->get_Sched_Info()->is_Feasible_ASAP_Initiated()){
+		    if(loopCtrl_set[i]->get_Sched_Info()->get_Feasible_ASAP() >= time){
+		      cout << " loopCtrl node_" << loopCtrl_set[i]->getName() << " has ASAP scheduled after current time\n";
+		      constraint_violation = 1;
+		    }
+		  } else {
+		    cout << " loopCtrl node_" << loopCtrl_set[i]->getName() << " has yet to be scheduled -> pushing back\n";
+		    constraint_violation = 2;
+		    break;
+		  }
+		}
+		if(constraint_violation == 1) continue;
+		else if(constraint_violation == 2) break;
+		else cout << " Constraint satisfied\n";
+	      }
 
               //schedule it at time
               rest[i]->get_Sched_Info()->set_Feasible_ASAP(time);
@@ -2746,7 +2813,7 @@ int DFG::Schedule_ASAP_Feasible(int number_of_resources, int II)
       if (detect)
       {     
         DEBUG_FEASIBLE_ASAP_SCHEDULING("Inside detect\n");
-        exit(1);
+        _FATAL("NO FEASIBLE_ASAP_SCHEDULE FOR THIS LOOP!!!\n");
       }
       detect=true;
     }
@@ -3222,7 +3289,6 @@ void DFG::Prune_Routing(DFG* original, int II)
 // schedule operations in ALAP manner considering number of available resources
 bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II)
 {
-
   int latest_time = latesttime;
   int* Total_Resources_alap = new int[MAPPING_POLICY.MAX_LATENCY];
   int* Address_BUS_alap = new int[MAPPING_POLICY.MAX_LATENCY];
@@ -3250,14 +3316,12 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
   // for memory operation, load data read and store address are not present in this set
   to_be_scheduled = get_set_of_end_nodes_constraint_scheduling();
 
-  //cout << "passed 2842" << endl;
-
   int schedule_time = 0;
   int schedule_time_2 = 0;
   //keep track of any change in set of scheduled operations
   bool change;
 
-  DEBUG_SCHEDULING("scheduling last nodes");
+  DEBUG_SCHEDULING("scheduling leaf nodes");
   //pick a node
   for (int i = 0; i < (int) to_be_scheduled.size(); i++)
   {
@@ -3269,7 +3333,7 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
       for (int j = latest_time; j > -1; j--)
       {
         //is there enough PE resource to schedule the node?
-        if (Total_Resources_alap[latest_time] >= number_of_resources)
+        if (Total_Resources_alap[j] >= number_of_resources)  // Modified by Vinh Ta: Total_Resources_alap[latest_time] -> Total_Resources_alap[j] 
         {
           //FATAL(true,"has total resources >= number of resources");
           continue; 
@@ -3306,7 +3370,7 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
         }
       }
     }
-    //if node is store data bus read
+    //if node is store data bus write
     else if (to_be_scheduled[i]->is_Store_Data_Bus_Write())
     {
       //pick up a time
@@ -3347,7 +3411,6 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
       for (int j = latest_time; j > -1; j--)
       {
         //is there enough PE?
-        cout << "lastest_time = " <<   latest_time << endl;
         if (Total_Resources_alap[latest_time] >= number_of_resources)
         {
           //FATAL(true, "total resource >= number_of_resources: Total_Resources_alap[j]:%d", Total_Resources_alap[j] ); 
@@ -3359,7 +3422,29 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
           //FATAL(true, "has Node conflict with feasible ALAP j: to_be_sched: %d and j:%d", to_be_scheduled[i], j);
           continue;
         }
+
+	if(to_be_scheduled[i]->get_node_mode() == 2){
+	  cout << "DFG::Schedule_ALAP_Feasible::InitSet: node_" << to_be_scheduled[i]->getName() << " is a loopCtrl\n";
+	  vector<Node*> liveOut_set = get_set_liveOut();
+	  bool constraint_violated = false;
+	  for(int i=0; i<liveOut_set.size(); i++){
+	    if(liveOut_set[i]->get_Sched_Info()->is_Feasible_ASAP_Initiated()){
+	      if(liveOut_set[i]->get_Sched_Info()->get_Feasible_ASAP() <= j){
+		cout << " liveOut node_" << liveOut_set[i]->getName() << " has ASAP scheduled before current time: " << j << "\n";
+		constraint_violated = true;
+		break;
+	      }
+	    } else {
+	      cout << " liveOut node_" << liveOut_set[i]->getName() << " has yet to be scheduled ASAP when it should be! How can this happen?\n";
+	      return false;
+	    }
+	  } 
+	  if(constraint_violated) continue;
+	  else cout << " Constraint satisfied\n";
+	}
+	
         //allocate resources
+        cout << "  Scheduled time: " << j << endl;
         Total_Resources_alap[j]++;
         //schedule the operations
         to_be_scheduled[i]->get_Sched_Info()->set_Feasible_ALAP(j);
@@ -3403,10 +3488,9 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
 
       DEBUG_FEASIBLE_ALAP_SCHEDULING("check if Node %d is ready to be scheduled", rest[i]->get_ID());
       //is it ready to be scheduled? if yes, at what cycle?
+      
       if (rest[i]->is_ready_to_schedule_Feasible_ALAP(schedule_time, MAX_SCHEDULE_LEN, II))
       {
-        //cout << "if rest[i]" << endl;
-
         DEBUG_FEASIBLE_ALAP_SCHEDULING("Node %d is ready to be scheduled", rest[i]->get_ID());
         //find a time slot to schedule
         for (int time = schedule_time; time > -1; time--)
@@ -3454,14 +3538,13 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
                   //schedule operations
                   rest[i]->get_Sched_Info()->set_Feasible_ALAP(time);
                   rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ALAP(time + 1);
-                  rest[i]->get_Sched_Info()->set_Feasible_ASAP(time + 1 - II);
-                  rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ASAP(time + 1 + 1 - II);
+                  //rest[i]->get_Sched_Info()->set_Feasible_ASAP(time + 1 - II);
+                  //rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ASAP(time + 1 + 1 - II);
                   //cout << "passed schedule" << endl;
                   //update set of scheduled operations
                   scheduled.push_back(rest[i]->get_Related_Node());
                   scheduled.push_back(rest[i]);
-
-                  //cout << "pased scheduled " << endl;
+                  
                   DEBUG_FEASIBLE_ALAP_SCHEDULING("Node %d is scheduled at time %d", rest[i]->get_ID(), time);
                   DEBUG_FEASIBLE_ALAP_SCHEDULING("Node %d is scheduled at time %d", rest[i]->get_Related_Node()->get_ID(), time + 1);
                   //there was a change, 2 new nodes are scheduled
@@ -3511,8 +3594,8 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
                   //schedule operations
                   rest[i]->get_Sched_Info()->set_Feasible_ALAP(time);
                   rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ALAP(time - 1);
-                  rest[i]->get_Sched_Info()->set_Feasible_ASAP(time+1-II);
-                  rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ASAP(time - 1 + 1 - II);
+                  //rest[i]->get_Sched_Info()->set_Feasible_ASAP(time+1-II);
+                  //rest[i]->get_Related_Node()->get_Sched_Info()->set_Feasible_ASAP(time - 1 + 1 - II);
                   //update set of scheduled operations
                   scheduled.push_back(rest[i]->get_Related_Node());
                   scheduled.push_back(rest[i]);
@@ -3585,6 +3668,28 @@ bool DFG::Schedule_ALAP_Feasible(int latesttime, int number_of_resources, int II
                 DEBUG_FEASIBLE_ALAP_SCHEDULING("Node %d cannot be scheduled at time %d", rest[i]->get_ID(), time);
                 continue;
               }
+
+	      // check if scheduling node is loopCtrl (shouldn't be as they are usually leaf nodes and should have been already scheduled)
+	      if(rest[i]->get_node_mode() == 2){
+	        cout << "DFG::Schedule_ALAP_Feasible::regular_node_" << rest[i]->getName() << " is loopCtrl\n";
+	        vector<Node*> liveOut_set = get_set_liveOut();
+	        bool constraint_violated = false;
+	        for(int i=0; i<liveOut_set.size(); i++){
+	          if(liveOut_set[i]->get_Sched_Info()->is_Feasible_ASAP_Initiated()){
+	            if(liveOut_set[i]->get_Sched_Info()->get_Feasible_ASAP() <= time){ 
+	              constraint_violated = true;
+	              cout << " node_" << liveOut_set[i]->getName() << " has ASAP scheduled before current time: " << time << "\n";
+	              break;
+	            }
+	          } else {
+	              cout << " node_" << liveOut_set[i]->getName() << " has yet to be scheduled ASAP! How can this happen?\n";
+   	              return false;
+	          }
+	        }
+	        if(constraint_violated) continue;
+		else cout << " Constraint satisfied\n";
+	      }
+
               //schedule the operation
               rest[i]->get_Sched_Info()->set_Feasible_ALAP(time);
               //update set of scheduled operations
@@ -3941,7 +4046,6 @@ bool DFG::Modulo_Schedule_Routing(int number_of_resources, vector<Node*> to_sche
         //printf("Node %d is scheduled at time %d, modulo time %d, schedule time %d, end time %d\n", ready_sorted[0]->get_ID(), current_schedule_time, modulo_schedule_time, schedule_time, end);
         Total_Resources[modulo_schedule_time]++;
         schedule.push_back(ready[0]);
-        //cout << "Node " << ready[0]->get_ID() << " is scheduled at time " <<  current_schedule_time << ", modulo time " << modulo_schedule_time << endl;
         DEBUG_MODULO_SCHEDULING("Node %d is scheduled at time %d, modulo time %d", ready[0]->get_ID(), current_schedule_time, modulo_schedule_time);
         break;
       }
@@ -4078,18 +4182,22 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
     //select a node with the highest priority
     ready_sorted = get_sorted_ready_list_modulo_backward(to_be_scheduled);
 
-    debugfile << "Node: " << ready_sorted[0]->get_ID() << endl << endl;
-
+    //cout << "Modulo_Schedule_2: Scheduling node " << ready_sorted[0]->get_ID() << endl;
+    
     if (ready_sorted[0]->get_Sched_Info()->is_CURRENT_Initiated())            //selected node should not be scheduled before!!
     {
       FATAL(true, "Selected node %d is already scheduled!", (int ) ready_sorted[0]->get_ID());
       continue;
     }
 
-    if(ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() < 0 || ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP() < 0 )
+    if(ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() < 0 || ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP() < 0 ){
+      cout << "Modulo_Schedule_2:: Node " << ready_sorted[0]->get_ID() << ": Feasible_ASAP/ALAP < 0 -> Exiting\n";
       return false;
-    if( ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() > ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP())
+    }
+    if( ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() > ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP()){
+      cout << "Modulo_Schedule_2:: Node " << ready_sorted[0]->get_ID() << ": Feasible_ASAP > Feasible_ALAP -> Exiting\n";
       return false;
+    }
 
     //schedule windows from feasible ALAP to feasible ASAP. We schedule at a random time.  
     // AS per IMS (Fig. 11) the start_time should include the predecessor schedule time.
@@ -4101,74 +4209,38 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
     int end_time = ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP();
 
     // Sanity check to return false if start time exceeds ALAP.
-    if(start_time > end_time)
+    if(start_time > end_time){
+      cout << "Modulo_Schedule_2:: Node " << ready_sorted[0]->get_ID() << ": start_time > end_time -> Exiting\n";
       return false;
+    }
 
     int try_time;
     if(start_time == end_time)
       try_time = start_time;
     else
       try_time = start_time + (rand() % (end_time-start_time));
-
+      
     // check for loop carried dependence constraint
     // The loop carried node should already be mapped due to SCC
+    // For nodes that have incoming loop carried dependence the difference in schedule of the pred and curent try time should be less than II. Else eventhough the schedule is feasible the results will be incorrect.
     vector<Node*> LCD = ready_sorted[0]->Get_True_Dependency_Predecessors_Prev_Iterations();
     
     if((int) LCD.size() > 0)
     {
       int pred_time = LCD[0]->get_Sched_Info()->get_Current();
-      int diff = try_time-pred_time;    
+      int diff = try_time-pred_time;
 
-
-     /* if(ready_sorted[0]->get_ID() == 3)
-        {
-          debugfile << "diff: " << diff << "\tabs " << abs(diff) << endl;
-          debugfile << "start_time: " << start_time << "\tend_time: " << end_time << endl;
-        }
-
-      if(ready_sorted[0]->get_ID() == 1)
-        {
-          debugfile << "diff: " << diff << "\tdiff mod II " << (abs(diff)) << endl;
-          debugfile << "start_time: " << start_time << "\tend_time: " << end_time << endl;
-        }
-  
-      if(ready_sorted[0]->get_ID() == 2)
-        {
-          debugfile << "diff: " << diff << "\tdiff mod II " << (abs(diff)) << endl;
-          debugfile << "start_time: " << start_time << "\tend_time: " << end_time << endl;
-          _FATAL("from ms2\n");
-        }*/ 
-      // say node A-->B has lcd. if A is scheduled in time 9 and B try_time is 5 and II is 4, this means that in modulo schedule A and B will be scheduled in the same same cycle and value of B cannot be communicated.
-      /*if((diff%II == 0))
-      {
-        if(ready_sorted[0]->get_ID() == 3)
-        {
-          debugfile << "diff: " << diff << endl;
-          _FATAL("from ms2\n");
-        }
-    
-        // get a new schedule.
-        if(start_time == end_time)
-          return false;  
-
-        bool toBreak = true;
-          // check until you get a different random schedule. 
-          while(toBreak)
-          {
-            int new_try_time = start_time + (rand() % (end_time-start_time));
-            if(try_time != new_try_time)
-              toBreak = false;
-          }
-      }*/ 
-      //else
       { 
         // A-->B. If A is scheduled in 9 and B try_time is 4, the diff in -5, since II is 4 
         // A will be scheduled one cycle before the value of B is computed. Which will give incorrect results.
         if((diff < 0) && (abs(diff) >= II ))
         {
           // no new schedule for the node be tried.
-          if(start_time == end_time)
-            return false;
+          if(start_time == end_time){
+	    cout << "Modulo_Schedule_2:: Could not find try time: start_time = end_time -> Exiting\n";
+	    cout << "  Scheduling node: " << ready_sorted[0]->get_ID() << " - LCD node: " << LCD[0]->get_ID() << " - try_time: " << try_time << " - diff: " << diff << endl;
+	    return false;
+	  }
 
           int diff1 = diff;
           // check until you get a different random schedule. 
@@ -4178,41 +4250,20 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
             diff1 = new_try_time-pred_time; 
           }
           // we are not able to find a schedule. Get a new schedule.
-          if(diff1 < 0)
-            return false;
+          if(diff1 < 0){
+	    cout << "Modulo_Schedule_2:: Could not find try time: diff1 < 0 -> Exiting\n";
+	    cout << "  Scheduling node: " << ready_sorted[0]->get_ID() << " - LCD node: " << LCD[0]->get_ID() << " - try_time: " << try_time << " - diff1: " << diff1 << " - end_time: " << end_time << endl;
+	    return false;
+	  }
         }
 
       }
 
     }
-    /*if((int)LCD.size() > 0)
-    {
-      if(LCD[0]->get_Sched_Info()->get_Modulo_Current() == (try_time % II))
-      {
-        if(start_time == end_time) // get another schedule
-          return false;
-        else
-        {
-          bool toBreak = true;
-          // check until you get a different random schedule. 
-          while(toBreak)
-          {
-            int new_try_time = start_time + (rand() % (end_time-start_time));
-            if(try_time != new_try_time)
-              toBreak = false;
-          }
-        }
-      }  
-    }*/
-
-
-    // For nodes that have incoming loop carried dependence the difference in schedule of the pred and curent try time should be less than II. Else eventhough the schedule is feasible the results will be incorrect.
     
 
     bool node_scheduled = false;
     int i = try_time;
-
-    debugfile << "Node: " << ready_sorted[0]->get_ID() << "\ttype:" << ready_sorted[0]->get_Instruction() << "\tASAP: " << ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() << "\tALAP:" << ready_sorted[0]->get_Sched_Info()->get_Feasible_ALAP()  <<"\trandom try_time: " << i << endl;
 
     while(!node_scheduled)
     {
@@ -4226,8 +4277,15 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
       // if selected not is a load address assert
       if (ready_sorted[0]->is_Load_Address_Generator())
       {
-
-        //_FATAL("In load address %d\n", ready_sorted[0]->get_ID()); 
+        // Added by Vinh TA
+        // Update: Since ld_add/ld_data creates memory conflicts and struggles mapping algorithms the most, this procedure is added to choose the cycle with fewest memory ops between start_time and end_time
+        if(LCD.size() == 0 && end_time > start_time){
+          for(int new_try_time = start_time; new_try_time < end_time; new_try_time++){
+            if(Address_BUS[current_schedule_time % II] > Address_BUS[new_try_time % II])
+              current_schedule_time = new_try_time;
+          }
+        }
+        
         //assume node is not constrained by multiple predecessors
         bool multiple_constraint_schedule = false;
         //schedule both load nodes
@@ -4298,19 +4356,20 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
       //if node is store operation
       else if (ready_sorted[0]->is_Store_Address_Generator() || ready_sorted[0]->is_Store_Data_Bus_Write())
       {
-        //_FATAL("In store nodes\n");
+        // Added by Vinh TA
+        // Update: Since ld_add/ld_data creates memory conflicts and struggles mapping algorithms the most, this procedure is added to choose the cycle with fewest memory ops between start_time and end_time
+        if(LCD.size() == 0 && end_time > start_time){
+          for(int new_try_time = start_time; new_try_time < end_time; new_try_time++){
+            if(Address_BUS[current_schedule_time % II] > Address_BUS[new_try_time % II])
+              current_schedule_time = new_try_time;
+          }
+        }
+        
         //assume no multiple constraints
         bool multiple_constraint_schedule = false;
         //schedule both store operations
         bool success = Schedule_Store_Address_Data(ready_sorted[0], current_schedule_time, II, multiple_constraint_schedule, Address_BUS, Data_BUS, Total_Resources, number_of_resources,scheduled);
 
-        //if failed due to multiple constraints
-        /*if (multiple_constraint_schedule)
-          {
-          cout << "Store Address generator || Data multiple constraint\n";
-          multiple_constraint = true;
-          return false;
-          }*/
         //if succeed, update set of lists
         if (success)
         {
@@ -4337,153 +4396,7 @@ bool DFG::Modulo_Schedule_2(bool &multiple_constraint, int number_of_resources)
         {
           if(ready_sorted[0]->is_Load_Address_Generator())
             _FATAL("load address in regular nodes");
-          /*Node* node_in_conflict_path=NULL;
-          //check if there is constrain conflict with scheduled nodes
-          if (has_node_conflict_with_scheduled_nodes(II, ready_sorted[0], current_schedule_time, modulo_schedule_time, scheduled, node_in_conflict_path))
-          {
-
-          //if schedule window is empty, resolve conflict here
-          DEBUG_MODULO_SCHEDULING("Node %d is found in conflict",(node_in_conflict_path)->get_ID());
-          if (current_schedule_time == end_time || II==1)
-          {
-          //find out the predecessor and successor between nodes
-          if (ready_sorted[0]->is_Connected_To(node_in_conflict_path))
-          {
-
-          //create a routing node
-          cout << "creating node inside if conflict with scheduled node: " << ready_sorted[0]->get_ID() << "\t conflict: " << (node_in_conflict_path)->get_ID() << endl;
-          tempDummyNode= new Node_Dummy(1, Get_Unique_Index(),ready_sorted[0]);
-          if ((int) tempDummyNode->get_Number_of_Pred()>0)
-          {
-          Add_Arc( tempDummyNode->get_Pred_Arc(0));
-          }
-
-          insert_Node(tempDummyNode); //insert it
-          cout << "1. dummy node no: " << tempDummyNode->get_ID() << endl;
-          //insert routing node to resolve conflict
-          if (insert_Node_in_between_output(ready_sorted[0], node_in_conflict_path, tempDummyNode))
-          {
-          //                  cout << "Inside if insert_node, returning false" << endl;
-          multiple_constraint = true;
-          return false;
-          }
-          multiple_constraint = true;
-          return false;
-
-          }
-          else
-          {
-
-          //create a routing node
-          cout << "creating node inside else conflict with scheduled node: " << ready_sorted[0]->get_ID() << "\t conflict: " << (node_in_conflict_path)->get_ID() << endl;
-
-          tempDummyNode= new Node_Dummy(1, Get_Unique_Index(),node_in_conflict_path);
-          if ((int) tempDummyNode->get_Number_of_Pred()>0)
-          {
-          Add_Arc( tempDummyNode->get_Pred_Arc(0));
-          }
-
-          insert_Node(tempDummyNode); //insert it
-          cout << "1 else. dummy node no: " << tempDummyNode->get_ID() << endl;
-          if (insert_Node_in_between_output(node_in_conflict_path, ready_sorted[0], tempDummyNode))
-          {
-          //                cout << "Insert else insert_node, returning false" << endl;
-          multiple_constraint = true;
-          return false;
-          }
-          //multiple_constraint = true;
-          // return false;
-
-          }
-
-          FATAL(true, "node %d constrains multiple successor but we could not insert a node between it and one of constrained successor", ready_sorted[0]->get_ID());
-          return false;
-          }
-          else
-          { 
-          //return false;
-          goto label; 
-          }
-          goto label;
-          //continue;
-          }
-          //if a node constrains multiple nodes
-          if (constrains_multiple(II,ready_sorted[0], current_schedule_time, node_in_conflict_path, scheduled))
-          {
-
-            //create a routing node
-            cout << "creating node inside if a node constrains: " << ready_sorted[0]->get_ID() << "\t conflict: " << (node_in_conflict_path)->get_ID() << endl;
-            tempDummyNode= new Node_Dummy(1, Get_Unique_Index(),ready_sorted[0] );
-            if ((int) tempDummyNode->get_Number_of_Pred()>0)
-            {
-              Add_Arc( tempDummyNode->get_Pred_Arc(0));
-            }
-            insert_Node(tempDummyNode); //insert it
-            cout << "2. dummy node no: " << tempDummyNode->get_ID() << endl;
-            //insert routing in between
-            if (insert_Node_in_between_output(ready_sorted[0], node_in_conflict_path, tempDummyNode))
-            {
-              //multiple_constraint = true;
-
-              //Instead of returning false, we are trying to schedule this node.
-              // can we add it to the to_be_scheduled? Not now, but have to explore.              
-              ready_sorted[0]->get_Sched_Info()->set_Current(current_schedule_time, II);
-              int asap = ready_sorted[0]->get_Sched_Info()->get_Feasible_ASAP() + 1;
-
-              //allocate resources
-              Total_Resources[modulo_schedule_time]++;
-              //add to list of scheduled nodes
-              scheduled.push_back(ready_sorted[0]);
-              schedule_list[modulo_schedule_time].push_back(ready_sorted[0]->get_ID());
-
-              if(Total_Resources[modulo_schedule_time] < (number_of_resources))
-              {
-                multiple_constraint = false;
-                int temp_current = current_schedule_time + 1; 
-                // set current, ASAP, ALAP for the tempDummyNode -> Routing node.
-                tempDummyNode->get_Sched_Info()->set_Current(temp_current, II);
-                tempDummyNode->get_Sched_Info()->set_Feasible_ASAP(asap);
-                tempDummyNode->get_Sched_Info()->set_Feasible_ALAP(temp_current);
-                Total_Resources[modulo_schedule_time]++;
-                break;
-              }
-              else 
-              {
-                multiple_constraint = true; 
-                return false;
-              }
-              //continue;
-            }
-            //multiple_constraint = true; 
-            //    return false;
-            FATAL(true, "node %d constrains multiple successor but we could not insert a node between it and one of constrained successor", ready_sorted[0]->get_ID());
-            return false;
-          }
-          //if multiple successors are scheduled such that the related node constrain them
-          if (has_multiple_constrains(II, ready_sorted[0], current_schedule_time, node_in_conflict_path, scheduled))
-          {
-            //create a routing node
-            //cout << "creating node inside if multiple successors are sched: " << ready_sorted[0] << "\t" << node_in_conflict_path << endl;
-            tempDummyNode= new Node_Dummy(1, Get_Unique_Index(),node_in_conflict_path );
-            if ((int) tempDummyNode->get_Number_of_Pred()>0)
-            {
-              Add_Arc( tempDummyNode->get_Pred_Arc(0));
-            }
-
-            insert_Node(tempDummyNode); //insert it to DDG
-            cout << "3. dummy node no: " << tempDummyNode->get_ID() << endl;
-            //insert between them
-            if (insert_Node_in_between_output(node_in_conflict_path, ready_sorted[0], tempDummyNode))
-            {
-              multiple_constraint = true;
-              return false;
-            }
-            //multiple_constraint = true;
-            //  return false;
-
-            FATAL(true, "node %d constrains multiple successor but we could not insert a node between it and one of constrained successor", ready_sorted[0]->get_ID());
-            return false;
-          }*/
+          
           //schedule the new node
           ready_sorted[0]->get_Sched_Info()->set_Current(current_schedule_time, II);
           //allocate resources
@@ -4556,6 +4469,24 @@ label:
     }
   }
   return true;
+}
+
+
+vector<Node*> DFG::get_set_liveOut(){
+  vector<Node*> ret;
+  for(int i=0; i<_node_Set.size(); i++)
+    if(_node_Set[i]->get_node_mode() == 1) ret.push_back(_node_Set[i]);
+  
+  return ret;
+}
+
+
+vector<Node*> DFG::get_set_loopCtrl(){
+  vector<Node*> ret;
+  for(int i=0; i<_node_Set.size(); i++)
+    if(_node_Set[i]->get_node_mode() == 2) ret.push_back(_node_Set[i]);
+
+  return ret;
 }
 
 
@@ -4946,178 +4877,15 @@ bool DFG::Schedule_Load_Address(Node* selected_node, int schedule_time, int II, 
     //check if there is enough resources to schedule both nodes
     if (HAS_ENOUGH_RESOURCES_FOR_LOAD_INSTRUCTION_AT_CYCLE(modulo_schedule_time, modulo_schedule_time_2, address_bus, data_bus, PE_resources, max_resources))
     {
-      //there is no schedule conflict if it is scheduled at this time
-      //node to insert in case of multiple constrained nodes
-      //Node_Dummy* tempDummyNode;
-      //Node* node_in_conflict_path=NULL;
-      /*if (has_node_conflict_with_scheduled_nodes(II, selected_node, schedule_time, modulo_schedule_time, scheduled_nodes, node_in_conflict_path))
-        {
-      //if this is the last time slot or II==1, conflict has be take care of at this stage
-      if (selected_node->get_Sched_Info()->get_Feasible_ASAP()==schedule_time || II==1)
-      {
-      //find out the predecessor and successor between nodes
-      if (selected_node->is_Connected_To(node_in_conflict_path))
-      {
-      //create a routing node
-      tempDummyNode= new Node_Dummy(1, Get_Unique_Index(), selected_node);
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      Add_Arc( tempDummyNode->get_Pred_Arc(0));
-
-      insert_Node(tempDummyNode);	  //insert it
-
-      //insert routing node to resolve conflict
-      if (insert_Node_in_between_output(selected_node, node_in_conflict_path, tempDummyNode))
-      {
-      multiple_constraint = true;
-      return false;
-      }
-      }
-      else
-      {
-      //create a routing node
-      tempDummyNode= new Node_Dummy(1, Get_Unique_Index(), node_in_conflict_path);
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      Add_Arc( tempDummyNode->get_Pred_Arc(0));
-
-      insert_Node(tempDummyNode);	    //insert it
-
-      if (insert_Node_in_between_output(node_in_conflict_path, selected_node, tempDummyNode))
-      {
-      multiple_constraint = true;
-      return false;
-      }
-      }
-      }
-      return false;
-      }
-
-      //is there a conflict between related node and scheduled nodes?
-      if (has_node_conflict_with_scheduled_nodes(II, selected_node->get_Related_Node(), current_schedule_time_2, modulo_schedule_time_2, scheduled_nodes, node_in_conflict_path))
-      {
-      //if this is the last time slot or II==1, conflict has be take care of at this stage
-      if (selected_node->get_Related_Node()->get_Sched_Info()->get_Feasible_ASAP()==current_schedule_time_2 || II==1)
-      {
-      //find out the predecessor and successor between nodes
-      if (selected_node->get_Related_Node()->is_Connected_To(node_in_conflict_path))
-      {
-      //create a routing node
-      tempDummyNode= new Node_Dummy(1, Get_Unique_Index(),selected_node->get_Related_Node() );
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      Add_Arc( tempDummyNode->get_Pred_Arc(0));
-
-      insert_Node(tempDummyNode);	   //insert it to DDG
-
-      //insert routing node to resolve conflict
-      if (insert_Node_in_between_output(selected_node->get_Related_Node(), node_in_conflict_path, tempDummyNode))
-      {
-      multiple_constraint = true;
-      return false;
-      }
-      }
-      else
-      {
-      //create a routing node
-      tempDummyNode= new Node_Dummy(1, Get_Unique_Index(), node_in_conflict_path);
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      {
-      Add_Arc( tempDummyNode->get_Pred_Arc(0));
-    }
-
-    insert_Node(tempDummyNode); //insert it to DDG
-
-    if (insert_Node_in_between_output(node_in_conflict_path, selected_node->get_Related_Node(), tempDummyNode))
-    {
-      multiple_constraint = true;
-      return false;
-    }
-    }
-    }
-    return false;
-    }
-    //hold successor constrained by this
-    //if multiple successor are scheduled such that this node constrain them
-    if (constrains_multiple(II, selected_node, schedule_time, node_in_conflict_path, scheduled_nodes))
-    {
-      //construct a routing node
-      tempDummyNode = new Node_Dummy(1, Get_Unique_Index(), selected_node);
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-        Add_Arc( tempDummyNode->get_Pred_Arc(0));
-
-      insert_Node(tempDummyNode);	  //insert it to DDG
-      //insert it between this and selected constrained node
-      if (insert_Node_in_between_output(selected_node, node_in_conflict_path, tempDummyNode))
-      {
-        //there was multiple constrained node, let caller know
-        multiple_constraint = true;
-        //scheduling did not succeed
-        return false;
-      }
-      FATAL(true, "node %d constrains multiple successor but we could not insert a node between it and one of constrained successor", selected_node->get_ID());
-      return false;
-    }
-    //if multiple successor are scheduled such that the related node constrain them
-    if (constrains_multiple(II, selected_node->get_Related_Node(), current_schedule_time_2, node_in_conflict_path, scheduled_nodes))
-    {
-      //construct a routing node
-      tempDummyNode = new Node_Dummy(1, Get_Unique_Index(),selected_node->get_Related_Node() );
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-        Add_Arc( tempDummyNode->get_Pred_Arc(0));
-
-      insert_Node(tempDummyNode);	  //insert it to DDG
-      //insert it between this and selected constrained node
-      if (insert_Node_in_between_output(selected_node->get_Related_Node(), node_in_conflict_path, tempDummyNode))
-      {
-        multiple_constraint = true;	          //there was multiple constrained node, let caller know
-        return false;			          //scheduling did not succeed
-      }
-      FATAL(true, "node %d constrains multiple successor but we could not insert a node between it and one of constrained successor", selected_node->get_Related_Node()->get_ID());
-      return false;
-    }
-    //if constrains multiple predecessors constrained this node
-    if (has_multiple_constrains(II,selected_node, schedule_time, node_in_conflict_path, scheduled_nodes))
-    {
-      tempDummyNode = new Node_Dummy(1, Get_Unique_Index(),node_in_conflict_path );
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      {
-        Add_Arc( tempDummyNode->get_Pred_Arc(0));
-      }
-
-      insert_Node(tempDummyNode);
-      if (insert_Node_in_between_output(node_in_conflict_path, selected_node, tempDummyNode))
-      {
-        multiple_constraint = true;
-        return false;
-      }
-      FATAL(true, "node %d is constrained by multiple predecessors but we could not insert a node between it and one of constrainers", selected_node->get_ID());
-      return false;
-    }
-    //if multiple predecessors constrained the related node
-    if (has_multiple_constrains(II, selected_node->get_Related_Node(), current_schedule_time_2, node_in_conflict_path, scheduled_nodes))
-    {
-      tempDummyNode = new Node_Dummy(1, Get_Unique_Index(),node_in_conflict_path);
-      if ((int) tempDummyNode->get_Number_of_Pred()>0)
-      {
-        Add_Arc( tempDummyNode->get_Pred_Arc(0));
-      }
-
-      insert_Node(tempDummyNode);
-      if (insert_Node_in_between_output(node_in_conflict_path, selected_node->get_Related_Node(),  tempDummyNode))
-      {
-        multiple_constraint = true;
-        return false;
-      }
-      FATAL(true, "node %d is constrained by multiple predecessors but we could not insert a node between it and one of constrainers", selected_node->get_Related_Node()->get_ID());
-      return false;
-    }*/
-    //everything is checked, schedule both operations
-    selected_node->get_Sched_Info()->set_Current(schedule_time, II);
-    selected_node->get_Related_Node()->get_Sched_Info()->set_Current(current_schedule_time_2, II);
-    //allocate resources
-    address_bus[modulo_schedule_time]++;
-    data_bus[modulo_schedule_time_2]++;
-    PE_resources[modulo_schedule_time]++;
-    PE_resources[modulo_schedule_time_2]++;
-    return true;
+      //everything is checked, schedule both operations
+      selected_node->get_Sched_Info()->set_Current(schedule_time, II);
+      selected_node->get_Related_Node()->get_Sched_Info()->set_Current(current_schedule_time_2, II);
+      //allocate resources
+      address_bus[modulo_schedule_time]++;
+      data_bus[modulo_schedule_time_2]++;
+      PE_resources[modulo_schedule_time]++;
+      PE_resources[modulo_schedule_time_2]++;
+      return true;
     }
     else
     {
@@ -6446,7 +6214,7 @@ vector<Node*> DFG::Get_SortOps(int &MII, int number_of_resources)
   Strongly_Connected (Sccs);
   Sort_Sccs(Sccs);
 
-  cout << "Get_SortOps SCCs: " << endl;
+  /*cout << "Get_SortOps SCCs: " << endl;
   for(int i=0; i< (int) Sccs.size(); i++)
   {
     for(int j=0; j < (int) Sccs[i].size(); j++)
@@ -6454,7 +6222,7 @@ vector<Node*> DFG::Get_SortOps(int &MII, int number_of_resources)
 
     cout << endl;
 
-  }
+  }*/
 
   if (Sccs.size() > 0)
     recMII = Sccs[0][0]->get_Sched_Info()->get_SCC_Delay();
