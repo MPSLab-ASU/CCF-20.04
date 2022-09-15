@@ -10,6 +10,7 @@
 #ifndef CGRA_H_
 #define CGRA_H_
 
+#include <random>
 #include "DFG.h"
 #include "Mapper.h"
 #include "matrix.h"
@@ -244,6 +245,7 @@ private:
 
   // 5. 1 Deep for n pred and n succ
   bool Smart_Map_Failure_Recovery_1Deep(Node* n, int map_case);
+  bool Smart_Map_Failure_Recovery_1Deep_Old(Node* n, int map_case);
 
 
   vector<Node*> get_Nodes_from_current_slot(int time);
