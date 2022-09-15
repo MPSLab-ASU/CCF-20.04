@@ -6,6 +6,9 @@
 *
 *  Author: Shail Dave
 *  Last Edited on: 22 Dec 2016
+*
+*  Last edited: Mar 25 2022
+*  Author: Vinh TA
 */
 
 #include "Node.h"
@@ -26,7 +29,7 @@ Node::Node(Instruction_Operation ins, int laten, int id, string nodeName = " ")
   latency = laten;
   name = nodeName;
   if (latency < 1)
-    debugfile << "latency cannot be less than 1\n";
+    debugfile << "Node " << id << ": latency cannot be less than 1\n";
 
   Load_Output_Address_bus = false;
   Store_Output_Address_bus = false;
@@ -46,8 +49,13 @@ Node::Node(Instruction_Operation ins, int laten, int id, string nodeName = " ")
   loop = NULL;
   self_loop = false;
   minimizable = false;
+  is_mp_assigned = false;
 
   predicated = false;
+
+  liveOut_or_loopCtrl = 0;
+
+  current_map_position = NULL;
 }
 
 Node::Node(Instruction_Operation ins, int laten, int id, bool load, bool store)
@@ -75,8 +83,13 @@ Node::Node(Instruction_Operation ins, int laten, int id, bool load, bool store)
   loop = NULL;
   self_loop = false;
   minimizable = false;
+  is_mp_assigned = false;
 
   predicated =false;
+
+  liveOut_or_loopCtrl = 0;
+
+  current_map_position = NULL;
 }
 
 void Node::delete_self_loop()
@@ -105,6 +118,8 @@ Node::~Node()
   inCommingArcs.clear();
   outGoingArcs.clear();
   delete (sched_info);
+  delete current_map_position;
+  indices.clear();
 }
 
 void Node::set_Instruction(Instruction_Operation ins, int laten, int id)
@@ -506,6 +521,8 @@ vector<Node*> Node::Get_True_Dependency_Successors_Same_Iteration()
 //return successors with distance = 0 excluding load store address dependency
 vector<Node*> Node::Get_Successors_Same_Iteration_Exclude_Address_Dependency()
 {
+  if(is_Load_Address_Generator()) return get_Related_Node()->Get_Next_Nodes();
+  
   vector<Node*> retVal;
   int SizeOfOutGoing = outGoingArcs.size();
   for (int i = 0; i < SizeOfOutGoing; i++)
@@ -770,16 +787,23 @@ bool Node::is_ready_to_prioritize(int &time)
 bool Node::is_ready_to_schedule_Feasible_ASAP(int &time, int II)
 {
   time = 0;
-  int current_time;
+  int current_time = -1;
+  int temp = 100;
+  
   vector<Node*> prev_nodes = Get_Predecessors_Same_Iteration_Exclude_Address_Dependency();
   for (int i = 0; i < (int) prev_nodes.size(); i++)
   {
     if (!prev_nodes[i]->get_Sched_Info()->is_Feasible_ASAP_Initiated())
       return false;
-    current_time = prev_nodes[i]->get_Sched_Info()->get_Feasible_ASAP() + prev_nodes[i]->get_Latency();
-    if (current_time > time)
-      time = current_time;
+    temp = prev_nodes[i]->get_Sched_Info()->get_Feasible_ASAP() + prev_nodes[i]->get_Latency();
+    if(temp > current_time)
+      current_time = temp;
   }
+
+  if (current_time > time)
+    time = current_time;
+    
+  current_time = time;
 
   if(is_Mem_Operation())
   {
@@ -797,8 +821,8 @@ bool Node::is_ready_to_schedule_Feasible_ASAP(int &time, int II)
 
           int node1_asap = pred->get_Sched_Info()->get_Feasible_ASAP() + pred->get_Latency();
           int node2_asap = node1_asap + node1->get_Latency() - get_Latency();
-          if(node2_asap > time)
-            time = node2_asap;
+          if(node2_asap > current_time)
+            current_time = node2_asap;
 
           //Check That ASAP of Load Address is In Accordance With ASAP of Successor Node.
           Node* succ = constrained_ld_succ_pairs[load_address_nodes[n]];
@@ -812,11 +836,13 @@ bool Node::is_ready_to_schedule_Feasible_ASAP(int &time, int II)
 
           int node2_asap_reverse = succ_time - get_Related_Node()->get_Latency() - get_Latency();
 
-          if(node2_asap_reverse > time)
-            time = node2_asap_reverse;
+          if(node2_asap_reverse > current_time)
+            current_time = node2_asap_reverse;
         }
       }
     }
+    if (current_time > time)
+      time = current_time;
   }
   return true;
 }
@@ -824,7 +850,8 @@ bool Node::is_ready_to_schedule_Feasible_ASAP(int &time, int II)
 bool Node::is_ready_to_schedule_Feasible_ALAP(int &time, int MAX_Schedule, int II)
 {
   time = MAXINT;
-  int current_time;
+  int current_time = MAXINT;
+  int temp;
   vector<Node*> next_nodes = Get_Successors_Same_Iteration_Exclude_Address_Dependency();
   int prev_nodes_size = Get_Prev_Nodes().size(); //Get_Prev_Nodes_Same_Iteration().size();
   if(is_Load_Data_Bus_Read())
@@ -836,16 +863,19 @@ bool Node::is_ready_to_schedule_Feasible_ALAP(int &time, int MAX_Schedule, int I
       if (!next_nodes[i]->get_Sched_Info()->is_Feasible_ALAP_Initiated())
         return false;
 
-      current_time = next_nodes[i]->get_Sched_Info()->get_Feasible_ALAP() - latency;
-      if (current_time < time)
-        time = current_time;
+      temp = next_nodes[i]->get_Sched_Info()->get_Feasible_ALAP() - latency;
+      if(temp < current_time)
+        current_time = temp;
     }
-    if(!is_PHI_Operations() && (!is_Load_Data_Bus_Read() || (prev_nodes_size > 0)))
+
+    if (current_time < time)
+      time = current_time;
+    /*if(!is_PHI_Operations() && (!is_Load_Data_Bus_Read()|| (prev_nodes_size > 0)))
     {
       current_time = get_Sched_Info()->get_Feasible_ASAP() + II - latency; // + (MAX_Schedule/2);
       if (current_time < time)
         time = current_time;
-    }
+    }*/
   }
   else
     time = get_Sched_Info()->get_Feasible_ASAP() + II - latency;
@@ -1023,8 +1053,10 @@ bool Node::isMapped()
 
 void Node::Reset()
 {
+  is_mp_assigned = false;
   assigned = false;
   AssignedPE = NULL;
+  indices.clear();
 }
 
 vector<Node*> Node::get_physical_successors_constrain_by_this_modulo(int II)
@@ -1471,11 +1503,24 @@ vector<MappingPair*> Node::GetTempMappedIndices()
 void Node::SetCurrentPosition(MappingPair* pos)
 {
   current_map_position = pos;
+  is_mp_assigned = true;
+}
+
+bool Node::is_Mapped(){
+  return is_mp_assigned;
 }
 
 void Node::SetTempCurrentPosition(MappingPair* pos)
 {
   temp_pos = pos;
+}
+
+void Node::set_node_mode(int mode){
+  liveOut_or_loopCtrl = mode;  // 1 for liveOut, 2 for loopCtrl
+}
+
+int Node::get_node_mode(){
+  return liveOut_or_loopCtrl;
 }
 
 MappingPair* Node::GetCurrentPosition()
@@ -1562,6 +1607,15 @@ int PE::getIndexT()
 bool PE::SameCoordination(PE* nPE)
 {
   if (iIndex == nPE->getIndexI() && jIndex == nPE->getIndexJ())
+  {
+    return true;
+  }
+  return false;
+}
+
+bool PE::SameTimeCoordinate(PE* nPE)
+{
+  if (iIndex == nPE->getIndexI() && jIndex == nPE->getIndexJ() && tIndex == nPE->getIndexT())
   {
     return true;
   }

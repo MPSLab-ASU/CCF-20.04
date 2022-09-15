@@ -6,6 +6,9 @@
 *
 * Last edited on: 22 Dec 2016
 * Author: Shail Dave
+*
+* Last edited on: 25 Mar 2022
+* Author: Vinh TA
 */
 
 #ifndef NODE_H_
@@ -58,12 +61,17 @@ class Node
     PE* AssignedPE;
     bool predicated;
     bool minimizable;
+    bool is_mp_assigned;
     int node_height;
     bool needToLoadConstant; 
     vector<MappingPair*> indices; 
     MappingPair* current_map_position; 
     vector<MappingPair*> temp_best_indices;
-    MappingPair* temp_pos; 
+    MappingPair* temp_pos;
+
+  // Added by Vinh Ta
+  // Used to enforce mapping constraints
+  int liveOut_or_loopCtrl = 0; // 0 for neither, 1 for liveOut, 2 for loopCtrl
 
   public:
     //Node();
@@ -296,6 +304,11 @@ class Node
     void delete_self_loop();
     int get_node_height();
     void set_node_height(int n);
+
+    // Added by Vinh Ta
+    void set_node_mode(int mode);
+    int get_node_mode();
+    bool is_Mapped();
 };
 
 class Node_Dummy: public Node
@@ -324,6 +337,7 @@ class PE
     int getIndexT();
 
     bool SameCoordination(PE* nPE);
+  bool SameTimeCoordinate(PE* nPE);
     //****************************GeoE****************************//
 
     //****************************MappingS****************************//
