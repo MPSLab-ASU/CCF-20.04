@@ -8,6 +8,9 @@
  *
  *  Created Ullman algorithm: Sept, 2019
  *  Author Mahesh Balasubramanian
+ *
+ *  Last edited on: June 10, 2022
+ *  Author: Vinh Ta
  */
 
 #include "CGRA.h"
@@ -15,6 +18,9 @@
 #include <numeric>
 #include <cmath>
 #include <math.h>
+#include <iomanip>
+
+//#define PRINT_TEC
 
 extern int map_id;
 
@@ -66,12 +72,16 @@ void CGRA::ShowMapping()
   kernel.append(".sch");
   kernelFile.open(kernel.c_str());
   printf("*********************************Kernel Start*********************************\n");
+  debugfile << "*********************************Kernel Start*********************************\n";
+  
   for (int timeIndex = 0; timeIndex < II; timeIndex++)
   {
 
     TimeCGRA* cgraTime = timeCGRAList[timeIndex];
     PE* candidatePE;
     cout << "Time:" << timeIndex << endl;
+    //debugfile << "Time:" << timeIndex << endl;
+    debugfile << "Time: " << timeIndex << endl;
     for (int i = 0; i < SizeX; i++)
     {
       for (int j = 0; j < SizeY; j++)
@@ -84,6 +94,8 @@ void CGRA::ShowMapping()
           if((usedReg < 0) || (usedReg > SizeReg))
             usedReg = 0;
           printf("%10d(%d)", candidatePE->getNode()->get_ID(), usedReg);
+          debugfile << std::setw(10) << candidatePE->getNode()->get_ID();
+	  //debugfile << "\t" << candidatePE->getNode()->get_ID() << "(" << usedReg << ")";
           //kernelFile << candidatePE->getNode()->get_ID()<<"\t"<< usedReg <<"\t"<< candidatePE->getNode()->get_Sched_Info()->get_Current() << "\n";
           kernelFile << candidatePE->getNode()->get_ID()<<"\t"<< usedReg <<"\t"<< candidatePE->getNode()->get_Sched_Info()->get_Modulo_Current() << "\n";
           if(((unsigned)usedReg) > totalRotatingReg[i*SizeY + j])
@@ -93,13 +105,17 @@ void CGRA::ShowMapping()
         {
           kernelFile << "-1\t0\t0" << "\n";
           printf("         F");
+	  debugfile << "         F";
         }
         printf("\t");
+        debugfile << "\t";
       }
       printf("\n");
+      debugfile << "\n";
     }
   }
   printf("*********************************Kernel End*********************************\n");
+  debugfile << "*********************************Kernel End*********************************\n";
   kernelFile << II*SizeX*SizeY << "\n";
   kernelFile.close();
 
@@ -340,8 +356,6 @@ bool CGRA::GenerateAdjacencyTable(DFG* myDFG, Matrix<T>& adj_h,  Matrix<T>& adj_
 
       if(connected_Nodes2(nodes[i], nodes[j]))
       {
-        //    adj_h[i][j] = 1;
-
         // For the BFS method just create adjacency of the incoming nodes
         // so that the next nodes mapped in BFS is the incoming node.
         // Else create both outgoing and incoming adj list.
@@ -355,18 +369,11 @@ bool CGRA::GenerateAdjacencyTable(DFG* myDFG, Matrix<T>& adj_h,  Matrix<T>& adj_
         {
           if(!contains_list(adjacency_list[i],j))
             adjacency_list[i].push_back(j); // Add w to v’s list.
-          //if(!contains_list(adjacency_list[j], i))
-          //  adjacency_list[j].push_back(i);
         }
-
-
-        //if(!contains_list(adjacency_list[i],j)) adjacency_list[i].push_back(j);
-        //if(!contains_list(adjacency_list[j],i)) adjacency_list[j].push_back(i);
       }
-      //  else
-      //    adj_h[i][j] = 0;
     }
   }
+  
   // cout << "passed adj_h" << endl; 
   //cout << endl;
   //adj_h.print_matrix();
@@ -925,18 +932,19 @@ bool CGRA::contains_list(list<int> adjacency_list, int node)
 
 void CGRA::AssignTEC(int posX, int posY, int sched_time, int node_id)
 {
-  //cout << "before setting\n";
-  //TEC.print_matrix();
-  TEC[(sched_time*SizeX)+posX][posY] = node_id; 
-  //cout << "Pased setting\n"; 
-
+  if(TEC[(sched_time*SizeX)+posX][posY] != -100 && TEC[(sched_time*SizeX)+posX][posY] != node_id){
+    cout << "FATAL: Assigning occupied TEC! Current Node: " << TEC[(sched_time*SizeX)+posX][posY] << " - assigning: " << node_id << " @ " << posX << ":" << posY << "T" << sched_time << endl;
+    exit(1);  
+  }
+  
+  TEC[(sched_time*SizeX)+posX][posY] = node_id;
 }
 
 void CGRA::UnAssignTEC(int posX, int posY, int sched_time, int node_id)
 {
 
   if(TEC[(sched_time*SizeX)+posX][posY] == node_id)
-    TEC[(sched_time*SizeX)+posX][posY] = INF;
+    TEC[(sched_time*SizeX)+posX][posY] = -100;
 }
 
 
@@ -1082,7 +1090,7 @@ void CGRA::Remove(vector<int>& nodeset, int value)
 
 tuple<vector<Node*>, vector<Node*> > CGRA::get_Mapped_pred_succ(Node* v)
 {
-  vector<Node*> pred, succ;
+  vector<Node*> pred;
 
   //cout << "from get_Mapped for node: " << v->get_ID() << endl;
 
@@ -1094,11 +1102,26 @@ tuple<vector<Node*>, vector<Node*> > CGRA::get_Mapped_pred_succ(Node* v)
       if(TEC.find_element(incoming_nodes[jj]->get_ID()))
       {
         pred.push_back(incoming_nodes[jj]);
+
+	// Added by Vinh TA
+	// Check for non consistent mp
+	for(int i=0; i<TEC.rows(); i++)
+	  for(int j=0; j<TEC.cols(); j++)
+	    if(TEC[i][j] == incoming_nodes[jj]->get_ID()){
+	      PE* mapped_pe = incoming_nodes[jj]->GetCurrentPosition()->getPE();
+	      if(mapped_pe->getIndexI() != i%SizeX || mapped_pe->getIndexJ() != j){
+		printf("ERROR: get_Mapped_pred_succ: inconsistent MP found at node %d\n\tTEC: %d:%dT%d - MP: %d:%dT%d\n", incoming_nodes[jj]->get_ID(), i%SizeX, j, i/SizeX, mapped_pe->getIndexI(), mapped_pe->getIndexJ(), mapped_pe->getIndexT());
+		TEC.print_matrix();
+		exit(1);
+	      }
+	    }
+	      
       }
     }
 
   }
 
+  vector<Node*> succ;
   // BLock to get all mapped succ.
   {
     vector<Node*> outgoing_nodes = v->Get_Next_Nodes();
@@ -1107,8 +1130,17 @@ tuple<vector<Node*>, vector<Node*> > CGRA::get_Mapped_pred_succ(Node* v)
       if(TEC.find_element(outgoing_nodes[jj]->get_ID()))
       {
         succ.push_back(outgoing_nodes[jj]);
-      }
 
+	// Added by Vinh TA
+	// Check for non consistent mp
+	for(int i=0; i<TEC.rows(); i++)
+	  for(int j=0; j<TEC.cols(); j++)
+	    if(TEC[i][j] == outgoing_nodes[jj]->get_ID()){
+	      PE* mapped_pe = outgoing_nodes[jj]->GetCurrentPosition()->getPE();
+	      if(mapped_pe->getIndexI() != i%SizeX || mapped_pe->getIndexJ() != j)
+		_FATAL("ERROR: get_Mapped_pred_succ: inconsistent MP found at node %d\n\tTEC: %d:%dT%d - MP: %d:%dT%d\n", outgoing_nodes[jj]->get_ID(), i%SizeX, j, i/SizeX, mapped_pe->getIndexI(), mapped_pe->getIndexJ(), mapped_pe->getIndexT());
+	    }
+      }
     }
   }
 
@@ -1140,7 +1172,7 @@ void CGRA::Update_Pred_Succ_Indices(Node* current)
     vector<int> ind = M.row_find(get_Node_Index(P[i]), 1);
     vector<int> pos;
     tie(indices, pos, map_case) = Get_Free_Coordinates(P[i], pred_pred, succ_pred, ind);
-
+    
     //indices vector holds the updated array with atleast one position because it is mapped now.
     //if not push empty.
     P[i]->SetMappableIndices(indices); 
@@ -1162,7 +1194,7 @@ void CGRA::Update_Pred_Succ_Indices(Node* current)
     vector<int> ind = M.row_find(get_Node_Index(S[i]), 1);
     vector<int> pos;
     tie(indices, pos, map_case) = Get_Free_Coordinates(S[i], pred_succ, succ_succ, ind);
-
+    
     //indices vector holds the updated array with atleast one position because it is mapped now.
     //if not push empty.
     S[i]->SetMappableIndices(indices);
@@ -1225,6 +1257,8 @@ bool CGRA::refine_M(DFG* myDFG)
   int left_nodes_x=0;
   vector<Node*> left_nodes_unmapped_x;
   Matrix<int> TEC_x(TEC.rows(), TEC.cols());
+  visited = new bool[nodeSize];
+  int failed_node = -1;
   //vector<Node*> recurrent_nodes = myDFG->get_nodes_with_recurrent_edges_incoming();
 
   //vector<int> recurrent_idx;
@@ -1240,7 +1274,7 @@ bool CGRA::refine_M(DFG* myDFG)
     mappingCounter++;
     cout << "mappingCounter: " << mappingCounter << endl;
     //Mark all the vertices as not visited;
-    visited = new bool[nodeSize];
+    
     for(int i = 0; i < nodeSize; i++)
       visited[i] = false;
 
@@ -1258,7 +1292,10 @@ bool CGRA::refine_M(DFG* myDFG)
     if(MAPPING_POLICY.MAPPING_MODE == 0) // completely random
     {
       it++;
-      //cout << "Completely random mapping" << endl; 
+      //if(failed_node != -1)
+      //BFS_refine_impl(myDFG, failed_node);  // Start with previously failed node
+        
+      //cout << "Completely random mapping" << endl;
       random_pick.clear();
       while(!all_visited(nodeSize))
       {
@@ -1269,11 +1306,17 @@ bool CGRA::refine_M(DFG* myDFG)
             random_pick.push_back(j);
         }
 
-        int  node_sel = random_pick[rand()%(int)random_pick.size()];
-        //cout << "node_sel: " << node_sel << endl;
+        int node_sel = random_pick[rand()%(int)random_pick.size()];
         BFS_refine_impl(myDFG, node_sel);
-
       }
+      /*if(left_nodes_unmapped.size() > 0){
+	for(int temp_i = 0; temp_i < _node_Set.size(); temp_i++)
+	  if(_node_Set[temp_i]->get_ID() == left_nodes_unmapped[left_nodes_unmapped.size()-1]->get_ID()){
+	     failed_node = temp_i;
+	     break;
+	  }
+	  }*/
+        
     }
     else if(MAPPING_POLICY.MAPPING_MODE == 1)//Priority of nodes having outgoing recurrent edges.
     {
@@ -1447,6 +1490,7 @@ bool CGRA::refine_M(DFG* myDFG)
     //int left_nodes_x; 
     //vector<Node*> left_nodes_unmapped_x;
 
+    cout << "CGRA::Refine_M: all nodes visited - left_nodes_unmapped size: " << left_nodes_unmapped.size() << endl;
     if((int) left_nodes_unmapped.size() > 0)
     {
 
@@ -1493,8 +1537,9 @@ bool CGRA::refine_M(DFG* myDFG)
     }
     else
     {
-      cout << "left node size == 0" << endl;
+      cout << "Final TEC:" << endl;
       TEC.print_matrix();
+
       cout<<endl;
       //M.print_matrix();  
       //if(!Sanity_M())
@@ -1786,11 +1831,12 @@ return true;
   */ 
 void CGRA::print_adj(int nodeSize)
 {
-  for(int j=0; j < nodeSize ; j++)
+  cout << "print_adj: nodeSize: " << nodeSize << endl;
+  for(int j=0; j < nodeSize; j++)
   {
-    cout << "j: " << j  << "\t -> ";
+    cout << "j: " << j << "\t -> ";
     for(list<int>::iterator i = adjacency_list[j].begin(); i != adjacency_list[j].end(); ++i)
-      cout << *i << " ";
+      cout << (*i) << " ";
     cout<<endl;
   }
 
@@ -1939,11 +1985,11 @@ void CGRA::Restore_timeslot(int time)
 
 }
 
-void CGRA::Matrix_Copy(Matrix<int> &M2)
+void CGRA::Matrix_Copy(Matrix<int>& M2)
 {
-  M2.reshape(TEC.rows(), TEC.cols()); 
-  assert(TEC.rows() == M2.rows()) ;
-  assert(TEC.cols() == M2.cols()) ;
+  M2.reshape(TEC.rows(), TEC.cols());
+  FATAL(TEC.rows() != M2.rows(), "FATAL::Matrix_Copy: Cannot resize rows\n");
+  FATAL(TEC.cols() != M2.cols(), "FATAL::Matrix_Copy: Cannot resize cols\n");
 
   for(int r=0; r < TEC.rows(); r++)
     for(int c=0; c < TEC.cols(); c++)
@@ -1957,51 +2003,60 @@ void CGRA::Matrix_Copy(Matrix<int> &M2)
 // This function can be called from either the failure node timeslot, 
 //  or from the pred and succ for 1-Deep.
 
-
 bool CGRA::Remap(vector<Node*> nodes_in_timeslot)
 {
-  //to_be_mapped.clear() ; 
-  //for(int i=0; i < (int) nodes_in_timeslot.size(); i++)
-  //  to_be_mapped.push_back(nodes_in_timeslot[i]);
+  if(nodes_in_timeslot.size() == 0) return true;
+  
+  to_be_mapped.clear() ; 
+  for(int i=0; i < (int) nodes_in_timeslot.size(); i++)
+    to_be_mapped.push_back(nodes_in_timeslot[i]);
 
   // update the positions of all the nodes in the timeslot before backing
+  cout << "\nRemap Wrapper:: Remapping " << to_be_mapped.size() << " nodes in timeslot " << to_be_mapped[0]->get_Sched_Info()->get_Modulo_Current() << endl;
 
-  for(int i=0; i < (int) nodes_in_timeslot.size(); i++)
+  vector<int> backup_TEC;
+  int timeslot = to_be_mapped[0]->get_Sched_Info()->get_Modulo_Current();
+  for(int i = timeslot*SizeX; i < timeslot*SizeX + SizeX; i++)
+    for(int j = 0; j < SizeY; j++)
+      backup_TEC.push_back(TEC[i][j]);
+  
+  for(int i=0; i < (int) nodes_in_timeslot.size(); i++){
     Update_Pred_Succ_Indices(nodes_in_timeslot[i]);
-  // back up the indices and the current position into temp
-  for(int i=0; i < (int) nodes_in_timeslot.size(); i++)
-  {
-    nodes_in_timeslot[i]->SetTempMappableIndices(nodes_in_timeslot[i]->GetMappedIndices()); 
-    nodes_in_timeslot[i]->SetTempCurrentPosition(nodes_in_timeslot[i]->GetCurrentPosition()); 
   }
 
-  // shuffle the nodes.
-  //random_shuffle(to_be_mapped.begin(), to_be_mapped.end()); 
-
-  if(Remap(nodes_in_timeslot, (int) nodes_in_timeslot.size()))
-    return true;
-  else
-  {
-    // clear out already mapped nodes in the TEC
-    TEC.free_current_timeslot(nodes_in_timeslot[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-
-    // if remap not successfull back up from temp
-    for(int i=0; i < (int) nodes_in_timeslot.size(); i++)
+  int remap_attempt = 0;
+  for(; remap_attempt < to_be_mapped.size() && remap_attempt < MAPPING_POLICY.MAX_MAPPING_ATTEMPTS; remap_attempt++){
+    bool success = Remap(to_be_mapped, (int) to_be_mapped.size());
+    if(success){
+      cout << "Remap success!\n";
+      backup_TEC.clear();
+      return true;
+    }
+    else
     {
-      nodes_in_timeslot[i]->SetMappableIndices(nodes_in_timeslot[i]->GetTempMappedIndices());
-      nodes_in_timeslot[i]->SetCurrentPosition(nodes_in_timeslot[i]->GetTempCurrentPosition());
+      cout << "Remap wrapper: failed @ attempt: " << remap_attempt << endl;
+      // clear out already mapped nodes in the TEC
+      for(int i=0; i<SizeX; i++)
+	for(int j=0; j<SizeY; j++)
+	  TEC[timeslot*SizeX + i][j] = backup_TEC[i*SizeX + j];
     }
   }
 
+  backup_TEC.clear();
+  cout << "Remap Wrapper::Failed to remap after " << remap_attempt << " attempts!\n";
   return false;
 }
 
 // This is a linear function to remap the nodes of a given timeslot.
 bool CGRA::Remap(vector<Node*> to_be_mapped, int size)
 {
+  auto rng = std::default_random_engine { std::random_device{}() };
+  std::shuffle(to_be_mapped.begin(), to_be_mapped.end(), rng);
+  
   for(int i=0;i<(int) to_be_mapped.size(); i++)
   {
     Node* v= to_be_mapped[i];
+    cout << "Remap Core: Mapping node " << v->get_ID() << endl;
     vector<Node*> P;
     vector<Node*> S;
     P.clear(); S.clear(); 
@@ -2017,20 +2072,27 @@ bool CGRA::Remap(vector<Node*> to_be_mapped, int size)
     if((int) indices.size() == 0)
       return false;
 
+    // Added by Vinh Ta
+    // Problem: Re-assigning positions have to look for mem conflicts as well as introducing randomness!
+    // Update: store all valid indices to array and randomly choose one
+    std::vector<MappingPair*> valid_indices;
     for(int j=0; j < (int) indices.size(); j++)
     {
       if(!isTECfree(indices[j]->getPE()->getIndexI(), indices[j]->getPE()->getIndexJ(), indices[j]->getPE()->getIndexT()))
         continue;
 
-      v->SetCurrentPosition(indices[j]);
-
-      AssignTEC(indices[j]->getPE()->getIndexI(), indices[j]->getPE()->getIndexJ(), indices[j]->getPE()->getIndexT(), indices[j]->getNode()->get_ID());
-
+      valid_indices.push_back(indices[j]);
     }
-    if( v->GetCurrentPosition() == NULL)
-      return false;
-  }
 
+    if(valid_indices.size() == 0) return false;
+
+    int chosen;
+    if(valid_indices.size() == 1) chosen = 0;
+    else chosen = rand() % (int)valid_indices.size();
+
+    v->SetCurrentPosition(valid_indices[chosen]);
+    AssignTEC(valid_indices[chosen]->getPE()->getIndexI(), valid_indices[chosen]->getPE()->getIndexJ(), valid_indices[chosen]->getPE()->getIndexT(), valid_indices[chosen]->getNode()->get_ID());
+  }
   return true; 
 
 }
@@ -2093,18 +2155,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
   // First update the predecessor and successor positions of the current node.
   Update_Pred_Succ_Indices(n);
 
-  //cout << "inside smart map node shallow map_case: " << map_case << endl;
+  cout << "inside smart map node: " << n->getName() << " - case: " << map_case << endl;
+  
   vector<int> ind = M.row_find(get_Node_Index(n), 1);
-
-
-  //cout << "passed ind" << endl;
 
   for(int i=0; i < (int) ind.size(); i++)
   {
 
     if(!isTECfree(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT()))
       continue;
-
+    
     switch(map_case)  
     {
       case 0:
@@ -2115,21 +2175,23 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             vector<int> mapped_nodes;
             mapped_nodes.clear();
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
-            //bool found_mem=false;
+            bool memory_conflict = false;
             if(((int) mapped_nodes.size()) > 0)
             {
               for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
               {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  break;
-                else
-                {
-                  MappingPair* mappair = mapPairs[ind[i]];
-                  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
-                  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  return true;
-                }
+                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write()){
+                  memory_conflict = true;
+		  break;
+		}
               }
+	      if(!memory_conflict)
+              {
+		MappingPair* mappair = mapPairs[ind[i]];
+		mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		return true;
+	      }
             }
             else
             {     
@@ -2159,9 +2221,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           vector<MappingPair*> pred_ind = P[0]->GetMappedIndices();
           MappingPair* pred_pos = P[0]->GetCurrentPosition();
 
-          // support for load_data nodes.
-          bool is_load_add = P[0]->is_Load_Address_Generator(); 
-
           UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
 
           for(int j=0; j < (int) pred_ind.size(); j++)
@@ -2169,33 +2228,50 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
               continue;
 
+	    if(n->is_Load_Address_Generator() || n->is_Store_Address_Generator() || n->is_Store_Data_Bus_Write()){
+	      if(n->is_Store_Data_Bus_Write()){
+	        if(pred_ind[j]->getPE()->getIndexI() != mapPairs[ind[i]]->getPE()->getIndexI())
+	          continue;
+	        if(pred_ind[j]->getPE()->SameTimeCoordinate(mapPairs[ind[i]]->getPE()))
+	          continue;
+	      } else {
+	        if(!connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())) continue;
+	      }
 
-            if(!is_load_add)
-            {
-              if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
-              {
-                AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
-                MappingPair* mappair = mapPairs[ind[i]];
-                mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
-                P[0]->SetCurrentPosition(pred_ind[j]);
-                AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                return true;
-
-              }
-            }
-            else
-            {
-              if(pred_ind[j]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
-              {
-                AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
-                MappingPair* mappair = mapPairs[ind[i]];
-                mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
-                P[0]->SetCurrentPosition(pred_ind[j]);
-                AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                return true;
-              }  
-            }
-          }
+	      // Find mapped nodes in current row for memory constraints
+	      vector<int> mapped_nodes;
+	      mapped_nodes.clear();
+	      mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+	      bool memory_conflict = false;
+	      for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		  memory_conflict = true;
+		  break;
+		}
+	      }
+		
+	      if(!memory_conflict)
+		{
+		  AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+		  MappingPair* mappair = mapPairs[ind[i]];
+		  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		  P[0]->SetCurrentPosition(pred_ind[j]);
+		  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		  return true;
+		}
+	    }
+	    else {
+	      if(!connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())) continue;
+	      AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+	      MappingPair* mappair = mapPairs[ind[i]];
+	      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+	      P[0]->SetCurrentPosition(pred_ind[j]);
+	      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+	      return true;
+	    }
+	  }
+	  
           AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
 
           break;
@@ -2211,8 +2287,290 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           MappingPair* pred_pos = P[0]->GetCurrentPosition();
           MappingPair* pred_pos1 = P[1]->GetCurrentPosition();
 
-          if(connectedPEs(pred_pos->getPE(),mapPairs[ind[i]]->getPE()) && !connectedPEs(pred_pos1->getPE(), mapPairs[ind[i]]->getPE()))
-          {
+	  // Added by Vinh TA
+	  // Update: To handle case where st_data is mapped on different row than st_add
+	  if(n->is_Store_Data_Bus_Write()){
+	    if(P[0]->is_Store_Address_Generator()){
+	      bool connected_p1 = (mapPairs[ind[i]]->getPE()->getIndexI() == pred_pos->getPE()->getIndexI());
+	      bool connected_p2 = connectedPEs(pred_pos1->getPE(), mapPairs[ind[i]]->getPE());
+
+	      if(connected_p1 && !connected_p2){
+		UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+		for(int j=0; j < (int) pred_ind1.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind1[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT()))
+		    continue;
+		  if(!connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		    continue;
+		  
+		  // Find mapped nodes in current row for memory constraints
+		  vector<int> mapped_nodes;
+		  mapped_nodes.clear();
+		  mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		  bool memory_conflict = false;
+		  for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		    if(get_Node(mapped_nodes[jj])->get_ID() == P[0]->get_ID()) continue;
+		    if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		      memory_conflict = true;
+		      break;
+		    }
+		  }
+		  
+		  if(!memory_conflict)
+		  { 
+		    AssignTEC(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT(), pred_ind1[j]->getNode()->get_ID());
+		    MappingPair* mappair = mapPairs[ind[i]];
+		    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		    P[1]->SetCurrentPosition(pred_ind1[j]);
+		    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		    return true;
+		  }
+		}
+		AssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+	      }
+	      else if(!connected_p1 && connected_p2){
+		UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+
+		for(int j=0; j < (int) pred_ind.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+		    continue;
+		  if(pred_ind[j]->getPE()->getIndexI() != mapPairs[ind[i]]->getPE()->getIndexI())
+		    continue;
+		  
+		  // Find mapped nodes in current row for memory constraints
+		  vector<int> mapped_nodes;
+		  mapped_nodes.clear();
+		  mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		  bool memory_conflict = false;
+		  for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		    if(get_Node(mapped_nodes[jj])->get_ID() == P[0]->get_ID()) continue;
+		    if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		      memory_conflict = true;
+		      break;
+		    }
+		  }
+
+		  if(!memory_conflict){
+		    AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+		    MappingPair* mappair = mapPairs[ind[i]];
+		    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		    P[0]->SetCurrentPosition(pred_ind[j]);
+		    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		    return true;
+		  }
+		}
+		AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	      }
+	      else if(!connected_p1 && !connected_p2){
+		UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+		UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+		for(int j=0; j < (int) pred_ind1.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind1[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT()))
+		    continue;
+		  for(int k=0; k < (int) pred_ind.size(); k++)
+		  {
+		    if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind[k]->getPE()))
+		      continue;
+		    if(pred_ind[k]->getNode()->get_ID() != pred_ind1[j]->getNode()->get_ID() && pred_ind[k]->getPE()->SameTimeCoordinate(pred_ind1[j]->getPE()))
+		      continue;
+		    if(!isTECfree(pred_ind[k]->getPE()->getIndexI(), pred_ind[k]->getPE()->getIndexJ(), pred_ind[k]->getPE()->getIndexT()))
+		      continue;
+		    if(pred_ind[k]->getPE()->getIndexI() != mapPairs[ind[i]]->getPE()->getIndexI())
+		      continue;
+		    if(!connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		      continue;
+
+		    // Find mapped nodes in current row for memory constraints
+		    vector<int> mapped_nodes;
+		    mapped_nodes.clear();
+		    mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		    bool memory_conflict = false;
+		    for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		      if(get_Node(mapped_nodes[jj])->get_ID() == P[0]->get_ID()) continue;
+		      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+			memory_conflict = true;
+			break;
+		      }
+		    }
+		    
+		    if(!memory_conflict)
+		    {
+		      AssignTEC(pred_ind[k]->getPE()->getIndexI(), pred_ind[k]->getPE()->getIndexJ(), pred_ind[k]->getPE()->getIndexT(), pred_ind[k]->getNode()->get_ID());
+		      AssignTEC(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT(), pred_ind1[j]->getNode()->get_ID());
+		      MappingPair* mappair = mapPairs[ind[i]];
+		      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		      P[0]->SetCurrentPosition(pred_ind[k]);
+		      P[1]->SetCurrentPosition(pred_ind1[j]);
+		      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		      return true;
+		    }
+		  }
+		}
+		AssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+		AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	      }
+	      else {
+		MappingPair* mappair = mapPairs[ind[i]];
+		mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		return true;
+	      }
+	    }
+	    else if(P[1]->is_Store_Address_Generator()){
+	      bool connected_p2 = (mapPairs[ind[i]]->getPE()->getIndexI() == pred_pos1->getPE()->getIndexI());
+	      bool connected_p1 = connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE());
+
+	      if(connected_p1 && !connected_p2){
+		UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+
+		for(int j=0; j < (int) pred_ind1.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind1[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT()))
+		    continue;
+		  if(pred_ind1[j]->getPE()->getIndexI() != mapPairs[ind[i]]->getPE()->getIndexI())
+		    continue;
+
+		  // Find mapped nodes in current row for memory constraints
+		  vector<int> mapped_nodes;
+		  mapped_nodes.clear();
+		  mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		  bool memory_conflict = false;
+		  for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		    if(get_Node(mapped_nodes[jj])->get_ID() == P[1]->get_ID()) continue;
+		    if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		      memory_conflict = true;
+		      break;
+		    }
+		  }
+
+		  if(!memory_conflict){
+		    AssignTEC(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT(), pred_ind1[j]->getNode()->get_ID());
+		    MappingPair* mappair = mapPairs[ind[i]];
+		    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		    P[1]->SetCurrentPosition(pred_ind1[j]);
+		    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		    return true;
+		  }
+		}
+		AssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+	      }
+	      else if(!connected_p1 && connected_p2){
+		UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+		for(int j=0; j < (int) pred_ind.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+		    continue;
+		  if(!connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		    continue;
+
+		  // Find mapped nodes in current row for memory constraints
+		  vector<int> mapped_nodes;
+		  mapped_nodes.clear();
+		  mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		  bool memory_conflict = false;
+		  for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		    if(get_Node(mapped_nodes[jj])->get_ID() == P[1]->get_ID()) continue;
+		    if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		      memory_conflict = true;
+		      break;
+		    }
+		  }
+		  
+		  if(!memory_conflict)
+		  { 
+		    AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+		    MappingPair* mappair = mapPairs[ind[i]];
+		    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		    P[0]->SetCurrentPosition(pred_ind[j]);
+		    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		    return true;
+		  }
+		}
+		AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	      }
+	      else if(!connected_p1 && !connected_p2){
+		UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+		UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+		for(int j=0; j < (int) pred_ind.size(); j++)
+		{
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+		    continue;
+		  if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+		    continue;
+		  for(int k=0; k < (int) pred_ind1.size(); k++)
+		  {
+		    if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()))
+		      continue;
+		    if(pred_ind[j]->getNode()->get_ID() != pred_ind1[k]->getNode()->get_ID() && pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()))
+		      continue;
+		    if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
+		      continue;
+		    if(pred_ind1[k]->getPE()->getIndexI() != mapPairs[ind[i]]->getPE()->getIndexI())
+		      continue;
+		    if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		      continue;
+
+		    // Find mapped nodes in current row for memory constraints
+		    vector<int> mapped_nodes;
+		    mapped_nodes.clear();
+		    mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		    bool memory_conflict = false;
+		    for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		      if(get_Node(mapped_nodes[jj])->get_ID() == P[1]->get_ID()) continue;
+		      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+			memory_conflict = true;
+			break;
+		      }
+		    }
+		    
+		    if(!memory_conflict)
+		    {
+		      AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
+		      AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+		      MappingPair* mappair = mapPairs[ind[i]];
+		      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		      P[0]->SetCurrentPosition(pred_ind[j]);
+		      P[1]->SetCurrentPosition(pred_ind1[k]);
+		      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		      return true;
+		    }
+		  }
+		}
+		AssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
+		AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	      }
+	      else{
+		MappingPair* mappair = mapPairs[ind[i]];
+		mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		return true;
+	      }
+	    }
+	    else _FATAL("FATAL: Smart_Map_Recovery_Node_Shallow::Case2: Cannot find related pred node to st_data\n");
+	  }
+	  
+	  else
+	  {
+           if(connectedPEs(pred_pos->getPE(),mapPairs[ind[i]]->getPE()) && !connectedPEs(pred_pos1->getPE(), mapPairs[ind[i]]->getPE()))
+           {
             //cout << "inside if" << endl;
             UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
             for(int j=0; j < (int) pred_ind1.size(); j++)
@@ -2268,6 +2626,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(pred_ind[k]->getPE()->getIndexI(), pred_ind[k]->getPE()->getIndexJ(), pred_ind[k]->getPE()->getIndexT()))
                   continue;
+		if(pred_ind[k]->getNode()->get_ID() != pred_ind1[j]->getNode()->get_ID() && (pred_ind[k]->getPE()->SameTimeCoordinate(pred_ind1[j]->getPE())))
+		  continue;
 
                 if(connectedPEs(pred_ind[k]->getPE(),mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
@@ -2291,8 +2651,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
             AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
             return true;
-            // _FATAL("should not come here! case 9 shallow node cp1: %d, cp2:%d, cs1: %d\n", connected_p1, connected_p2, connected_p3);
           }
+	  }
           break;
         }
       case 3:
@@ -2324,7 +2684,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             connected_p2 = true;
 
           //  cout << "pased connected s2" << endl;
-
+	  // 3 predecessors -> can only be predicating nodes -> no mem conflicts
 
           if(connected_p1 && connected_p2 && !connected_p3)
           {
@@ -2407,6 +2767,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(pred_ind2[k]->getPE()->getIndexI(), pred_ind2[k]->getPE()->getIndexJ(), pred_ind2[k]->getPE()->getIndexT()))
                   continue;
+                if(pred_ind1[j]->getPE()->SameTimeCoordinate(pred_ind2[k]->getPE()))
+                  continue;
 
                 if(connectedPEs(pred_ind2[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
@@ -2437,6 +2799,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               for(int k=0; k < (int) pred_ind2.size(); k++)
               {
                 if(!isTECfree(pred_ind2[k]->getPE()->getIndexI(), pred_ind2[k]->getPE()->getIndexJ(), pred_ind2[k]->getPE()->getIndexT()))
+                  continue;
+                if(pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind2[k]->getPE()))
                   continue;
 
                 if(connectedPEs(pred_ind2[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -2469,6 +2833,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                   continue;
+                if(pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                  continue;
 
                 if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
@@ -2500,10 +2866,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                   continue;
+                if(pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()))
+                  continue;
                 for(int l=0; l < (int) pred_ind2.size(); l++)
                 {
                   if(!isTECfree(pred_ind2[l]->getPE()->getIndexI(), pred_ind2[l]->getPE()->getIndexJ(), pred_ind2[l]->getPE()->getIndexT()))
                     continue;
+                  if(pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()) || pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                    continue;
+                    
                   if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind2[l]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
                     AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
@@ -2532,14 +2903,11 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
             AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
             return true;
-            // _FATAL("should not come here! case 9 shallow node cp1: %d, cp2:%d, cs1: %d\n", connected_p1, connected_p2, connected_p3);
           } 
-          //_FATAL("In Node recovery shallow map_case: %d\n", map_case);
           break;
         }
       case 4:
         {
-          cout << "inside case 4" << endl;
           vector<Node*> P;
           vector<Node*> S;
 
@@ -2548,18 +2916,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           MappingPair* succ_pos = S[0]->GetCurrentPosition();
           UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
-          bool is_load_add = n->is_Load_Address_Generator(); 
-
-          //cout << "succ no: " << S[0]->get_ID() << endl;
-          //for(int j=0; j < (int) succ_ind.size(); j++)
-          //  cout << "positions: " << succ_ind[j]->getPE()->getIndexI() << " " << succ_ind[j]->getPE()->getIndexJ() << " " << succ_ind[j]->getPE()->getIndexT() << endl;
+          bool is_load_add = n->is_Load_Address_Generator();
+	  bool is_st_add = n->is_Store_Address_Generator();
 
           for(int j=0; j < (int) succ_ind.size(); j++)
           { 
             if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
               continue;
 
-            if(!is_load_add)
+            if(!is_load_add && !is_st_add)
             {
               if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
               {  
@@ -2572,16 +2937,56 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
               }
             }
-            else
+	    else if(is_st_add){
+	      if(!mapPairs[ind[i]]->getPE()->SameTimeCoordinate(succ_ind[j]->getPE()) && succ_ind[j]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI()){
+		// Find mapped nodes in current row for memory constraints
+		vector<int> mapped_nodes;
+		mapped_nodes.clear();
+		mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		bool memory_conflict = false;
+		for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		  if(succ_ind[j]->getNode()->is_Store_Data_Bus_Write() && get_Node(mapped_nodes[jj])->get_ID() == succ_ind[j]->getNode()->get_ID()) continue;
+		  if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		    memory_conflict = true;
+		    break;
+		  }
+		}
+
+		if(!memory_conflict){
+		  AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
+		  MappingPair* mappair = mapPairs[ind[i]];
+		  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		  S[0]->SetCurrentPosition(succ_ind[j]);
+		  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		  return true;
+		}
+	      }
+	    }
+            else // ld_add node
             {
               if(succ_ind[j]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
               {
-                AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
-                MappingPair* mappair = mapPairs[ind[i]];
-                mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
-                S[0]->SetCurrentPosition(succ_ind[j]);
-                AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                return true;
+		vector<int> mapped_nodes;
+		mapped_nodes.clear();
+		mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		bool memory_conflict = false;
+		for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		  if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		    memory_conflict = true;
+		    break;
+		  }
+		}
+
+		if(!memory_conflict){
+		  AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
+		  MappingPair* mappair = mapPairs[ind[i]];
+		  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+		  S[0]->SetCurrentPosition(succ_ind[j]);
+		  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+		  return true;
+		}
               }
             }
           }
@@ -2594,21 +2999,22 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           vector<Node*> S;
 
           bool is_load_add = n->is_Load_Address_Generator(); 
-          bool is_load_data = n->is_Load_Data_Bus_Read();  
+          bool is_load_data = n->is_Load_Data_Bus_Read();
+	  bool is_store_add = n->is_Store_Address_Generator(); // Added by Vinh TA
 
-          tie(P,S) = get_Mapped_pred_succ(n);
+	  tie(P,S) = get_Mapped_pred_succ(n);
+	  FATAL(P.size() != 1 || S.size() != 1, "FATAL: Smart_Map_Failure_Recovery_Shallow case 5: Invalid pred/succ: P size = %d - S size = %d", P.size(), S.size());
+	  
           vector<MappingPair*> pred_ind = P[0]->GetMappedIndices();
-
           vector<MappingPair*> succ_ind = S[0]->GetMappedIndices();
+	  
           MappingPair* succ_pos = S[0]->GetCurrentPosition();
           MappingPair* pred_pos = P[0]->GetCurrentPosition();
 
-          if(!is_load_add && !is_load_data)
+          if(!is_load_add && !is_load_data && !is_store_add)
           {
-
             if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos->getPE()) && !connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE()))
             {
-              //cout << "case 5 first if" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
               {
@@ -2616,15 +3022,12 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   continue;
 
                 if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
-                { 
-                  //cout << "connected" << endl;
+                {	  
                   AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   P[0]->SetCurrentPosition(pred_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug"); 
                   return true;
 
                 }
@@ -2632,8 +3035,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
             }
             else if(!connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos->getPE()) && connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE()))
-            {    
-              //cout << "case 5 else if" << endl; 
+            {
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
               for(int j=0; j < (int) succ_ind.size(); j++)
@@ -2643,14 +3045,11 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
                 {
-                  //cout << "connected" << endl;
                   AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   S[0]->SetCurrentPosition(succ_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug");
                   return true;
 
                 }
@@ -2659,7 +3058,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos->getPE()) && !connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE()))
             {
-              // cout << "case 5: last else" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
@@ -2670,10 +3068,24 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
-
-                  if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+                    
+                  if(pred_ind[j]->getNode()->get_ID() == succ_ind[k]->getNode()->get_ID()){ // pred node = succ node -> mapping phi node -> should only assign either pred or succ but both have to be connected to phi
+                    if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                      AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                      MappingPair* mappair = mapPairs[ind[i]];
+                      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                      S[0]->SetCurrentPosition(succ_ind[k]);;
+                      //P[0]->SetCurrentPosition(pred_ind[j]);
+                      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                      return true;
+                    }
+                  } else {
+                    
+		  if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		    continue;
+		  
+		  if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
-                    //cout << "connected" << endl;
                     AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
                     AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                     MappingPair* mappair = mapPairs[ind[i]];
@@ -2681,10 +3093,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     S[0]->SetCurrentPosition(succ_ind[k]);;
                     P[0]->SetCurrentPosition(pred_ind[j]);
                     AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                    //TEC.print_matrix(); 
-                    //_FATAL("debug"); 
                     return true;
                   }
+                }
                 }
               }
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
@@ -2696,34 +3107,43 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
               AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
               return true;
-              // _FATAL("should not come here! case 9 shallow node cp1: %d, cp2:%d, cs1: %d\n", connected_p1, connected_p2, connected_s1);
             }
           }
 
-          if(is_load_add)
+          else if(is_load_add) // ld_add is not usually connected to phi -> doesn't have to check for same pred/succ node
           {
             bool connected_p = connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE()); 
-            bool connected_s = (succ_pos->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI()); 
-        
-            if(connected_s && !connected_p)
+            bool connected_s = (succ_pos->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI());
+
+	    vector<int> mapped_nodes;
+	    mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+	    bool memory_conflict = false;
+	    for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+	      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		memory_conflict = true;
+		break;
+	      }
+	    }
+	    if(memory_conflict) continue;
+
+	    //cout << "connected_p: " << connected_p << " - connected_s: " << connected_s << endl;
+		
+	    if(connected_s && !connected_p)
             {
-              //cout << "case 5 first if" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
               {
                 if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
                   continue;
-
-                if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
-                { 
-                  //cout << "connected" << endl;
+	       
+		if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+                {
                   AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   P[0]->SetCurrentPosition(pred_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug"); 
                   return true;
 
                 }
@@ -2732,24 +3152,18 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connected_s && connected_p)
             {    
-              //cout << "case 5 else if" << endl; 
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
-
               for(int j=0; j < (int) succ_ind.size(); j++)
               {
                 if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
                   continue;
-
                 if(mapPairs[ind[i]]->getPE()->getIndexI() == succ_ind[j]->getPE()->getIndexI())
                 {
-                  //cout << "connected" << endl;
                   AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   S[0]->SetCurrentPosition(succ_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug");
                   return true;
 
                 }
@@ -2758,9 +3172,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connected_p && !connected_s)
             {
-              // cout << "case 5: last else" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
-              UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	      UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
               {
                 if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
@@ -2769,25 +3182,25 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
-
-                  if((mapPairs[ind[i]]->getPE()->getIndexI() == succ_ind[k]->getPE()->getIndexI()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		  if(pred_ind[j]->getNode()->get_ID() != succ_ind[k]->getNode()->get_ID() && pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE())){
+		    continue;
+		  }
+		  
+                  if(mapPairs[ind[i]]->getPE()->getIndexI() == succ_ind[k]->getPE()->getIndexI() && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
-                    //cout << "connected" << endl;
-                    AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+	            AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
                     AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                     MappingPair* mappair = mapPairs[ind[i]];
                     mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                     S[0]->SetCurrentPosition(succ_ind[k]);;
                     P[0]->SetCurrentPosition(pred_ind[j]);
                     AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                    //TEC.print_matrix(); 
-                    //_FATAL("debug"); 
                     return true;
                   }
                 }
               }
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
-              AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	      AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
             }
             else
             {
@@ -2795,16 +3208,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
               AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
               return true;
-              // _FATAL("should not come here! case 9 shallow node cp1: %d, cp2:%d, cs1: %d\n", connected_p1, connected_p2, connected_s1);
             }
           }
-          else if(is_load_data)
+          else if(is_load_data) // ld_data is not usually connected to phi node
           {
             bool connected_p = (pred_pos->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI()); 
-            bool connected_s = connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos->getPE()); 
+            bool connected_s = connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos->getPE());
+	    
             if(connected_s && !connected_p)
             {
-              //cout << "case 5 first if" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
               {
@@ -2813,14 +3225,11 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(pred_ind[j]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
                 { 
-                  //cout << "connected" << endl;
                   AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   P[0]->SetCurrentPosition(pred_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug"); 
                   return true;
 
                 }
@@ -2829,7 +3238,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connected_s && connected_p)
             {    
-              //cout << "case 5 else if" << endl; 
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
               for(int j=0; j < (int) succ_ind.size(); j++)
@@ -2839,14 +3247,11 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
                 {
-                  //cout << "connected" << endl;
                   AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   S[0]->SetCurrentPosition(succ_ind[j]);
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                  //TEC.print_matrix(); 
-                  //_FATAL("debug");
                   return true;
 
                 }
@@ -2855,7 +3260,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connected_s && !connected_p)
             {
-              // cout << "case 5: last else" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
@@ -2866,10 +3270,12 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
+                    
+                  if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                    continue;
 
                   if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && (pred_ind[j]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI()))
                   {
-                    //cout << "connected" << endl;
                     AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
                     AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                     MappingPair* mappair = mapPairs[ind[i]];
@@ -2877,8 +3283,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     S[0]->SetCurrentPosition(succ_ind[k]);;
                     P[0]->SetCurrentPosition(pred_ind[j]);
                     AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
-                    //TEC.print_matrix(); 
-                    //_FATAL("debug"); 
                     return true;
                   }
                 }
@@ -2892,9 +3296,139 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
               AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
               return true;
-              // _FATAL("should not come here! case 9 shallow node cp1: %d, cp2:%d, cs1: %d\n", connected_p1, connected_p2, connected_s1);
             }
           }
+
+	  // Added by Vinh TA
+	  // Update: to handle case 5 and solve case where st_add is mapped on different row than st_data
+	  else if(is_store_add){
+	    bool connected_p = connectedPEs(pred_pos->getPE(), mapPairs[ind[i]]->getPE());
+            bool connected_s = (succ_pos->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI());
+
+	    //cout << "connected p: " << connected_p << " - connected s: " << connected_s << endl;
+	    
+	    if(!connected_p && connected_s){
+	      UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+              for(int j=0; j < (int) pred_ind.size(); j++)
+              {
+                if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+                  continue;
+
+                if(!connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())) continue;
+
+		vector<int> mapped_nodes;
+		mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		bool memory_conflict = false;
+		for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		  if(get_Node(mapped_nodes[jj])->get_ID() == S[0]->get_ID()) continue;
+		  if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		    memory_conflict = true;
+		    break;
+		  }
+		}
+		
+		if(!memory_conflict)
+                { 
+                  AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+                  MappingPair* mappair = mapPairs[ind[i]];
+                  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                  P[0]->SetCurrentPosition(pred_ind[j]);
+                  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                  return true;
+
+                }
+              }
+              AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	    }
+	    
+	    else if(connected_p && !connected_s){
+	      UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+              for(int j=0; j < (int) succ_ind.size(); j++)
+              {
+                if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
+                  continue;
+
+                if(mapPairs[ind[i]]->getPE()->getIndexI() != succ_ind[j]->getPE()->getIndexI()) continue;
+		if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(succ_ind[j]->getPE())) continue;
+
+		vector<int> mapped_nodes;
+		mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		
+		bool memory_conflict = false;
+		for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		  if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		    memory_conflict = true;
+		    break;
+		  }
+		}
+		
+		if(!memory_conflict)
+                {
+                  AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
+                  MappingPair* mappair = mapPairs[ind[i]];
+                  mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                  S[0]->SetCurrentPosition(succ_ind[j]);
+                  AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                  return true;
+
+                }
+              }
+              AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	    }
+
+	    else if(!connected_p && !connected_s){
+	      UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+              UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+              for(int j=0; j < (int) pred_ind.size(); j++)
+              {
+                if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+                  continue;
+                for(int k=0; k < (int) succ_ind.size(); k++)
+                {
+                  if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
+                    continue;
+		  if(mapPairs[ind[i]]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		    continue;
+                  if((mapPairs[ind[i]]->getPE()->getIndexI() != succ_ind[k]->getPE()->getIndexI()) || !connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+		    continue;
+
+		  vector<int> mapped_nodes;
+		  mapped_nodes = get_nodes_mapped_to_row((mapPairs[ind[i]]->getPE()->getIndexT()*SizeX)+mapPairs[ind[i]]->getPE()->getIndexI());
+		  
+		  bool memory_conflict = false;
+		  for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		    if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		      memory_conflict = true;
+		      break;
+		    }
+		  }
+
+		  if(!memory_conflict)
+                  {
+	            AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                    AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+                    MappingPair* mappair = mapPairs[ind[i]];
+                    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                    S[0]->SetCurrentPosition(succ_ind[k]);
+                    P[0]->SetCurrentPosition(pred_ind[j]);
+                    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                    return true;
+                  }
+                }
+              }
+              AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+              AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	    }
+
+	    else if(connected_p && connected_s){  // connected_p && connected_s
+	      MappingPair* mappair = mapPairs[ind[i]];
+              mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+              AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+              return true;
+	    }
+	    else _FATAL("Smart_Map_Recovery_Node_Shallow::Case5:is_st_add: should not reach here!\n");
+	  }
           break;
         }
       case 6:
@@ -2904,6 +3438,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
           tie(P,S) = get_Mapped_pred_succ(n);
 
+          // Case 6 should not have any memory node!
           vector<MappingPair*> pred_ind = P[0]->GetMappedIndices();
           vector<MappingPair*> pred_ind1 = P[1]->GetMappedIndices();
           vector<MappingPair*> succ_ind = S[0]->GetMappedIndices();
@@ -2926,6 +3461,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
           //  cout << "pased connected s2" << endl;
 
+	  //cout << "  p1: " << connected_p1 << " - p2: " << connected_p2 << " - s1: " << connected_s1 << endl;
 
           if(connected_p1 && connected_p2 && !connected_s1)
           {
@@ -2995,7 +3531,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
             AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
           }
-          else if(connected_p1 && !connected_p2 && !connected_s1)
+          else if(connected_p1 && !connected_p2 && !connected_s1)  // have to check for phi node case
           {
             //cout << "inside 4" << endl;
             UnAssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
@@ -3004,11 +3540,27 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             {
               if(!isTECfree(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT()))
                 continue;
+		
               for(int k=0; k < (int) succ_ind.size(); k++)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
 
+               if(pred_ind1[j]->getNode()->get_ID() == succ_ind[k]->getNode()->get_ID()){
+                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                   AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                   MappingPair* mappair = mapPairs[ind[i]];
+                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                   S[0]->SetCurrentPosition(succ_ind[k]);
+                   //P[1]->SetCurrentPosition(succ_ind[k]);
+                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                   return true;
+                 }
+               } else {
+
+		if(pred_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		  continue;
+		
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
                   AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -3021,12 +3573,13 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   return true;
                 }
               }
+              }
             }
             AssignTEC(pred_pos1->getPE()->getIndexI(), pred_pos1->getPE()->getIndexJ(), pred_pos1->getPE()->getIndexT(), pred_pos1->getNode()->get_ID());
             AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
           }
-          else if(!connected_p1 && connected_p2 && !connected_s1)
+          else if(!connected_p1 && connected_p2 && !connected_s1)  // Have to check for phi node case
           {
             //cout << "inside 5" << endl;
             UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
@@ -3039,7 +3592,22 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
+                  
+                if(pred_ind[j]->getNode()->get_ID() == succ_ind[k]->getNode()->get_ID()){
+                  if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                    AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                    MappingPair* mappair = mapPairs[ind[i]];
+                    mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                    S[0]->SetCurrentPosition(succ_ind[k]);
+                    //P[0]->SetCurrentPosition(pred_ind[j]);
+                    AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                    return true;
+                  }
+                } else {
 
+		if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		  continue;
+		
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
                   AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -3051,6 +3619,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
                   return true;
                 }
+              }
               }
             }
             AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
@@ -3071,6 +3640,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                   continue;
 
+		if(pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()))
+		  continue;
+		
                 if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
                   AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
@@ -3101,10 +3673,32 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                   continue;
+		if(pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()))
+		  continue;
+		
                 for(int l=0; l < (int) succ_ind.size(); l++)
                 {
                   if(!isTECfree(succ_ind[l]->getPE()->getIndexI(), succ_ind[l]->getPE()->getIndexJ(), succ_ind[l]->getPE()->getIndexT()))
                     continue;
+                    
+                  if(pred_ind[j]->getNode()->get_ID() == succ_ind[l]->getNode()->get_ID() || pred_ind1[k]->getNode()->get_ID() == succ_ind[l]->getNode()->get_ID()){
+                    if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[l]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                      if(!(pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))){
+                        AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
+                        AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+                        MappingPair* mappair = mapPairs[ind[i]];
+                        mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                        P[1]->SetCurrentPosition(pred_ind1[k]);
+                        P[0]->SetCurrentPosition(pred_ind[j]);
+                        AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                        return true;
+                      }
+                    }
+                  } else {
+                    
+		  if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[l]->getPE()) || pred_ind1[k]->getPE()->SameTimeCoordinate(succ_ind[l]->getPE()))
+		    continue;
+		    
                   if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[l]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
                     AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
@@ -3120,7 +3714,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   }
 
                 }
-
+                }
               }
             }
             AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
@@ -3249,6 +3843,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                     continue;
+                  if(pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind2[j]->getPE()))
+                    continue;
 
                   if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind2[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
@@ -3279,6 +3875,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 for(int k=0; k < (int) pred_ind2.size(); k++)
                 {
                   if(!isTECfree(pred_ind2[k]->getPE()->getIndexI(), pred_ind2[k]->getPE()->getIndexJ(), pred_ind2[k]->getPE()->getIndexT()))
+                    continue;
+                  if(pred_ind2[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
                     continue;
 
                   if(connectedPEs(pred_ind2[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -3311,6 +3909,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                     continue;
+                  if(pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                    continue;
 
                   if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
@@ -3342,10 +3942,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                     continue;
+                  if(pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                    continue;
+                    
                   for(int l=0; l < (int) pred_ind2.size(); l++)
                   {
                     if(!isTECfree(pred_ind2[l]->getPE()->getIndexI(), pred_ind2[l]->getPE()->getIndexJ(), pred_ind2[l]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()) || pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                      continue;
+                      
                     if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind2[l]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                     {
                       AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
@@ -3401,6 +4007,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind2[j]->getPE()->getIndexI(), pred_ind2[j]->getPE()->getIndexJ(), pred_ind2[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
 
                     if(connectedPEs(pred_ind2[j]->getPE(), mapPairs[ind[i]]->getPE()))
                     {
@@ -3427,6 +4035,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind1[j]->getPE()->getIndexI(), pred_ind1[j]->getPE()->getIndexJ(), pred_ind1[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
 
                     if(connectedPEs(pred_ind1[j]->getPE(), mapPairs[ind[i]]->getPE()))
                     {
@@ -3449,6 +4059,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   for(int j=0; j < (int) pred_ind.size(); j++)
                   {
                     if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
+                      continue;
+                    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
                       continue;
 
                     if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -3475,9 +4087,14 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind2[j]->getPE()->getIndexI(), pred_ind2[j]->getPE()->getIndexJ(), pred_ind2[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
+                      
                     for(int k=0; k < (int) pred_ind1.size(); k++)
                     {
                       if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
+                        continue;
+                      if(pred_ind1[k]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()) || pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind2[j]->getPE()))
                         continue;
 
                       if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind2[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -3508,9 +4125,14 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
+                      
                     for(int k=0; k < (int) pred_ind2.size(); k++)
                     {
                       if(!isTECfree(pred_ind2[k]->getPE()->getIndexI(), pred_ind2[k]->getPE()->getIndexJ(), pred_ind2[k]->getPE()->getIndexT()))
+                        continue;
+                      if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()) || pred_ind[j]->getPE()->SameTimeCoordinate(pred_ind2[k]->getPE()))
                         continue;
 
                       if(connectedPEs(pred_ind2[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -3541,9 +4163,14 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
+                      
                     for(int k=0; k < (int) pred_ind1.size(); k++)
                     {
                       if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
+                        continue;
+                      if(pred_ind1[k]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()) || pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
                         continue;
 
                       if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
@@ -3574,14 +4201,23 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT()))
                       continue;
+                    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()))
+                      continue;
+                      
                     for(int k=0; k < (int) pred_ind1.size(); k++)
                     {
                       if(!isTECfree(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT()))
                         continue;
+                      if(pred_ind1[k]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()) || pred_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                        continue;
+                      
                       for(int l=0; l < (int) pred_ind2.size(); l++)
                       {
                         if(!isTECfree(pred_ind2[l]->getPE()->getIndexI(), pred_ind2[l]->getPE()->getIndexJ(), pred_ind2[l]->getPE()->getIndexT()))
                           continue;
+                        if(pred_ind2[l]->getPE()->SameTimeCoordinate(succ_ind[jj]->getPE()) || pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind1[k]->getPE()) || pred_ind2[l]->getPE()->SameTimeCoordinate(pred_ind[j]->getPE()))
+                          continue;
+                          
                         if(connectedPEs(pred_ind1[k]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind2[l]->getPE(), mapPairs[ind[i]]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                         {
                           AssignTEC(pred_ind1[k]->getPE()->getIndexI(), pred_ind1[k]->getPE()->getIndexJ(), pred_ind1[k]->getPE()->getIndexT(), pred_ind1[k]->getNode()->get_ID());
@@ -3699,6 +4335,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
+		if(succ_ind[k]->getNode()->get_ID() != succ_ind1[j]->getNode()->get_ID() && succ_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		  continue;
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                 {
@@ -3732,6 +4370,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           vector<Node*> S;
 
           tie(P,S) = get_Mapped_pred_succ(n);
+
+	  if(S.size() != 2 || P.size() != 1) _FATAL("ERROR: Map case 9 has illegal pred or succ size");
+	  
           vector<MappingPair*> pred_ind = P[0]->GetMappedIndices();
           vector<MappingPair*> succ_ind1 = S[1]->GetMappedIndices();
           vector<MappingPair*> succ_ind = S[0]->GetMappedIndices();
@@ -3739,7 +4380,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
           MappingPair* succ_pos1 = S[1]->GetCurrentPosition();
           MappingPair* pred_pos = P[0]->GetCurrentPosition();
 
-          bool is_load_add = P[0]->is_Load_Address_Generator();
+          bool is_load_add = P[0]->is_Load_Address_Generator();  // prev is ld_add -> current is ld_data
 
           bool connected_p = false, connected_s1 = false, connected_s2 = false; 
 
@@ -3752,9 +4393,10 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos1->getPE()))
               connected_s2 = true;
 
-            if(connected_p && connected_s1 && !connected_s2)
+	    //cout << "Smart_Map_Recovery_Node_Shallow::Case 9: p: " << connected_p << " - s1: " << connected_s1 << " - s2: " << connected_s2 << endl;
+	    
+	    if(connected_p && connected_s1 && !connected_s2)
             {
-              //cout << "inside 1" << endl;
               UnAssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
 
               for(int j=0; j < (int) succ_ind1.size(); j++)
@@ -3764,6 +4406,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                 {
+		    
                   AssignTEC(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT(), succ_ind1[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
@@ -3778,7 +4421,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(connected_p && !connected_s1 && connected_s2)
             {
-              //cout << "inside 2" << endl;
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
               for(int j=0; j < (int) succ_ind.size(); j++)
@@ -3788,6 +4430,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
                 {
+		  
                   AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
@@ -3800,7 +4443,6 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(!connected_p && connected_s1 && connected_s2)
             {
-              //cout << "inside 3" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
               {
@@ -3809,7 +4451,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
 
                 if(connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
-                  AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
+		  AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                   MappingPair* mappair = mapPairs[ind[i]];
                   mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
                   P[0]->SetCurrentPosition(pred_ind[j]);
@@ -3822,8 +4464,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
             }
             else if(connected_p && !connected_s1 && !connected_s2)
             {
-              //cout << "inside 4" << endl;
-              UnAssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
+	      UnAssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               for(int j=0; j < (int) succ_ind1.size(); j++)
               {
@@ -3833,6 +4474,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
+		  if(succ_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE())){
+		    continue;
+		  }
 
                   if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                   {
@@ -3849,11 +4493,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               }
               AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
               AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
-
             }
-            else if(!connected_p && connected_s1 && !connected_s2)
+            else if(!connected_p && connected_s1 && !connected_s2)  // Have to check for phi node case
             {
-              //cout << "inside 5" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
@@ -3864,7 +4506,22 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
                     continue;
+                    
+                  if(pred_ind[j]->getNode()->get_ID() == succ_ind1[k]->getNode()->get_ID()){
+                    if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                      AssignTEC(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT(), succ_ind1[k]->getNode()->get_ID());
+                      MappingPair* mappair = mapPairs[ind[i]];
+                      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                      S[1]->SetCurrentPosition(succ_ind1[k]);
+                      //P[0]->SetCurrentPosition(pred_ind[j]);
+                      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                      return true;
+                    }
+                  } else {
 
+		  if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind1[k]->getPE()))
+		    continue;
+		  
                   if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
                     AssignTEC(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT(), succ_ind1[k]->getNode()->get_ID());
@@ -3877,14 +4534,14 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     return true;
                   }
                 }
+                }
               }
-              AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
-              AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
-
+	      
+	      AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
+	      AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
             }
             else if(!connected_p && !connected_s1 && connected_s2)
             {
-              //cout << "inside 6" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               for(int j=0; j < (int) pred_ind.size(); j++)
@@ -3895,8 +4552,23 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
-
-                  if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
+                  
+                  if(pred_ind[j]->getNode()->get_ID() == succ_ind[k]->getNode()->get_ID()){
+                    if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                      AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                      MappingPair* mappair = mapPairs[ind[i]];
+                      mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                      S[0]->SetCurrentPosition(succ_ind[k]);
+                      //P[0]->SetCurrentPosition(pred_ind[j]);
+                      AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                      return true;
+                    }
+                  } else {
+                  
+		  if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		    continue;
+		  
+		  if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                   {
                     AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
                     AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
@@ -3908,13 +4580,14 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     return true;
                   }
                 }
+                }
               }
+
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
-              AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	      AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
             }
             else if(!connected_p && !connected_s1 && !connected_s2)
             {
-              //cout << "inside 7" << endl;
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
               UnAssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
@@ -3926,13 +4599,55 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                     continue;
+                    
                   for(int l=0; l < (int) succ_ind1.size(); l++)
                   {
                     if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                       continue;
+                    
+                    int register pred_id = pred_ind[j]->getNode()->get_ID();
+                    int register succ_id = succ_ind[k]->getNode()->get_ID();
+                    int register succ1_id = succ_ind1[l]->getNode()->get_ID();
+                    
+                    /*cout << "Break: Inside all loops\npred_ind node: " << pred_id << " @ " << pred_ind[j]->getPE()->getIndexI() << ":" << pred_ind[j]->getPE()->getIndexJ() << "T" << pred_ind[j]->getPE()->getIndexT() << endl;
+                    cout << "Break: succ_ind node: " << succ_id << " @ " << succ_ind[k]->getPE()->getIndexI() << ":" << succ_ind[k]->getPE()->getIndexJ() << "T" << succ_ind[k]->getPE()->getIndexT() << endl;
+                    cout << "Break: succ_ind1 node: " << succ1_id << " @ " << succ_ind1[l]->getPE()->getIndexI() << ":" << succ_ind1[l]->getPE()->getIndexJ() << "T" << succ_ind1[l]->getPE()->getIndexT() << endl;
+                    
+                    if(pred_id == succ_id || pred_id == succ1_id){
+                      cout << "Break: phi node case 9!\n";
+                    }*/
+                      
+                    if(pred_id == succ_id || pred_id == succ1_id){
+                      //cout << "  Break: Pred node = succ node\n";
+                      if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE())){
+                        //cout << "  Break: Connected PE!\n";
+                        if(!(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))){
+                          //cout << "  Break: Assigning both succ nodes\n";
+                          AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                          AssignTEC(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT(), succ_ind1[l]->getNode()->get_ID());
+                          MappingPair* mappair = mapPairs[ind[i]];
+                          mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                          S[0]->SetCurrentPosition(succ_ind[k]);
+                          S[1]->SetCurrentPosition(succ_ind1[l]);
+                          AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                          return true;
+                        }
+                      }
+                    } else {
+                    cout << "Break: Pred node != succ node\n";
+                      
+                    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+		      continue;
+                      
+		    if(pred_ind[j]->getPE()->SameTimeCoordinate(succ_ind1[l]->getPE()))
+		      continue;
+		    
+		    if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[l]->getPE()))
+		      continue;
+		    
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(pred_ind[j]->getPE(), mapPairs[ind[i]]->getPE()))
                     {
-                      AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+		      AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
                       AssignTEC(pred_ind[j]->getPE()->getIndexI(), pred_ind[j]->getPE()->getIndexJ(), pred_ind[j]->getPE()->getIndexT(), pred_ind[j]->getNode()->get_ID());
                       AssignTEC(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT(), succ_ind1[l]->getNode()->get_ID());
                       MappingPair* mappair = mapPairs[ind[i]];
@@ -3945,15 +4660,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     }
 
                   }
-
+                  }
                 }
               }
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
-              AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
-              AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
+	      AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
+	      AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
             }
             else
             {
+	      cout << "Smart_Map_Recovery_Node_Shallow::Case 9: inside else case\n";
               MappingPair* mappair = mapPairs[ind[i]];
               mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);        
               AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
@@ -3962,7 +4678,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               //_FATAL("In Node recovery shallow map_case: %d\n", map_case);
             }
           }
-          else
+          else  // Ld_data node not usually connected to phi node
           {
             // Instead of connected PEs for pred check for connected rows.
             if(pred_pos->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
@@ -4030,6 +4746,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                     {
@@ -4047,16 +4765,21 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
                 AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
 
+              } else {
+              	 cout << "Smart_Map_Recovery_Node_Shallow::Case 9: inside else case\n";
+                MappingPair* mappair = mapPairs[ind[i]];
+                mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);        
+                AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                return true;
               }
-              else
-              {
-                _FATAL("We should not be here case 9 shallow/non load p=%d, s1=%d, s2=%d\n", connected_p, connected_s1, connected_s2); 
-              }
-            }
+	    }
             else
             {
               for(int jj=0; jj < (int) pred_ind.size(); jj++)
               {
+                if(!isTECfree(pred_ind[jj]->getPE()->getIndexI(), pred_ind[jj]->getPE()->getIndexJ(), pred_ind[jj]->getPE()->getIndexT()))
+                  continue;
+                  
                 UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
                 if(connected_s1 && !connected_s2)
                 {
@@ -4065,6 +4788,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   for(int j=0; j < (int) succ_ind1.size(); j++)
                   {
                     if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
+                      continue;
+                    if(succ_ind1[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
                       continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()) && pred_ind[jj]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
@@ -4090,6 +4815,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()) && pred_ind[jj]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
                     {
@@ -4114,10 +4841,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind1[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                      continue;
+
                     for(int k=0; k < (int) succ_ind.size(); k++)
                     {
                       if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind[k]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
+                        continue;
+
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()) && pred_ind[jj]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
                       {
@@ -4269,6 +5002,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
+                if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
+                  continue;
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                 {
@@ -4299,6 +5034,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               for(int k=0; k < (int) succ_ind1.size(); k++)
               {
                 if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
+                  continue;
+                if(succ_ind1[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
                   continue;
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -4331,6 +5068,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
+                if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                  continue;
 
                 if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                 {
@@ -4362,10 +5101,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               {
                 if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                   continue;
+                if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                  continue;
                 for(int l=0; l < (int) succ_ind1.size(); l++)
                 {
                   if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                     continue;
+                  if(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()) || succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                    continue;
+                    
                   if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                   {
                     AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -4512,6 +5256,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                     {
@@ -4542,6 +5288,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   for(int k=0; k < (int) succ_ind1.size(); k++)
                   {
                     if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
+                      continue;
+                    if(succ_ind1[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
                       continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -4574,6 +5322,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                     {
@@ -4605,10 +5355,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                      continue;
                     for(int l=0; l < (int) succ_ind1.size(); l++)
                     {
                       if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()) || succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                        continue;
+                        
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                       {
                         AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -4641,11 +5396,13 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 //_FATAL("In Node recovery shallow map_case: %d\n", map_case);
               }
             }
-            else
+            else  // !connected_p
             {
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int jj=0; jj < (int) pred_ind.size(); jj++)
               {
+                if(pred_ind[jj]->getPE()->SameTimeCoordinate(mapPairs[ind[i]]->getPE()))
+                  continue;
                 if(connectedPEs(pred_ind[jj]->getPE(), mapPairs[ind[i]]->getPE()))
                 {
                   if(connected_s && connected_s1 && !connected_s2)
@@ -4656,6 +5413,20 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     for(int j=0; j < (int) succ_ind1.size(); j++)
                     {
                       if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
+                        continue;
+                        
+                      if(succ_ind1[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                        if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE())){
+                          AssignTEC(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT(), succ_ind1[j]->getNode()->get_ID());
+                          MappingPair* mappair = mapPairs[ind[i]];
+                          mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                          S[1]->SetCurrentPosition(succ_ind1[j]);
+                          AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                          return true;
+                        }
+                      } else {
+                        
+                      if(succ_ind1[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
                         continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
@@ -4668,8 +5439,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                         P[0]->SetCurrentPosition(pred_ind[jj]);
                         AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
                         return true;
-
                       }
+                    }
                     }
                     AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
 
@@ -4682,6 +5453,20 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     for(int j=0; j < (int) succ_ind.size(); j++)
                     {
                       if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
+                        continue;
+                        
+                      if(succ_ind[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                        if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE())){
+                          AssignTEC(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT(), succ_ind[j]->getNode()->get_ID());
+                          MappingPair* mappair = mapPairs[ind[i]];
+                          mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                          S[0]->SetCurrentPosition(succ_ind[j]);
+                          AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                          return true;
+                        }
+                      } else {
+                        
+                      if(succ_ind[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
                         continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
@@ -4696,6 +5481,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                         return true;
                       }
                     }
+                    }
                     AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
                   }
                   else if(!connected_s && connected_s1 && connected_s2)
@@ -4705,6 +5491,20 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     for(int j=0; j < (int) succ_ind2.size(); j++)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
+                        continue;
+                        
+                      if(succ_ind2[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                        if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE())){
+                          AssignTEC(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT(), succ_ind2[j]->getNode()->get_ID());
+                          MappingPair* mappair = mapPairs[ind[i]];
+                          mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                          S[2]->SetCurrentPosition(succ_ind2[j]);
+                          AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                          return true;
+                        }
+                      } else {
+                        
+                      if(succ_ind2[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
                         continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -4719,7 +5519,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                         return true;
                       }
                     }
-
+                    }
                     AssignTEC(succ_pos2->getPE()->getIndexI(), succ_pos2->getPE()->getIndexJ(), succ_pos2->getPE()->getIndexT(), succ_pos2->getNode()->get_ID());
                   }
                   else if(connected_s && !connected_s1 && !connected_s2)
@@ -4731,9 +5531,32 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
                         continue;
+                        
+                      if(succ_ind1[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
+                          continue;
+                          
+                        if(succ_ind1[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID() || succ_ind[k]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                          if(!(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))){
+                            if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE())){
+                              AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                              AssignTEC(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT(), succ_ind1[j]->getNode()->get_ID());
+                              MappingPair* mappair = mapPairs[ind[i]];
+                              mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                              S[0]->SetCurrentPosition(succ_ind[k]);
+                              S[1]->SetCurrentPosition(succ_ind1[j]);
+                              AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                              return true;
+                            }
+                          }
+                      
+                        } else {
+                        
+                        if(succ_ind[k]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
@@ -4750,6 +5573,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                           return true;
                         }
                       }
+                      }
                     }
                     AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
                     AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
@@ -4764,9 +5588,30 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind2[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind1.size(); k++)
                       {
                         if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
+                          continue;
+                        
+                        if(succ_ind2[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID() || succ_ind1[k]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                          if(!(succ_ind1[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))){
+                            if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE())){
+                              AssignTEC(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT(), succ_ind1[k]->getNode()->get_ID());
+                              AssignTEC(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT(), succ_ind2[j]->getNode()->get_ID());
+                              MappingPair* mappair = mapPairs[ind[i]];
+                              mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                              S[1]->SetCurrentPosition(succ_ind1[k]);
+                              S[2]->SetCurrentPosition(succ_ind2[j]);
+                              AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                              return true;
+                            }
+                          }
+                        } else {
+                          
+                        if(succ_ind1[k]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind1[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -4783,6 +5628,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                           return true;
                         }
                       }
+                      }
                     }
                     AssignTEC(succ_pos2->getPE()->getIndexI(), succ_pos2->getPE()->getIndexJ(), succ_pos2->getPE()->getIndexT(), succ_pos2->getNode()->get_ID());
                     AssignTEC(succ_pos1->getPE()->getIndexI(), succ_pos1->getPE()->getIndexJ(), succ_pos1->getPE()->getIndexT(), succ_pos1->getNode()->get_ID());
@@ -4797,9 +5643,30 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind2[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
+                          continue;
+                          
+                        if(succ_ind2[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID() || succ_ind[k]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                          if(!(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))){
+                            if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE())){
+                              AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                              AssignTEC(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT(), succ_ind2[j]->getNode()->get_ID());
+                              MappingPair* mappair = mapPairs[ind[i]];
+                              mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                              S[0]->SetCurrentPosition(succ_ind[k]);
+                              S[2]->SetCurrentPosition(succ_ind2[j]);
+                              AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                              return true;
+                            }
+                          }
+                        } else {
+                        
+                        if(succ_ind[k]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -4816,6 +5683,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                           return true;
                         }
                       }
+                      }
                     }
                     AssignTEC(succ_pos2->getPE()->getIndexI(), succ_pos2->getPE()->getIndexJ(), succ_pos2->getPE()->getIndexT(), succ_pos2->getNode()->get_ID());
                     AssignTEC(succ_pos->getPE()->getIndexI(), succ_pos->getPE()->getIndexJ(), succ_pos->getPE()->getIndexT(), succ_pos->getNode()->get_ID());
@@ -4830,14 +5698,41 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind2[j]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                           continue;
+                        if(succ_ind[k]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                          continue;
+                          
                         for(int l=0; l < (int) succ_ind1.size(); l++)
                         {
                           if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                             continue;
+                            
+                          if(succ_ind2[j]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID() || succ_ind[k]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID() || succ_ind1[l]->getNode()->get_ID() == pred_ind[jj]->getNode()->get_ID()){
+                            if(!(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE())) && !(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE())) && !(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))){
+                              if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE())){
+                                AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
+                                AssignTEC(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT(), succ_ind2[j]->getNode()->get_ID());
+                                AssignTEC(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT(), succ_ind1[l]->getNode()->get_ID());
+                                MappingPair* mappair = mapPairs[ind[i]];
+                                mapPairs[ind[i]]->getNode()->SetCurrentPosition(mappair);
+                                S[0]->SetCurrentPosition(succ_ind[k]);
+                                S[1]->SetCurrentPosition(succ_ind1[l]);
+                                S[2]->SetCurrentPosition(succ_ind2[j]);
+                                AssignTEC(mapPairs[ind[i]]->getPE()->getIndexI(), mapPairs[ind[i]]->getPE()->getIndexJ(), mapPairs[ind[i]]->getPE()->getIndexT(), mapPairs[ind[i]]->getNode()->get_ID());
+                                return true;
+                              }
+                            }
+                          } else {
+                            
+                          if(succ_ind1[l]->getPE()->SameTimeCoordinate(pred_ind[jj]->getPE()) || succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()) || succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                            continue;
+                            
                           if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                           {
                             AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -4855,7 +5750,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                           }
 
                         }
-
+                        }
                       }
                     }
                     AssignTEC(succ_pos2->getPE()->getIndexI(), succ_pos2->getPE()->getIndexJ(), succ_pos2->getPE()->getIndexT(), succ_pos2->getNode()->get_ID());
@@ -4878,7 +5773,7 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
               AssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
             }
           }
-          else
+          else // P[0] is ld_add -> current node is ld_data
           {
             if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_pos2->getPE()))
               connected_s = true;
@@ -4972,6 +5867,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
                     {
@@ -4999,9 +5896,12 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 {
                   if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                     continue;
+                  
                   for(int k=0; k < (int) succ_ind1.size(); k++)
                   {
                     if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
+                      continue;
+                    if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind1[k]->getPE()))
                       continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -5034,6 +5934,8 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                      continue;
 
                     if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                     {
@@ -5065,10 +5967,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                   {
                     if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                       continue;
+                    if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                      continue;
+                    
                     for(int l=0; l < (int) succ_ind1.size(); l++)
                     {
                       if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                         continue;
+                      if(succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()) || succ_ind1[l]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                        continue;
+                        
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                       {
                         AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -5101,11 +6009,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                 //_FATAL("In Node recovery shallow map_case: %d\n", map_case);
               }
             }
-            else
+            else  // !connected_p
             {
               UnAssignTEC(pred_pos->getPE()->getIndexI(), pred_pos->getPE()->getIndexJ(), pred_pos->getPE()->getIndexT(), pred_pos->getNode()->get_ID());
               for(int jj=0; jj < (int) pred_ind.size(); jj++)
               {
+                if(pred_ind[jj]->getPE()->SameTimeCoordinate(mapPairs[ind[i]]->getPE()))
+                  continue;
+                  
+                // TODO: Check SameTimeCoordinate for all cases below!
                 if(pred_ind[jj]->getPE()->getIndexI() == mapPairs[ind[i]]->getPE()->getIndexI())
                 {
                   if(connected_s && connected_s1 && !connected_s2)
@@ -5116,6 +6028,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     for(int j=0; j < (int) succ_ind1.size(); j++)
                     {
                       if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
+                        continue;
+                        
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
                         continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
@@ -5143,6 +6058,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind[j]->getPE()->getIndexI(), succ_ind[j]->getPE()->getIndexJ(), succ_ind[j]->getPE()->getIndexT()))
                         continue;
+                        
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind[j]->getPE()))
+                        continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[j]->getPE()))
                       {
@@ -5165,6 +6083,9 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     for(int j=0; j < (int) succ_ind2.size(); j++)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
+                        continue;
+                        
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
                         continue;
 
                       if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -5191,9 +6112,16 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind1[j]->getPE()->getIndexI(), succ_ind1[j]->getPE()->getIndexJ(), succ_ind1[j]->getPE()->getIndexT()))
                         continue;
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind1[j]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
+                          continue;
+                        if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                          continue;
+                        if(succ_ind1[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[j]->getPE()))
@@ -5224,9 +6152,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                        continue;
                       for(int k=0; k < (int) succ_ind1.size(); k++)
                       {
                         if(!isTECfree(succ_ind1[k]->getPE()->getIndexI(), succ_ind1[k]->getPE()->getIndexJ(), succ_ind1[k]->getPE()->getIndexT()))
+                          continue;
+                        if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind1[k]->getPE()))
+                          continue;
+                        if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind1[k]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -5257,9 +6191,15 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                        continue;
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
+                          continue;
+                        if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                          continue;
+                        if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
                           continue;
 
                         if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
@@ -5290,14 +6230,29 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
                     {
                       if(!isTECfree(succ_ind2[j]->getPE()->getIndexI(), succ_ind2[j]->getPE()->getIndexJ(), succ_ind2[j]->getPE()->getIndexT()))
                         continue;
+                      if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind2[j]->getPE()))
+                        continue;
+                        
                       for(int k=0; k < (int) succ_ind.size(); k++)
                       {
                         if(!isTECfree(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT()))
                           continue;
+                        if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                          continue;
+                        if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind[k]->getPE()))
+                          continue;
+                          
                         for(int l=0; l < (int) succ_ind1.size(); l++)
                         {
                           if(!isTECfree(succ_ind1[l]->getPE()->getIndexI(), succ_ind1[l]->getPE()->getIndexJ(), succ_ind1[l]->getPE()->getIndexT()))
                             continue;
+                          if(pred_ind[jj]->getPE()->SameTimeCoordinate(succ_ind1[l]->getPE()))
+                            continue;
+                          if(succ_ind2[j]->getPE()->SameTimeCoordinate(succ_ind1[l]->getPE()))
+                            continue;
+                          if(succ_ind[k]->getPE()->SameTimeCoordinate(succ_ind1[l]->getPE()))
+                            continue;
+                            
                           if(connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind[k]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind1[l]->getPE()) && connectedPEs(mapPairs[ind[i]]->getPE(), succ_ind2[j]->getPE()))
                           {
                             AssignTEC(succ_ind[k]->getPE()->getIndexI(), succ_ind[k]->getPE()->getIndexJ(), succ_ind[k]->getPE()->getIndexT(), succ_ind[k]->getNode()->get_ID());
@@ -5398,41 +6353,188 @@ bool CGRA::Smart_Map_Recovery_Node_Shallow(Node* n, int map_case)
   return false;
 }
 
+
+// Added by Vinh TA:
+// Problem: Remap changes positions of nodes_in_current_slot and when success, their backup lost track. As Smart_Map_Recovery_Node_Shallow fails, nodes cannot restore to their originals
+// Update: add backup for nodes_in_current_slot and restore from this backup when Smart_Map_Recovery_Node_Shallow fails
 bool CGRA::Smart_Map_Failure_Recovery_Shallow_N(Node* n, int map_case)
 {
+  cout << "\nSmart_Map_Failure_Recovery_Shallow_N node: " << n->get_ID() << " - case: " << map_case << "\n";
+  //TEC.print_matrix();
   Matrix_Copy(copy_TEC);
 
   nodes_in_current_slot.clear();
   nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current()); 
 
-  for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
+  std::vector<MappingPair*> current_backup;
+  std::vector<MappingPair*>::iterator mp_it;
+  for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+    MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+    current_backup.push_back(mp);
+  }
+  
+  cout << "\tcurrent timeslot node size: " << nodes_in_current_slot.size() << endl;
+  if(nodes_in_current_slot.size() == 0) {  // No node to remap in current timeslot -> go to 1Deep to remap adjacent timeslots
+    current_backup.clear();
+    return false;
+  }
+  
+  // Added by Vinh Ta
+  // Update: new routine - free current timeslot and try mapping n before doing remap
+  vector<Node*> P;
+  vector<Node*> S;
+  P.clear(); S.clear(); 
+  tie(P,S) = get_Mapped_pred_succ(n);
+  
+  std::vector<MappingPair*> pred_backup;
+  for(int curr_i = 0; curr_i < P.size(); curr_i++){
+    MappingPair* mp = new MappingPair(*(P[curr_i]->GetCurrentPosition()));
+    pred_backup.push_back(mp);
+  }
+  std::vector<MappingPair*> succ_backup;
+  for(int curr_i = 0; curr_i < S.size(); curr_i++){
+    MappingPair* mp = new MappingPair(*(S[curr_i]->GetCurrentPosition()));
+    succ_backup.push_back(mp);
+  }
+
+  TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+  // Assign back removed pred/succ nodes
+  for(int node_i = 0; node_i < P.size(); node_i++)
+    if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+      AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+      nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), P[node_i]));  
+      cout << "Warning: pred node: " << P[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl;
+    }
+      
+  for(int node_i = 0; node_i < S.size(); node_i++)
+    if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+      AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+      nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), S[node_i]));
+      cout << "Warning: succ node: " << S[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+    }
+  
+  if(Smart_Map_Recovery_Node_Shallow(n, map_case)){
+    cout << "Shallow_N recovery success!\n";
+    if(Remap(nodes_in_current_slot)) {
+      cout << "Shalow_N Remap success!";
+      current_backup.clear();
+      pred_backup.clear();
+      succ_backup.clear();
+      return true;
+    }
+  }
+  
+  cout << "Shallow_N failed to find mapping for node: " << n->get_ID() << endl;
+  
+  for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+    for(mp_it = current_backup.begin(); mp_it != current_backup.end(); mp_it++){
+      if((*mp_it)->getNode()->get_ID() == nodes_in_current_slot[curr_i]->get_ID())
+        nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+    }
+  }
+  
+  for(int curr_i = 0; curr_i < P.size(); curr_i++){
+    bool found = false;
+    for(mp_it = pred_backup.begin(); mp_it != pred_backup.end(); mp_it++){
+      if((*mp_it)->getNode()->get_ID() == P[curr_i]->get_ID()){
+        P[curr_i]->SetCurrentPosition(*mp_it);
+        found = true;
+      }
+    }
+    if(!found) _FATAL("ERROR: Cannot restore node %d\n", P[curr_i]->get_ID());
+  }
+  
+  for(int curr_i = 0; curr_i < S.size(); curr_i++){
+    bool found = false;
+    for(mp_it = succ_backup.begin(); mp_it != succ_backup.end(); mp_it++){
+      if((*mp_it)->getNode()->get_ID() == S[curr_i]->get_ID()){
+        S[curr_i]->SetCurrentPosition(*mp_it);
+        found = true;
+      }
+    }
+    if(!found)
+      _FATAL("ERROR: Cannot restore node %d\n", S[curr_i]->get_ID());
+  }
+  
+  current_backup.clear();
+  pred_backup.clear();
+  succ_backup.clear();
+  Restore(copy_TEC);
+  
+  return false;
+  
+  
+  // OLD PROCEDURE
+  
+  vector<MappingPair*> indices;
+  indices.clear();
+  vector<int> ind = M.row_find(get_Node_Index(n), 1);
+  vector<int> pos;
+  int temp_case;
+  tie(indices, pos, temp_case) = Get_Free_Coordinates(n, P, S, ind);
+  
+  if(indices.size() == 0){
+    Restore(copy_TEC);
+    return false;
+  }
+  
+  for(int ii = 0; ii < indices.size(); ii++)  // How many time should I remap? Fine tune this parameter!
   {
-    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-    bool success  = Remap(nodes_in_current_slot);
+    AssignTEC(indices[ii]->getPE()->getIndexI(), indices[ii]->getPE()->getIndexJ(), indices[ii]->getPE()->getIndexT(), indices[ii]->getNode()->get_ID());
+    n->SetCurrentPosition(indices[ii]);
+    //TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    bool success = Remap(nodes_in_current_slot);
 
     //TEC.print_matrix();
     //exit(1); 
 
     if(success)
     {
-      bool success1 = Smart_Map_Recovery_Node_Shallow(n, map_case);  
-
-      if(success1)
-        return true;
+      cout << "\nSmart_Map_Failure_Recovery_Shallow_N: Remap success!\n";
+      return true;
+      
+      //bool success1 = Smart_Map_Recovery_Node_Shallow(n, map_case);  
+      //cout << "Smart_Map_Failure_Recovery_Shallow_N: success1: " << success1 << endl;
+      
+      //if(success1)  // Should I remap when success1 fails?
+        //return true;
     }
     // if not successfull empty the timeslot and then restore.
+    cout << "\nSmart_Map_Failure_Recovery_Shallow_N: Remap failed @ attempt: " << ii << "\n";
     TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-    Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
+    // Assign back removed pred/succ nodes
+    for(int node_i = 0; node_i < P.size(); node_i++)
+      if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+        cout << "Warning: pred node: " << P[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl;
+      }
+      
+    for(int node_i = 0; node_i < S.size(); node_i++)
+      if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+        cout << "Warning: succ node: " << S[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+      }
+    //Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
   }
 
+  mp_it = current_backup.begin();
+  for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++, mp_it++){
+    if((*mp_it)->getNode()->get_ID() != nodes_in_current_slot[curr_i]->get_ID())
+      _FATAL("\nSmart_Map_Failure_Recovery_Shallow_N: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_current_slot[curr_i]->get_ID());
+    nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+  }
+  n->SetCurrentPosition(NULL);
   Restore(copy_TEC);
   return false;
 
 }
 
 
+// Added by Vinh Ta
+// Update: 1Deep procedure modified to increase "findability" of failing node, also improve run time
 bool CGRA::Smart_Map_Failure_Recovery_1Deep(Node* n, int map_case)
 {
+  cout << "\nSmart_Map_Failure_Recovery_1Deep - node: " << n->get_ID() << " - case: " << map_case << "\n";
   Matrix_Copy(copy_TEC);
 
   vector<Node*> P;
@@ -5442,100 +6544,685 @@ bool CGRA::Smart_Map_Failure_Recovery_1Deep(Node* n, int map_case)
 
   nodes_in_current_slot.clear();
   nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current());
+  cout << "Smart_Map_Failure_Recovery_1Deep - P size: " << P.size() << " - S size: " << S.size() << endl;
+
+  if(P.size() == 0){
+    
+    std::vector<MappingPair*> current_backup, succ_backup, succ_slot_backup;
+    std::vector<MappingPair*>::iterator mp_it;
+    
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+      current_backup.push_back(mp);
+    }
+    for(int curr_i = 0; curr_i < S.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(S[curr_i]->GetCurrentPosition()));
+      succ_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Assign back removed pred/succ nodes
+    for(int node_i = 0; node_i < S.size(); node_i++)
+      if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+        nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), S[node_i]));
+        cout << "Warning: succ node: " << S[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+      }
+  
+    nodes_in_succ_slot.clear();
+    nodes_in_succ_slot = get_Nodes_from_current_slot(S[0]->get_Sched_Info()->get_Modulo_Current());  // If succ slot = current slot, nodes_in_succ_slot = S
+    for(int curr_i = 0; curr_i < nodes_in_succ_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_succ_slot[curr_i]->GetCurrentPosition()));
+      succ_slot_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Free succ slot but put back mapped succ nodes
+    for(int node_i = 0; node_i < S.size(); node_i++)
+      if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+        nodes_in_succ_slot.erase(std::find(nodes_in_succ_slot.begin(), nodes_in_succ_slot.end(), S[node_i]));
+        cout << "1Deep::succ node: " << S[node_i]->get_ID() << " is put back @ " << S[node_i]->GetCurrentPosition()->getPE()->getIndexI() << ":" << S[node_i]->GetCurrentPosition()->getPE()->getIndexJ() << "T" << S[node_i]->GetCurrentPosition()->getPE()->getIndexT() << endl; 
+      }
+      
+    // Now find mapping for n
+    if(Smart_Map_Recovery_Node_Shallow(n, map_case)){
+      cout << "1Deep recovery success!\n";
+      //std::vector<int> backup_TEC;
+      Matrix<int> Shallow_TEC_Backup;
+      Matrix_Copy(Shallow_TEC_Backup);
+      
+      if(S[0]->get_Sched_Info()->get_Modulo_Current() == n->get_Sched_Info()->get_Modulo_Current() && Remap(nodes_in_current_slot)){
+        cout << "WARNING: succ slot = current slot!\nRemap 0 success!\n";
+        return true;
+      } else {
+	cout << "Remapping 1\n";
+	bool success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_succ_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	Restore(Shallow_TEC_Backup);
+	  
+	cout << "Remapping 2\n";
+	success = Remap(nodes_in_succ_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+      }
+      Shallow_TEC_Backup.empty();
+    }
+    
+    cout << "1Deep fails to find mapping for node: " << n->get_ID() << " - restoring nodes\n";
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      for(mp_it = current_backup.begin(); mp_it != current_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_current_slot[curr_i]->get_ID())
+          nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+    
+    for(int curr_i = 0; curr_i < nodes_in_succ_slot.size(); curr_i++){
+      for(mp_it = succ_slot_backup.begin(); mp_it != succ_slot_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_succ_slot[curr_i]->get_ID())
+          nodes_in_succ_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+  
+    for(int curr_i = 0; curr_i < S.size(); curr_i++){
+      bool found = false;
+      for(mp_it = succ_backup.begin(); mp_it != succ_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == S[curr_i]->get_ID()){
+          S[curr_i]->SetCurrentPosition(*mp_it);
+          found = true;
+        }
+      }
+      if(!found) _FATAL("ERROR: Cannot restore node %d\n", P[curr_i]->get_ID());
+    }
+  } else if(S.size() == 0) {
+    
+    std::vector<MappingPair*> current_backup, pred_backup, pred_slot_backup;
+    std::vector<MappingPair*>::iterator mp_it;
+    
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+      current_backup.push_back(mp);
+    }
+    for(int curr_i = 0; curr_i < P.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(P[curr_i]->GetCurrentPosition()));
+      pred_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Assign back removed pred/succ nodes in current slot
+    for(int node_i = 0; node_i < P.size(); node_i++)
+      if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+        nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), P[node_i]));
+        cout << "Warning: pred node: " << P[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+      }
+      
+    nodes_in_pred_slot.clear();
+    nodes_in_pred_slot = get_Nodes_from_current_slot(P[0]->get_Sched_Info()->get_Modulo_Current());
+    for(int curr_i = 0; curr_i < nodes_in_pred_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_pred_slot[curr_i]->GetCurrentPosition()));
+      pred_slot_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Free pred slot but put back mapped pred nodes
+    for(int node_i = 0; node_i < P.size(); node_i++)
+      if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+        nodes_in_pred_slot.erase(std::find(nodes_in_pred_slot.begin(), nodes_in_pred_slot.end(), P[node_i]));
+        cout << "1Deep::pred node: " << P[node_i]->get_ID() << " is put back @ " << P[node_i]->GetCurrentPosition()->getPE()->getIndexI() << ":" << P[node_i]->GetCurrentPosition()->getPE()->getIndexJ() << "T" << P[node_i]->GetCurrentPosition()->getPE()->getIndexT() << endl; 
+      }
+      
+    // Now find mapping for n
+    if(Smart_Map_Recovery_Node_Shallow(n, map_case)){
+      cout << "1Deep recovery success!\n";
+      Matrix<int> Shallow_TEC_Backup;
+      Matrix_Copy(Shallow_TEC_Backup);
+      
+      if(P[0]->get_Sched_Info()->get_Modulo_Current() == n->get_Sched_Info()->get_Modulo_Current() && Remap(nodes_in_current_slot)){
+        cout << "WARNING: pred slot = current slot!\nRemap 0 success!\n";
+        return true;
+      } else {
+	cout << "Remapping 1\n";
+	bool success = Remap(nodes_in_pred_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	Restore(Shallow_TEC_Backup);
+	
+	cout << "Remapping 2\n";
+	success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_pred_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+      }
+      Shallow_TEC_Backup.empty();
+    }
+    
+    cout << "1Deep fails to find mapping for node: " << n->get_ID() << " - restoring nodes\n";
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      for(mp_it = current_backup.begin(); mp_it != current_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_current_slot[curr_i]->get_ID())
+          nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+    
+    for(int curr_i = 0; curr_i < nodes_in_pred_slot.size(); curr_i++){
+      for(mp_it = pred_slot_backup.begin(); mp_it != pred_slot_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_pred_slot[curr_i]->get_ID())
+          nodes_in_pred_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+  
+    for(int curr_i = 0; curr_i < P.size(); curr_i++){
+      bool found = false;
+      for(mp_it = pred_backup.begin(); mp_it != pred_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == P[curr_i]->get_ID()){
+          P[curr_i]->SetCurrentPosition(*mp_it);
+          found = true;
+        }
+      }
+      if(!found) _FATAL("ERROR: Cannot restore node %d\n", P[curr_i]->get_ID());
+    }
+  } else {
+  
+    std::vector<MappingPair*> current_backup, succ_backup, succ_slot_backup, pred_backup, pred_slot_backup;
+    std::vector<MappingPair*>::iterator mp_it;
+    
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+      current_backup.push_back(mp);
+    }
+    for(int curr_i = 0; curr_i < S.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(S[curr_i]->GetCurrentPosition()));
+      succ_backup.push_back(mp);
+    }
+    for(int curr_i = 0; curr_i < P.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(P[curr_i]->GetCurrentPosition()));
+      pred_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Assign back removed pred/succ nodes in current slot
+    for(int node_i = 0; node_i < P.size(); node_i++)
+      if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+        nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), P[node_i]));
+        cout << "Warning: pred node: " << P[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+      }
+    for(int node_i = 0; node_i < S.size(); node_i++)
+      if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+        nodes_in_current_slot.erase(std::find(nodes_in_current_slot.begin(), nodes_in_current_slot.end(), S[node_i]));
+        cout << "Warning: succ node: " << S[node_i]->get_ID() << " is in the same timeslot as node: " << n->get_ID() << endl; 
+      }
+      
+    // Backup pred/succ slots
+    nodes_in_pred_slot.clear();
+    nodes_in_pred_slot = get_Nodes_from_current_slot(P[0]->get_Sched_Info()->get_Modulo_Current());
+    for(int curr_i = 0; curr_i < nodes_in_pred_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_pred_slot[curr_i]->GetCurrentPosition()));
+      pred_slot_backup.push_back(mp);
+    }
+    
+    nodes_in_succ_slot.clear();
+    nodes_in_succ_slot = get_Nodes_from_current_slot(S[0]->get_Sched_Info()->get_Modulo_Current());  // If succ slot = current slot, nodes_in_succ_slot = S
+    for(int curr_i = 0; curr_i < nodes_in_succ_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_succ_slot[curr_i]->GetCurrentPosition()));
+      succ_slot_backup.push_back(mp);
+    }
+    
+    TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+    // Free pred slot but put back mapped pred nodes
+    for(int node_i = 0; node_i < P.size(); node_i++)
+      if(isTECfree(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(P[node_i]->GetCurrentPosition()->getPE()->getIndexI(), P[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), P[node_i]->GetCurrentPosition()->getPE()->getIndexT(), P[node_i]->get_ID());
+        nodes_in_pred_slot.erase(std::find(nodes_in_pred_slot.begin(), nodes_in_pred_slot.end(), P[node_i]));
+        cout << "1Deep::pred node: " << P[node_i]->get_ID() << " is put back @ " << P[node_i]->GetCurrentPosition()->getPE()->getIndexI() << ":" << P[node_i]->GetCurrentPosition()->getPE()->getIndexJ() << "T" << P[node_i]->GetCurrentPosition()->getPE()->getIndexT() << endl; 
+      }
+      
+    // Free succ slot but put back mapped succ nodes
+    for(int node_i = 0; node_i < S.size(); node_i++)
+      if(isTECfree(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT())){
+        AssignTEC(S[node_i]->GetCurrentPosition()->getPE()->getIndexI(), S[node_i]->GetCurrentPosition()->getPE()->getIndexJ(), S[node_i]->GetCurrentPosition()->getPE()->getIndexT(), S[node_i]->get_ID());
+        nodes_in_succ_slot.erase(std::find(nodes_in_succ_slot.begin(), nodes_in_succ_slot.end(), S[node_i]));
+        cout << "1Deep::succ node: " << S[node_i]->get_ID() << " is put back @ " << S[node_i]->GetCurrentPosition()->getPE()->getIndexI() << ":" << S[node_i]->GetCurrentPosition()->getPE()->getIndexJ() << "T" << S[node_i]->GetCurrentPosition()->getPE()->getIndexT() << endl; 
+      }
+      
+      
+    // Now find mapping for n
+    if(Smart_Map_Recovery_Node_Shallow(n, map_case)){  // S and P should already be mapped
+      cout << "1Deep recovery success!\n";
+      Matrix<int> Shallow_TEC_Backup;
+      Matrix_Copy(Shallow_TEC_Backup);
+      
+      if(P[0]->get_Sched_Info()->get_Modulo_Current() == n->get_Sched_Info()->get_Modulo_Current()){  // P slot = current slot -> have to check if P slot = S slot
+        if(P[0]->get_Sched_Info()->get_Modulo_Current() == S[0]->get_Sched_Info()->get_Modulo_Current()){  // P slot = current slot = S slot -> remap current slot
+          // S nodes and P nodes already removed from current slot -> Only remap current slot
+	  cout << "Remapping 0.1\n";
+          if(Remap(nodes_in_current_slot)){
+            cout << "1Deep remap 0.1 success!\n";
+	    Shallow_TEC_Backup.empty();
+            return true;
+          }
+        } else {  // only P slot = current slot -> remap S slot and current slot
+          // Since P slot != S slot -> no need to remove P nodes in S slot
+	  cout << "Remapping 1.1\n";
+	  bool success = Remap(nodes_in_current_slot);
+	  success &= Remap(nodes_in_succ_slot);
+          if(success){
+	    Shallow_TEC_Backup.empty();
+            return true;
+	  }
+          
+	  // Remap fail -> change order
+	  Restore(Shallow_TEC_Backup);
+              
+	  cout << "Remapping 1.2\n";
+	  success = Remap(nodes_in_succ_slot);
+	  success &= Remap(nodes_in_current_slot);
+	  if(success){
+	    Shallow_TEC_Backup.empty();
+	    return true;
+	  }
+	  
+	  cout << "1Deep Remap failed!\n";
+        }
+        
+      } else if(S[0]->get_Sched_Info()->get_Modulo_Current() == n->get_Sched_Info()->get_Modulo_Current()){  // P slot != current slot -> remap P slot and current slot
+        // S nodes already removed in current slot above and P slot should not include P/S/current nodes
+        cout << "Remapping 2.1\n";
+	bool success = Remap(nodes_in_pred_slot);
+	success &= Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	
+	cout << "Remapping 2.2\n";
+	success = Remap(nodes_in_current_slot);
+	success &= Remap(nodes_in_pred_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+	
+	cout << "1Deep Remap failed!\n";
+
+      } else if(S[0]->get_Sched_Info()->get_Modulo_Current() == P[0]->get_Sched_Info()->get_Modulo_Current()){  // Only neccessary to remap (S or P slot) and current slot
+        // Have to remove S nodes from nodes_in_pred_slot (maybe)
+        for(int node_i = 0; node_i < S.size(); node_i++)
+          nodes_in_pred_slot.erase(std::find(nodes_in_pred_slot.begin(), nodes_in_pred_slot.end(), S[node_i]));
+
+	cout << "Remapping 3.1\n";
+	bool success = Remap(nodes_in_pred_slot);
+	success &= Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	
+	cout << "Remapping 3.2\n";
+	success = Remap(nodes_in_current_slot);
+	success &= Remap(nodes_in_pred_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+	  
+	cout << "1Deep Remap failed!\n";
+          
+      } else {  // P slot != current slot != S slot -> remap P/S/Current slots
+	// P/S nodes should already be mapped and excluded
+	cout << "Remapping 4.1\n";
+	bool success = Remap(nodes_in_pred_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_succ_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	
+	cout << "Remapping 4.2\n";
+	success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_pred_slot);
+	if(success) success = Remap(nodes_in_succ_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	      
+	cout << "Remapping 4.3\n";
+	success = Remap(nodes_in_pred_slot);
+	if(success) success = Remap(nodes_in_succ_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+ 	// NOTE: Uncomment following section to increase "findability" of failing node in exchange for run time!
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	      
+	cout << "Remapping 4.4\n";
+	success = Remap(nodes_in_succ_slot);
+	if(success) success = Remap(nodes_in_pred_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	      
+	cout << "Remapping 4.5\n";
+	success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_succ_slot);
+	if(success) success = Remap(nodes_in_pred_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+
+	// Remap fail -> change order
+	Restore(Shallow_TEC_Backup);
+	      
+	cout << "Remapping 4.6\n";
+	success = Remap(nodes_in_succ_slot);
+	if(success) success = Remap(nodes_in_current_slot);
+	if(success) success = Remap(nodes_in_pred_slot);
+	if(success){
+	  Shallow_TEC_Backup.empty();
+	  return true;
+	}
+	  
+	cout << "1Deep Remap failed!\n";
+      }
+      Shallow_TEC_Backup.empty();
+    }
+    
+    cout << "1Deep fails to find mapping for node: " << n->get_ID() << "\n";
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      for(mp_it = current_backup.begin(); mp_it != current_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_current_slot[curr_i]->get_ID())
+          nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+    
+    for(int curr_i = 0; curr_i < nodes_in_pred_slot.size(); curr_i++){
+      for(mp_it = pred_slot_backup.begin(); mp_it != pred_slot_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_pred_slot[curr_i]->get_ID())
+          nodes_in_pred_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+  
+    for(int curr_i = 0; curr_i < nodes_in_succ_slot.size(); curr_i++){
+      for(mp_it = succ_slot_backup.begin(); mp_it != succ_slot_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == nodes_in_succ_slot[curr_i]->get_ID())
+          nodes_in_succ_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+    }
+    
+    for(int curr_i = 0; curr_i < P.size(); curr_i++){
+      bool found = false;
+      for(mp_it = pred_backup.begin(); mp_it != pred_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == P[curr_i]->get_ID()){
+          P[curr_i]->SetCurrentPosition(*mp_it);
+          found = true;
+        }
+      }
+      if(!found) _FATAL("ERROR: Cannot restore node %d\n", P[curr_i]->get_ID());
+    }
+    
+    for(int curr_i = 0; curr_i < S.size(); curr_i++){
+      bool found = false;
+      for(mp_it = succ_backup.begin(); mp_it != succ_backup.end(); mp_it++){
+        if((*mp_it)->getNode()->get_ID() == S[curr_i]->get_ID()){
+          S[curr_i]->SetCurrentPosition(*mp_it);
+          found = true;
+        }
+      }
+      if(!found) _FATAL("ERROR: Cannot restore node %d\n", P[curr_i]->get_ID());
+    }   
+  }
+  
+  Restore(copy_TEC);
+  return false;
+}
+
+
+// Added by Vinh Ta
+// Bug1: After top level success, current positions of nodes are changed and lost backup. As succeeding success fails, they cannot recover to the originals (TEC matrix not affected)
+// Bug2: remap in all success level are repeated when failed, though changes in environment (nodes_in_<current/succ/pred>_slot does not change -> repitition becomes meaningless
+// Update: added backup positions for all nodes at all success levels and remove repitition
+// NOTE: Should I remap with multiple attempts? How many attempts should it be?
+bool CGRA::Smart_Map_Failure_Recovery_1Deep_Old(Node* n, int map_case)
+{
+  cout << "\nSmart_Map_Failure_Recovery_1Deep - node: " << n->getName() << " - case: " << map_case << endl;
+  //Matrix_Copy(copy_TEC);
+
+  vector<Node*> P;
+  vector<Node*> S;
+
+  tie(P,S) = get_Mapped_pred_succ(n);
+
+  nodes_in_current_slot.clear();
+  nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current());
+  cout << "Smart_Map_Failure_Recovery_1Deep - P size: " << P.size() << " - S size: " << S.size() << endl;
 
   if((int) P.size() == 0)
   {
-    bool success = false, success1 = false;  
-    for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-    {
-      TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-      success  = Remap(nodes_in_current_slot);
+    bool success = false, success1 = false;
+    std::vector<MappingPair*> current_backup, succ_backup;
+    std::vector<MappingPair*>::iterator mp_it;
+    
+    //for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
+    //{ 
+      for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+        MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+	current_backup.push_back(mp);
+      }
+      
+      //TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+      if(nodes_in_current_slot.size() == 0) success = true;
+      else success = Remap(nodes_in_current_slot);
+
+      cout << "\nSmart_Map_Failure_Recovery_1Deep - success: " << success << endl;
+      
       if(success)
       {
-        nodes_in_succ_slot.clear();
+	nodes_in_succ_slot.clear();
         nodes_in_succ_slot = get_Nodes_from_current_slot(S[0]->get_Sched_Info()->get_Modulo_Current());
-        for(int jj=0; jj < (int) nodes_in_succ_slot.size(); jj++)
-        {
 
-          TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-          success1 = Remap(nodes_in_succ_slot); 
+	for(int succ_i = 0; succ_i < nodes_in_succ_slot.size(); succ_i++){
+	  MappingPair* mp = new MappingPair(*(nodes_in_succ_slot[succ_i]->GetCurrentPosition()));
+	  succ_backup.push_back(mp);
+	}
+	
+        //for(int jj=0; jj < (int) nodes_in_succ_slot.size(); jj++)
+        //{
+
+	  //TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+          success1 = Remap(nodes_in_succ_slot);
+
+	  cout << "\nSmart_Map_Failure_Recovery_1Deep - success1: " << success1 << endl;
+	  
           if(success1)
           {
+	    cout << "TEC:\n";
+	    TEC.print_matrix();
             bool success2 = Smart_Map_Recovery_Node_Shallow(n, map_case);
+
+	    cout << "\nSmart_Map_Failure_Recovery_1Deep - success2: " << success2 << endl;
+	    
             if(success2)
               return true; 
           }
+	  // Restore succ positions
+	  cout << "Restoring succ positions\n";
+	  mp_it = succ_backup.begin();
+	  for(int succ_i = 0; succ_i < nodes_in_succ_slot.size(); succ_i++, mp_it++){
+	    if((*mp_it)->getNode()->get_ID() != nodes_in_succ_slot[succ_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success1: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_succ_slot[succ_i]->get_ID());
+	    nodes_in_succ_slot[succ_i]->SetCurrentPosition(*mp_it);
+	  }
           TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
           Restore_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current()); 
           success1 = false; 
-        }
+	//}
+      }
+      // Restore current positions
+      cout << "Restoring current positions\n";
+      mp_it = current_backup.begin();
+      for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++, mp_it++){
+	if((*mp_it)->getNode()->get_ID() != nodes_in_current_slot[curr_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_current_slot[curr_i]->get_ID());
+	nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
       }
       TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
       Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current());
       success = false;
-    }
+      //}
   }
   else if((int)S.size() == 0)
   {
     bool success = false, success1 = false;
-    for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-    {
-      TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-      success  = Remap(nodes_in_current_slot);
+    std::vector<MappingPair*> current_backup, pred_backup;
+    std::vector<MappingPair*>::iterator mp_it;
+
+    for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+      MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+      current_backup.push_back(mp);
+    }
+    
+    //for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
+    //{
+      //TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+      if(nodes_in_current_slot.size() == 0) success = true;
+      else success = Remap(nodes_in_current_slot);
+
+      cout << "\nSmart_Map_Failure_Recovery_1Deep - success: " << success << endl;
+      
       if(success)
       {
         nodes_in_pred_slot.clear();
         nodes_in_pred_slot = get_Nodes_from_current_slot(P[0]->get_Sched_Info()->get_Modulo_Current());
-        for(int jj=0; jj < (int) nodes_in_pred_slot.size(); jj++)
-        {
 
-          TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+	for(int pred_i = 0; pred_i < nodes_in_pred_slot.size(); pred_i++){
+	  MappingPair* mp = new MappingPair(*(nodes_in_pred_slot[pred_i]->GetCurrentPosition()));
+	  pred_backup.push_back(mp);
+	}
+	
+        //for(int jj=0; jj < (int) nodes_in_pred_slot.size(); jj++)
+        //{
+
+	  //TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
           success1 = Remap(nodes_in_pred_slot);
+
+	  cout << "\nSmart_Map_Failure_Recovery_1Deep - success1: " << success1 << endl;
+	  
           if(success1)
           {
+	    cout << "TEC:\n";
+            TEC.print_matrix();
             bool success2 = Smart_Map_Recovery_Node_Shallow(n, map_case);
+
+	    cout << "\nSmart_Map_Failure_Recovery_1Deep - success2: " << success2 << endl;
+	    
             if(success2)
               return true;
           }
+	  // Restore pred positions
+	  cout << "Restoring pred positions\n";
+	  mp_it = pred_backup.begin();
+	  for(int pred_i = 0; pred_i < nodes_in_pred_slot.size(); pred_i++, mp_it++){
+	    if((*mp_it)->getNode()->get_ID() != nodes_in_pred_slot[pred_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success1: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_pred_slot[pred_i]->get_ID());
+	    nodes_in_pred_slot[pred_i]->SetCurrentPosition(*mp_it);
+	  }
+	  
           TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
           Restore_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current());
           success1 = false;
-        }
+	//}
       }
+      // Restore current positions
+      cout << "Restoring current positions\n";
+      mp_it = current_backup.begin();
+      for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++, mp_it++){
+	if((*mp_it)->getNode()->get_ID() != nodes_in_current_slot[curr_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_current_slot[curr_i]->get_ID());
+	nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+      
       TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
       Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current());
       success = false;
-    }
+      //}
   }
   else
-  {
-    //cout << " 1 deep mapcase: " << map_case << " inside P size !=0" << endl;
-
-    //cout << "nodes in current slot: " << (int) nodes_in_current_slot.size() << endl;
-
+  { 
     bool success = false, success1 = false, success2 = false, success3 = false;
+    std::vector<MappingPair*> current_backup, pred_backup, succ_backup;
+    std::vector<MappingPair*>::iterator mp_it;
 
-    for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-    {
-      TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-      success  = Remap(nodes_in_current_slot);
+    //for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
+    //{
 
-      //cout << "success: " << success << endl;
+      for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++){
+        MappingPair* mp = new MappingPair(*(nodes_in_current_slot[curr_i]->GetCurrentPosition()));
+	current_backup.push_back(mp);
+      }
+    
+      //TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
+      if(nodes_in_current_slot.size() == 0) success = true;
+      else success = Remap(nodes_in_current_slot);
+
+      cout << "\nSmart_Map_Failure_Recovery_1Deep - success: " << success << endl;
 
       if(success)
       {
         nodes_in_succ_slot.clear();
         nodes_in_succ_slot = get_Nodes_from_current_slot(S[0]->get_Sched_Info()->get_Modulo_Current());
 
+	for(int succ_i = 0; succ_i < nodes_in_succ_slot.size(); succ_i++){
+	  MappingPair* mp = new MappingPair(*(nodes_in_succ_slot[succ_i]->GetCurrentPosition()));
+	  succ_backup.push_back(mp);
+	}
+
         //cout << "nodes in succ slot: " << (int) nodes_in_succ_slot.size() << endl;
 
-        for(int jj=0; jj < (int) nodes_in_succ_slot.size(); jj++)
-        {
+        //for(int jj=0; jj < (int) nodes_in_succ_slot.size(); jj++)
+        //{
 
-          TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+	  //TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
           success1 = Remap(nodes_in_succ_slot);
 
-          //cout << "success1: " << success << endl;
+          cout << "\nSmart_Map_Failure_Recovery_1Deep - success1: " << success1 << endl;
 
           if(success1)
           {
@@ -5544,1060 +7231,77 @@ bool CGRA::Smart_Map_Failure_Recovery_1Deep(Node* n, int map_case)
             //cout << "passed pred clear" << endl;
             nodes_in_pred_slot = get_Nodes_from_current_slot(P[0]->get_Sched_Info()->get_Modulo_Current());
 
+	    for(int pred_i = 0; pred_i < nodes_in_pred_slot.size(); pred_i++){
+	      MappingPair* mp = new MappingPair(*(nodes_in_pred_slot[pred_i]->GetCurrentPosition()));
+	      pred_backup.push_back(mp);
+	    }
 
-            //cout << "nodes in pred slot: " << (int) nodes_in_pred_slot.size() << endl;
-
-
-            for(int kk=0; kk < (int) nodes_in_pred_slot.size(); kk++)
-            {
-              TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
+	    //for(int kk=0; kk < (int) nodes_in_pred_slot.size(); kk++)
+            //{
+	      //TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
               success2 = Remap(nodes_in_pred_slot);
 
-              //  cout << "success2: " << success << endl;
+              cout << "\nSmart_Map_Failure_Recovery_1Deep - success2: " << success2 << endl;
 
               if(success2)
               {
-                // cout << "inside success3" << endl; 
+                // cout << "inside success3" << endl;
+		cout << "TEC:\n";
+		TEC.print_matrix();
                 success3 = Smart_Map_Recovery_Node_Shallow(n, map_case); 
 
+		cout << "\nSmart_Map_Failure_Recovery_1Deep - success3: " << success3 << endl;
                 if(success3)
                   return true;
 
                 success3 = false; 
               }
+
+	      // Restore pred positions
+	      cout << "Restoring pred positions\n";
+	      mp_it = pred_backup.begin();
+	      for(int pred_i = 0; pred_i < nodes_in_pred_slot.size(); pred_i++, mp_it++){
+		if((*mp_it)->getNode()->get_ID() != nodes_in_pred_slot[pred_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success2: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_pred_slot[pred_i]->get_ID());
+		nodes_in_pred_slot[pred_i]->SetCurrentPosition(*mp_it);
+	      }
+	      
               TEC.free_current_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
               Restore_timeslot(P[0]->get_Sched_Info()->get_Modulo_Current());
               success2 = false; 
-            }
+	    //}
           }
+
+	  // Restore succ positions
+	  cout << "Restoring succ positions\n";
+	  mp_it = succ_backup.begin();
+	  for(int succ_i = 0; succ_i < nodes_in_succ_slot.size(); succ_i++, mp_it++){
+	    if((*mp_it)->getNode()->get_ID() != nodes_in_succ_slot[succ_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success1: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_succ_slot[succ_i]->get_ID());
+	    nodes_in_succ_slot[succ_i]->SetCurrentPosition(*mp_it);
+	  }
+	  
           TEC.free_current_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
           Restore_timeslot(S[0]->get_Sched_Info()->get_Modulo_Current());
           success1 = false;
-        }
+	//}
       }
+      // Restore current positions
+      cout << "Restoring current positions\n";
+      mp_it = current_backup.begin();
+      for(int curr_i = 0; curr_i < nodes_in_current_slot.size(); curr_i++, mp_it++){
+	if((*mp_it)->getNode()->get_ID() != nodes_in_current_slot[curr_i]->get_ID()) _FATAL("\nSmart_Map_Failure_Recovery_1Deep:success: Unmatched node %d v %d! Please find me corresponding node\n", (*mp_it)->getNode()->get_ID(), nodes_in_current_slot[curr_i]->get_ID());
+	nodes_in_current_slot[curr_i]->SetCurrentPosition(*mp_it);
+      }
+      
       TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
       Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current());
       success = false; 
-    }
-
-
+    //}
   }
 
   Restore(copy_TEC);
   return false;
 
 }
-
-/*bool CGRA::Smart_Map_Failure_Recovery_Shallow_N_succ(vector<Node*> connected_node1, Node* n)
-  {
-
-//cout << "Inside Smart Map failure Recovery Shallow 2 " << endl;
-
-//Matrix<int> copy_TEC(TEC.rows(), TEC.cols());
-//copy_TEC = TEC;
-Matrix_Copy(copy_TEC);
-
-nodes_in_current_slot.clear();
-nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current());
-bool found = false;  
-
-MappingPair *out=NULL, *out1=NULL, *out2=NULL, *out3=NULL, *out4=NULL; 
-
-int succ_size = (int) connected_node1.size(); 
-
-switch(succ_size)
-{
-case 1:
-{
-out = connected_node1[0]->GetCurrentPosition();     
-break;  
-}
-case 2:
-{
-out = connected_node1[0]->GetCurrentPosition();
-out1 = connected_node1[1]->GetCurrentPosition();
-break;
-}
-case 3:
-{ 
-out = connected_node1[0]->GetCurrentPosition();
-out1 = connected_node1[1]->GetCurrentPosition();
-out2 = connected_node1[2]->GetCurrentPosition();
-break;
-}
-case 4:
-{
-out = connected_node1[0]->GetCurrentPosition();
-out1 = connected_node1[1]->GetCurrentPosition();
-out2 = connected_node1[2]->GetCurrentPosition();
-out3 = connected_node1[3]->GetCurrentPosition();
-break;
-}
-case 5:
-{
-out = connected_node1[0]->GetCurrentPosition();
-out1 = connected_node1[1]->GetCurrentPosition();
-out2 = connected_node1[2]->GetCurrentPosition();
-out3 = connected_node1[3]->GetCurrentPosition();
-out4 = connected_node1[4]->GetCurrentPosition();  
-break;
-}
-default:
-_FATAL("out edges more than 5 are not supported\n");  
-
-}
-
-// instead of trying to remap with all the mapped nodes, unmap all the nodes in the timeslot.
-// Remap them in the while loop one by one again with different coordinates (PEs). 
-//TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-
-// This may fall into an infinite loop? 
-// if so please have a termination check.
-
-//remap connected nodes and if success try to map the unmapped node.
-//node_iterator = 0; 
-//Node* start_node = nodes_in_current_slot[0]; 
-// node_iterator++; 
-// vector<MappingPair*> indices = start_node->GetMappedIndices();
-// best_pairs.clear();  
-
-for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-{
-  TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-  bool success  = Remap(nodes_in_current_slot);
-
-  if(success)
-  {
-    vector<int> ind = M.row_find(get_Node_Index(n), 1);
-
-    for(int jj=0; jj < (int) ind.size(); jj++)
-    {
-      //cout << "Inside ind shallow 4" << endl; 
-      if(!isTECfree(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT()))
-        continue;
-
-
-      bool connection = false;
-      switch(succ_size)
-      {
-        case 1:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-              connection = true;
-            break;
-          }
-        case 2:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-              connection = true;
-            break;
-          }
-        case 3:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-              connection = true;
-            break;
-          }
-        case 4:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-              connection = true;
-            break;
-          }
-        case 5:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-              connection = true;
-            break;
-
-          }
-        default:
-          connection = false;
-      }
-
-      if(connection)
-      {
-        //cout << "inside connected and returning 0 shallow 4" << endl;
-        MappingPair* mappair = mapPairs[ind[jj]];
-        mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair);
-        //BestIndices.push_back(mapPairs[ind[jj]]);
-        //best_pairs.push_back(mapPairs[ind[jj]]);
-
-        //BestIndices = Combine(BestIndices, best_pairs);
-
-        AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-        //cout << endl;
-        //TEC.print_matrix(); 
-        return true;
-      }
-    }
-  }  
-  Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
-}
-
-Restore(copy_TEC); 
-return false;  
-}*/
-// Shallow recovery with n pred and n succ mapped (1-3 pred and 1-5 succ)
-
-/*bool CGRA::Smart_Map_Failure_Recovery_Shallow_N(vector<Node*> connected_node1, vector<Node*> connected_node2, Node* n)
-  {
-
-//cout << "Inside Smart Map failure Recovery Shallow 2 " << endl;
-
-//Matrix<int> copy_TEC(TEC.rows(), TEC.cols());
-Matrix_Copy(copy_TEC);
-nodes_in_current_slot.clear(); 
-nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current());
-bool found = false;  
-
-MappingPair* out=NULL, *out1=NULL, *out2=NULL, *out3=NULL, *out4=NULL;
-MappingPair* in=NULL, *in1=NULL, *in2=NULL;
-
-int pred_size = (int) connected_node1.size();
-int succ_size = (int) connected_node2.size();
-
-switch(pred_size)
-{
-case 1:
-in  = connected_node1[0]->GetCurrentPosition();
-break;
-case 2:
-in = connected_node1[0]->GetCurrentPosition();
-in1 = connected_node1[1]->GetCurrentPosition();
-break;
-case 3:
-in = connected_node1[0]->GetCurrentPosition();
-in1 = connected_node1[1]->GetCurrentPosition();
-in2 = connected_node1[2]->GetCurrentPosition();
-break;
-default:
-_FATAL("More than 3 inputs are not allowed\n");
-
-}
-
-switch(succ_size)
-{
-case 1:
-{
-out = connected_node2[0]->GetCurrentPosition();
-break;
-}
-case 2:
-{
-out = connected_node2[0]->GetCurrentPosition();
-out1 = connected_node2[1]->GetCurrentPosition();
-break;
-}
-case 3:
-{
-out = connected_node2[0]->GetCurrentPosition();
-out1 = connected_node2[1]->GetCurrentPosition();
-out2 = connected_node2[2]->GetCurrentPosition();
-break;
-}
-case 4:
-{
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-break;
-}
-case 5:
-{
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-out = connected_node2[0]->GetCurrentPosition();
-break;
-}
-default:
-_FATAL("Outgoing nodes more than 5 is not supported currently\n");
-}
-
-
-
-for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-{
-  TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-  bool success = Remap(nodes_in_current_slot);
-
-  if(success)
-  {
-    vector<int> ind = M.row_find(get_Node_Index(n), 1);
-
-    for(int jj=0; jj < (int) ind.size(); jj++)
-    {
-      //cout << "Inside ind shallow N" << endl;
-      if(!isTECfree(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT()))
-        continue;
-
-      bool connected = false, connected1 = false;
-      switch(pred_size)
-      {
-        case 1:
-          {
-            if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()))
-              connected = true;
-            break;
-          }
-        case 2:
-          {
-            if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()))      
-              connected = true;
-
-            break;
-
-          }
-        case 3:
-          {
-            if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()) &&  connectedPEs(in2->getPE(), mapPairs[ind[jj]]->getPE()))
-              connected = true;
-
-            break;
-
-          }
-        default:
-          connected = false;
-      }
-      switch(succ_size)
-      {
-        case 1:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-              connected1 = true;
-            break;
-          }
-        case 2:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-              connected1 = true;
-            break;
-          }
-        case 3:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-              connected1 = true;
-            break;
-          }
-        case 4:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-              connected1 = true;
-            break;
-          }
-        case 5:
-          {
-            if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-              connected1 = true;
-            break;
-          }
-        default:
-          connected1 = false;
-      } 
-
-      if(connected && connected1)
-      {
-        MappingPair* mappair = mapPairs[ind[jj]]; 
-        mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-        AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-        return true; 
-      }
-    } 
-  }
-  Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
-}
-// if we are here then no mapping for found.
-// restore TEC back. 
-
-Restore(copy_TEC);  
-return false;  
-}
-
-// 1 deep for n successors mapped. Max of 5. no pred mapped.
-
-bool CGRA::Smart_Map_Failure_Recovery_1Deep_N_succ(vector<Node*> connected_node1, Node* n)
-{
-
-  //cout << "Inside Smart Map failure Recovery 1Deep 3" << endl;
-  //TEC.print_matrix(); 
-  //Matrix<int> copy_TEC(TEC.rows(), TEC.cols());
-  //copy_TEC = TEC;
-  Matrix_Copy(copy_TEC); 
-  nodes_in_current_slot.clear(); 
-  nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current()); 
-
-  MappingPair *out=NULL, *out1=NULL, *out2=NULL, *out3=NULL, *out4=NULL; 
-
-  int succ_size = (int) connected_node1.size(); 
-
-  switch(succ_size)
-  {
-    case 1:
-      {
-        out = connected_node1[0]->GetCurrentPosition();
-        break;
-      }
-    case 2:
-      {
-        out = connected_node1[0]->GetCurrentPosition();
-        out1 = connected_node1[1]->GetCurrentPosition();
-        break;
-      }
-    case 3:
-      {
-        out = connected_node1[0]->GetCurrentPosition();
-        out1 = connected_node1[1]->GetCurrentPosition();
-        out2 = connected_node1[2]->GetCurrentPosition();
-        break;
-      }
-    case 4:
-      {
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        break;
-      }
-    case 5:
-      {
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        out = connected_node1[0]->GetCurrentPosition();
-        break;
-      }
-    default:
-      _FATAL("Outgoing nodes more than 5 is not supported currently\n"); 
-  }
-
-  // instead of trying to remap with all the mapped nodes, unmap all the nodes in the timeslot.
-  // Remap them in the while loop one by one again with different coordinates (PEs). 
-  //TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-
-  // This may fall into an infinite loop? 
-  // if so please have a termination check.
-
-  //remap connected nodes and if success try to map the unmapped node.
-
-  for(int j=0; j < (int) nodes_in_current_slot.size(); j++)
-  {
-    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-    bool success = Remap(nodes_in_current_slot);
-
-    if(success)
-    {
-      //TEC.print_matrix();  
-      //cout << endl; 
-      vector<int> ind = M.row_find(get_Node_Index(n), 1); 
-
-      for(int jj=0; jj < (int) ind.size(); jj++)
-      {
-        cout << "Inside ind 1 deep 3" << endl; 
-        if(!isTECfree(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT()))
-          continue;
-
-        bool connection = false;
-        switch(succ_size)
-        {
-          case 1:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                connection = true;
-              break;
-            }
-          case 2:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && mapPairs[ind[jj]]->getPE(), out1->getPE())
-                connection = true;
-              break;
-            }
-          case 3:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && mapPairs[ind[jj]]->getPE(), out1->getPE() && mapPairs[ind[jj]]->getPE(), out2->getPE())
-                connection = true;
-              break;
-            }
-          case 4:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && mapPairs[ind[jj]]->getPE(), out1->getPE() && mapPairs[ind[jj]]->getPE(), out2->getPE() && mapPairs[ind[jj]]->getPE(), out3->getPE())
-                connection = true;
-              break;
-            }
-          case 5:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && mapPairs[ind[jj]]->getPE(), out1->getPE() && mapPairs[ind[jj]]->getPE(), out2->getPE() && mapPairs[ind[jj]]->getPE(), out3->getPE() && mapPairs[ind[jj]]->getPE(), out4->getPE())
-                connection = true;
-              break;
-            }
-          default:
-            connection = false;
-        }
-
-        if(connection)
-        {
-          //cout << "inside connected and returning 0 shallow 2" << endl;
-          MappingPair* mappair = mapPairs[ind[jj]]; 
-          mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair);
-          AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-          //cout << endl;
-          //TEC.print_matrix(); 
-          return true; 
-        }
-        else
-        {
-          // change succ timeslot
-          nodes_in_succ_slot.clear();
-          nodes_in_succ_slot = get_Nodes_from_current_slot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current()); 
-
-          for(int kk = 0; kk < (int) nodes_in_pred_slot.size(); kk++)
-          {
-            TEC.free_current_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-            bool success1 = Remap(nodes_in_succ_slot);
-
-            if(success1)
-            {
-              bool connected3 = false;
-              switch(succ_size)
-              {
-                case 1:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 2:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 3:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 4:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 5:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                default:
-                  connected3 = false;
-              } 
-
-              if(connected3)
-              {
-                MappingPair* mappair = mapPairs[ind[jj]]; 
-                mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-                AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-                return true; 
-              } 
-
-            }
-            Restore_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current());
-          }
-
-        }
-      } 
-    }
-    Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
-  }
-
-  // if we are here then no mapping for found.
-  // restore TEC back. 
-  Restore(copy_TEC);
-  return false;  
-
-} 
-
-// for n pred and n succ mapped (1-3 pred and 1-5 succ)
-bool CGRA::Smart_Map_Failure_Recovery_1Deep_N(vector<Node*> connected_node1, vector<Node*> connected_node2, Node* n)
-{
-
-  //cout << "Inside Smart Map failure Recovery 1Deep N" << endl;
-  //TEC.print_matrix(); 
-
-  //Matrix<int> copy_TEC(TEC.rows(), TEC.cols());
-  //copy_TEC = TEC;
-  Matrix_Copy(copy_TEC); 
-  nodes_in_current_slot.clear();
-  nodes_in_current_slot = get_Nodes_from_current_slot(n->get_Sched_Info()->get_Modulo_Current()); 
-
-
-  MappingPair* out=NULL, *out1=NULL, *out2=NULL, *out3=NULL, *out4=NULL; 
-  MappingPair* in=NULL, *in1=NULL, *in2=NULL; 
-
-  int pred_size = (int) connected_node1.size(); 
-  int succ_size = (int) connected_node2.size(); 
-
-  switch(pred_size)
-  {
-    case 1:
-      in  = connected_node1[0]->GetCurrentPosition();
-      break;
-    case 2:
-      in = connected_node1[0]->GetCurrentPosition();
-      in1 = connected_node1[1]->GetCurrentPosition();
-      break;
-    case 3:
-      in = connected_node1[0]->GetCurrentPosition();
-      in1 = connected_node1[1]->GetCurrentPosition();
-      in2 = connected_node1[2]->GetCurrentPosition();
-      break;
-    default:
-      _FATAL("More than 3 inputs are not allowed\n");
-
-  }
-
-  switch(succ_size)
-  {
-    case 1:
-      {
-        out = connected_node2[0]->GetCurrentPosition();
-        break;
-      }
-    case 2:
-      {
-        out = connected_node2[0]->GetCurrentPosition();
-        out1 = connected_node2[1]->GetCurrentPosition();
-        break;
-      }
-    case 3:
-      {
-        out = connected_node2[0]->GetCurrentPosition();
-        out1 = connected_node2[1]->GetCurrentPosition();
-        out2 = connected_node2[2]->GetCurrentPosition();
-        break;
-      }
-    case 4:
-      {
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        break;
-      }
-    case 5:
-      {
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        out = connected_node2[0]->GetCurrentPosition();
-        break;
-      }
-    default:
-      _FATAL("Outgoing nodes more than 5 is not supported currently\n");
-  } 
-
-
-  // _FATAL("No. of nodes in the current timeslot %d\n", (int) nodes_in_current_slot.size()); 
-  cout << "No. of nodes in the current timeslot " << (int) nodes_in_current_slot.size() << endl;
-
-  for(int ii = 0; ii < (int) nodes_in_current_slot.size(); ii++)
-  {
-    cout << "Iteration: " << ii << endl;
-    TEC.free_current_timeslot(n->get_Sched_Info()->get_Modulo_Current(), SizeX);
-    bool success = Remap(nodes_in_current_slot);
-
-    if(success)
-    {
-      vector<int> ind = M.row_find(get_Node_Index(n), 1);
-
-      for(int jj=0; jj < (int) ind.size(); jj++)
-      {
-        //cout << "Inside ind shallow N" << endl;
-        if(!isTECfree(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT()))
-          continue;
-
-        bool connected = false, connected1 = false;
-        switch(pred_size)
-        {
-          case 1:
-            {
-              if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()))
-                connected = true;
-              break;
-            }
-          case 2:
-            {
-              if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()))      
-                connected = true;
-
-              break;
-
-            }
-          case 3:
-            {
-              if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()) &&  connectedPEs(in2->getPE(), mapPairs[ind[jj]]->getPE()))
-                connected = true;
-
-              break;
-
-            }
-          default:
-            connected = false;
-        }
-        switch(succ_size)
-        {
-          case 1:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                connected1 = true;
-              break;
-            }
-          case 2:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-                connected1 = true;
-              break;
-            }
-          case 3:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-                connected1 = true;
-              break;
-            }
-          case 4:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-                connected1 = true;
-              break;
-            }
-          case 5:
-            {
-              if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-                connected1 = true;
-              break;
-            }
-          default:
-            connected1 = false;
-        } 
-
-        if(connected && connected1)
-        {
-          MappingPair* mappair = mapPairs[ind[jj]]; 
-          mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-          AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-          return true; 
-        }
-        else if(!connected && connected1)
-        {
-          cout << "Inside !pred connected and succ connected" << endl;
-          // we have a connection for succ and not the pred. Change the pred timeslot
-          nodes_in_pred_slot.clear();
-          nodes_in_pred_slot = get_Nodes_from_current_slot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current()); 
-
-          cout << "No. of pred nodes: " << (int) nodes_in_pred_slot.size() << endl;
-
-          for(int kk = 0; kk < (int) nodes_in_pred_slot.size(); kk++)
-          {
-            TEC.free_current_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-            bool success1 = Remap(nodes_in_pred_slot);
-
-            if(!success)
-            {
-              TEC.print_matrix();
-              _FATAL("pred remap not successfull"); 
-            }
-
-            if(success1)
-            {
-              bool connected2 = false, connected3 = false;
-              switch(pred_size)
-              {
-                case 1:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()))
-                      connected2 = true;
-                    break;
-                  }
-                case 2:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()))      
-                      connected2 = true;
-
-                    break;
-
-                  }
-                case 3:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()) &&  connectedPEs(in2->getPE(), mapPairs[ind[jj]]->getPE()))
-                      connected2 = true;
-
-                    break;
-
-                  }
-                default:
-                  connected2 = false;
-              }
-              switch(succ_size)
-              {
-                case 1:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 2:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 3:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 4:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 5:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                default:
-                  connected3 = false;
-              } 
-
-              if(connected2 && connected3)
-              {
-                MappingPair* mappair = mapPairs[ind[jj]]; 
-                mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-                AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-                return true; 
-              } 
-
-            }
-            Restore_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current());
-          } 
-        }
-        else if(connected && !connected1)
-        {
-          cout << "Inside !succ connected and pred connected" << endl;
-          cout << "No. of succ nodes: " << (int) nodes_in_pred_slot.size() << endl;
-          // we have a connection for pred and not for succ. Change the succ timeslot
-          nodes_in_succ_slot.clear();
-          nodes_in_succ_slot = get_Nodes_from_current_slot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current()); 
-
-          for(int kk = 0; kk < (int) nodes_in_pred_slot.size(); kk++)
-          {
-            TEC.free_current_timeslot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-            bool success1 = Remap(nodes_in_succ_slot);
-
-            if(success1)
-            {
-              bool connected2 = false, connected3 = false;
-              switch(pred_size)
-              {
-                case 1:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()))
-                      connected2 = true;
-                    break;
-                  }
-                case 2:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()))      
-                      connected2 = true;
-
-                    break;
-
-                  }
-                case 3:
-                  {
-                    if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()) &&  connectedPEs(in2->getPE(), mapPairs[ind[jj]]->getPE()))
-                      connected2 = true;
-
-                    break;
-
-                  }
-                default:
-                  connected2 = false;
-              }
-              switch(succ_size)
-              {
-                case 1:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 2:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 3:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 4:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                case 5:
-                  {
-                    if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-                      connected3 = true;
-                    break;
-                  }
-                default:
-                  connected3 = false;
-              } 
-
-              if(connected2 && connected3)
-              {
-                MappingPair* mappair = mapPairs[ind[jj]]; 
-                mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-                AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-                return true; 
-              } 
-
-            }
-            Restore_timeslot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current());
-          } 
-        }
-        else
-        {
-          cout << "Inside !pred connected and !succ connected" << endl;
-          // we do not have connection for both pred and succ. Change both timeslots.
-          nodes_in_pred_slot.clear();
-          nodes_in_pred_slot = get_Nodes_from_current_slot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current()); 
-          cout << "no. of pred nodes: " << (int) nodes_in_pred_slot.size() << endl;
-
-          for(int kk = 0; kk < (int) nodes_in_pred_slot.size(); kk++)
-          {
-            TEC.free_current_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-            bool success1 = Remap(nodes_in_pred_slot);
-
-            if(success1)
-            {
-              nodes_in_succ_slot.clear();
-              nodes_in_succ_slot = get_Nodes_from_current_slot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current());
-              cout << "no. of succ nodes: " << (int) nodes_in_succ_slot.size() << endl;
-              for(int ll = 0; ll < (int) nodes_in_succ_slot.size(); ll++)
-              {
-                TEC.free_current_timeslot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current(), SizeX);
-                bool success2 = Remap(nodes_in_succ_slot);
-                //TEC.print_matrix(); 
-                //exit(1);
-                if(success2)
-                {
-                  bool connected4 = false, connected5 = false;
-                  switch(pred_size)
-                  {
-                    case 1:
-                      {
-                        if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()))
-                          connected4 = true;
-                        break;
-                      }
-                    case 2:
-                      {
-                        if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()))      
-                          connected4 = true;
-
-                        break;
-
-                      }
-                    case 3:
-                      {
-                        if(connectedPEs(in->getPE(), mapPairs[ind[jj]]->getPE()) && connectedPEs(in1->getPE(), mapPairs[ind[jj]]->getPE()) &&  connectedPEs(in2->getPE(), mapPairs[ind[jj]]->getPE()))
-                          connected4 = true;
-
-                        break;
-
-                      }
-                    default:
-                      connected4 = false;
-                  }
-                  switch(succ_size)
-                  {
-                    case 1:
-                      {
-                        if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()))
-                          connected5 = true;
-                        break;
-                      }
-                    case 2:
-                      {
-                        if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()))
-                          connected5 = true;
-                        break;
-                      }
-                    case 3:
-                      {
-                        if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()))
-                          connected5 = true;
-                        break;
-                      }
-                    case 4:
-                      {
-                        if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()))
-                          connected5 = true;
-                        break;
-                      }
-                    case 5:
-                      {
-                        if(connectedPEs(mapPairs[ind[jj]]->getPE(), out->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out1->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out2->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out3->getPE()) && connectedPEs(mapPairs[ind[jj]]->getPE(), out4->getPE()))
-                          connected5 = true;
-                        break;
-                      }
-                    default:
-                      connected5 = false;
-                  } 
-
-                  if(connected4 && connected5)
-                  {
-                    MappingPair* mappair = mapPairs[ind[jj]]; 
-                    mapPairs[ind[jj]]->getNode()->SetCurrentPosition(mappair); 
-                    AssignTEC(mapPairs[ind[jj]]->getPE()->getIndexI(), mapPairs[ind[jj]]->getPE()->getIndexJ(), mapPairs[ind[jj]]->getPE()->getIndexT(), mapPairs[ind[jj]]->getNode()->get_ID());
-                    return true; 
-                  } 
-                }
-                Restore_timeslot(connected_node2[0]->get_Sched_Info()->get_Modulo_Current());
-              }
-
-            }
-            Restore_timeslot(connected_node1[0]->get_Sched_Info()->get_Modulo_Current());
-          } 
-        }
-      } 
-    }
-    Restore_timeslot(n->get_Sched_Info()->get_Modulo_Current()); 
-  }
-
-  // If nothing works out restore TEC to original
-  Restore(copy_TEC);  
-  return false;  
-
-} 
-*/
 
 
 // The pred and succ vectors are mapped nodes and not the absolute predecessor and successors of v
@@ -6651,7 +7355,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 0" << endl;
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
           _FATAL("in else of case 0:\n");
           // parental smart recovery and if that fails, children smart recovery. 
@@ -6666,7 +7370,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
       {
         // TEC.print_matrix();
         cout << "Inside diagnostic case 1: " << endl;
+#ifdef PRINT_TEC
         TEC.print_matrix();
+#endif
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
         if(!success)
@@ -6677,7 +7383,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 1 shallow!!!!" << endl;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
         }
 
         if(!success)
@@ -6685,7 +7394,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "node shallow 1 not success" << endl;
           //_FATAL("shallow 4 not success"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
           //_FATAL("1 Deep case 1\n");
         }
 
@@ -6702,7 +7414,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 1" << endl;
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           //TEC.print_matrix(); 
           // _FATAL("in else of case 1:\n");
           return false;
@@ -6717,7 +7429,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 2:
       {
         cout << "Inside diagnostic case 2: " << endl;
+#ifdef PRINT_TEC
         TEC.print_matrix();
+#endif
+
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
         if(!success)
@@ -6728,7 +7443,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 2 shallow!!!!" << endl;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
         }
 
 
@@ -6737,7 +7455,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "node shallow 2 not success" << endl;
           //_FATAL("shallow 4 not success"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case) ;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
           //_FATAL("1 Deep case 2\n");
         }
         // if(success1)
@@ -6756,7 +7477,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 2" << endl;
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           //TEC.print_matrix(); 
           //_FATAL("in else of case 2:\n");
           return false;
@@ -6772,7 +7493,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 3:
       {
         cout << "Inside diagnostic case 3: " << endl;
+#ifdef PRINT_TEC
         TEC.print_matrix();
+#endif
+
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
         if(!success)
@@ -6783,7 +7507,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 3 shallow!!!!" << endl;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
         }
 
         if(!success)
@@ -6791,7 +7518,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "node shallow 3 not success" << endl;
           //_FATAL("shallow 4 not success"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case) ;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
           //_FATAL("1 Deep case 3\n");
         }
         //if(success1)
@@ -6810,7 +7540,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 3" << endl;
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           //TEC.print_matrix(); 
           //_FATAL("in else of case 2:\n");
           return false;
@@ -6824,7 +7554,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
       {
         //TEC.print_matrix(); 
         cout << "Inside diagnostic case 4: " << endl;
+#ifdef PRINT_TEC
         TEC.print_matrix();
+#endif
+
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1  = false;
         if(!success)
@@ -6835,7 +7568,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 4 shallow!!!!" << endl;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
         }
 
         if(!success)
@@ -6843,7 +7579,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "node shallow 4 not success" << endl;
           //_FATAL("shallow 4 not success"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case) ;   
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 4\n");
         }
         // if(success1)
@@ -6862,14 +7600,17 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 4" << endl;
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           //TEC.print_matrix();
           //_FATAL("in else of case 4:\n");
           return false;
           _FATAL("in else of case 4:\n");
           // parental smart recovery and if that fails, children smart recovery. 
         }
+#ifdef PRINT_TEC
         TEC.print_matrix();
+#endif
+
         cout << "map case 4" << endl;
         _FATAL("map case 4\n");
         break;
@@ -6878,7 +7619,10 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
       {
         //TEC.print_matrix(); 
         cout << "Inside map case 5 diagnostic" << endl;
-        TEC.print_matrix(); 
+#ifdef PRINT_TEC
+        TEC.print_matrix();
+#endif
+
 
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
@@ -6893,7 +7637,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 5 shallow!!!!" << endl;
-          TEC.print_matrix();
+#ifdef PRINT_TEC
+	  TEC.print_matrix();
+#endif
         }
 
 
@@ -6902,7 +7648,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 5 shallow N not success" << endl;
           //_FATAL("Remap failure in 5"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case); 
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 5\n");
         }
         // if(success1)
@@ -6922,7 +7670,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "map case 5 failure\n";
           // _FATAL("Map case 5 failure\n"); 
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           //TEC.print_matrix();
           //_FATAL("Map case 5 failure\n");
           return false;
@@ -6934,7 +7682,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 6:
       {
         cout << "Inside map case 6 diagnostic" << endl;
-        TEC.print_matrix(); 
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
 
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
@@ -6948,7 +7698,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 6 shallow!!!!" << endl;
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
         }
 
 
@@ -6957,7 +7709,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 6 shallow N not success" << endl;
           //_FATAL("Remap failure in 5"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 6\n");
         }
         // if(success1)
@@ -6977,7 +7731,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "map case 6 failure\n";
           // _FATAL("Map case 5 failure\n"); 
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
         _FATAL("map case 6\n");
@@ -6986,7 +7740,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 7:
       {
         cout << "Inside map case 7 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
 
@@ -6999,7 +7755,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 7 shallow!!!!" << endl;
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
         }
 
 
@@ -7008,7 +7766,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 7 shallow N not success" << endl;
           //_FATAL("Remap failure in 5"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 7\n");
         }
         //if(success1)
@@ -7028,7 +7788,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "map case 7 failure\n";
           // _FATAL("Map case 5 failure\n"); 
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
 
@@ -7038,7 +7798,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 8:
       {
         cout << "Inside map case 8 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
 
 
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
@@ -7061,7 +7823,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           //_FATAL("map case 8\n");
           cout << "case 8 shallow N not success" << endl;
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 8\n");
         }
 
@@ -7073,14 +7837,13 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 8 failure\n";
           left_nodes_unmapped.push_back(v);
-          //cout << "passed left nodes" << endl;
-          //  TEC.print_matrix();
-          //_FATAL("map case 8 all failed"); 
-          cout << "map case 8" << endl;
+	  cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
 
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         cout << "map case 8" << endl;
         _FATAL("map case 8\n");
         break;
@@ -7088,7 +7851,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 9:
       {
         cout << "Inside map case 9 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false;
         if(!success)
@@ -7100,8 +7865,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 9 shallow!!!!" << endl;
+#ifdef PRINT_TEC
           TEC.print_matrix();
-
+#endif
         }
 
 
@@ -7110,7 +7876,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 9 shallow N not success" << endl;
           //_FATAL("Shallow failure in 9"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           // _FATAL("1 Deep case 9\n");
         }
         // if(success1)
@@ -7129,12 +7897,14 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         {
           cout << "map case 9 failure\n";
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
 
 
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         cout << "map case 9" << endl;
         // _FATAL("map case 9\n");
         break;
@@ -7142,8 +7912,11 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 10:
       {
         cout << "Inside map case 10 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         /*bool success = Smart_Map_Failure_Recovery_Shallow_N(pred, succ, v);
 
           if(!success)
@@ -7164,9 +7937,12 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
       }
     case 11:
       {
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         cout << "map case 11" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 11\n");
         return false; 
         break;
@@ -7174,7 +7950,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
     case 12:
       {
         cout << "Inside map case 12 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
 
@@ -7187,7 +7965,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         if(success)
         {
           cout << "success case 12 shallow!!!!" << endl;
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
         }
 
 
@@ -7196,7 +7976,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 12 shallow N not success" << endl;
           //_FATAL("Remap failure in 5"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 12\n");
         }
         // if(success1)
@@ -7216,7 +7998,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "map case 12 failure\n";
           // _FATAL("Map case 5 failure\n"); 
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
         break;
@@ -7226,7 +8008,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
         //TEC.print_matrix();
         //cout << "map case 13 for: " << v->get_ID() << endl;
         cout << "Inside map case 13 diagnostic" << endl;
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         bool success = Smart_Map_Recovery_Node_Shallow(v, map_case);
         bool success1 = false; 
 
@@ -7248,7 +8032,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "case 13 shallow N not success" << endl;
           //_FATAL("Remap failure in 5"); 
           success1 = Smart_Map_Failure_Recovery_1Deep(v, map_case);
+#ifdef PRINT_TEC
           TEC.print_matrix();
+#endif
           //_FATAL("1 Deep case 13\n");
         }
         //  if(success1)
@@ -7268,7 +8054,7 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
           cout << "map case 13 failure\n";
           // _FATAL("Map case 5 failure\n"); 
           left_nodes_unmapped.push_back(v);
-          cout << "passed left nodes" << endl;
+          cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
           return false;
         }
 
@@ -7277,95 +8063,120 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
       }
     case 14:
       {
-        TEC.print_matrix();
-        cout << "map case 14" << endl;
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
+        cout << "map case 14 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 14\n");
         return false;
         break;
       }
     case 15:
       {
-        TEC.print_matrix();
-        cout << "map case 15" << endl;
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
+        cout << "map case 15 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 15\n");
         return false;
         break;
       }
     case 16:
       {
-
-        TEC.print_matrix();
-        cout << "map case 16" << endl;
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
+        cout << "map case 16 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 16\n");
         return false;
         break;
       }
     case 17:
       {
-
-        TEC.print_matrix();
-        cout << "map case 17" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 17 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         // _FATAL("map case 17\n");
         return false;
         break;
       }
     case 18:
       {
-        TEC.print_matrix();
-        cout << "map case 18" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 18 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         // _FATAL("map case 18\n");
         return false;
         break;
       }
     case 19:
       {
-
-        TEC.print_matrix();
-        cout << "map case 19" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 19 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 19\n");
         return false;
         break;
       }
     case 20:
       {
-
-        TEC.print_matrix();
-        cout << "map case 20" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 20 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 20\n");
         return false;
         break;
       }
     case 21:
       {
-        TEC.print_matrix();
-        cout << "map case 21" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 21 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 21\n");
         return false;
         break;
       }
     case 22:
       {
-
-        TEC.print_matrix();
-        cout << "map case 22" << endl;
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
+        cout << "map case 22 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 22\n");
         return false;
         break;
       }
     case 23:
       {
-        TEC.print_matrix();
-        cout << "map case 23" << endl;
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
+        cout << "map case 23 not implemented!" << endl;
         left_nodes_unmapped.push_back(v);
+	cout << "Left nodes: " << left_nodes_unmapped.size() << endl;
         //_FATAL("map case 23\n");
         return false;
         break;
@@ -7373,8 +8184,9 @@ bool CGRA::Map_Failure_Diagnostic(Node *v, vector<Node*> pred, vector<Node*> suc
 
     default:
       {   
-
-        TEC.print_matrix();
+#ifdef PRINT_TEC
+          TEC.print_matrix();
+#endif
         cout << "map case default" << endl;
         _FATAL("default\n");
       }     
@@ -7444,13 +8256,32 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
   else if(pred.size() == 3 &&  succ.size() == 5)
     map_case = 23;
 
+  cout << "Get_Free_Coordinates: node " << v->getName() << " - ID: " << v->get_ID() << " - case: " << map_case << endl;
+  //if(v->is_Mapped()){
+    //MappingPair* mp = v->GetCurrentPosition();
+    //cout << "  pos: " << mp->getPE()->getIndexI() << ":" << mp->getPE()->getIndexJ() << "T" << mp->getPE()->getIndexT() << endl;
+  //}
+  
+
+  /*unsigned num_mapped_nodes = 0;
+  for(int cycle = 0; cycle < II; cycle++)
+    for(int xcoor = 0; xcoor < SizeX; xcoor++)
+      for(int ycoor = 0; ycoor < SizeY; ycoor++)
+	if(TEC[(cycle*SizeX)+xcoor][ycoor] >= 0) num_mapped_nodes++;
+  cout << "  Number of nodes mapped: " << num_mapped_nodes << endl;*/
+
+#ifdef PRINT_TEC
+  cout << "TEC:\n";
+  TEC.print_matrix();
+#endif
+  
   switch(map_case)
   {
     case 0: 
       {
         vector<int> potential_pos;
         potential_pos.clear();
-        if(v->is_Load_Address_Generator())
+        if(v->is_Load_Address_Generator() || v->is_Store_Address_Generator() || v->is_Store_Data_Bus_Write())
         {
           vector<int> mapped_nodes;
           for(int ii=0; ii<(int) indices.size(); ii++)
@@ -7460,18 +8291,17 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
 
             mapped_nodes.clear();
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-            //bool found_mem=false;
-            if(((int) mapped_nodes.size()) > 0)
+            bool mem_conflict = false;
+	    for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
             {
-              for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  break;
-                else
-                  potential_pos.push_back(indices[ii]);
-              }
+	      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || \
+		 get_Node(mapped_nodes[jj])->is_Store_Address_Generator() || \
+		 get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write()){
+		mem_conflict = true;
+		break;
+	      }
             }
-            else
+            if(!mem_conflict)
               potential_pos.push_back(indices[ii]);
           }
         }
@@ -7490,6 +8320,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case); 
       } 
 
@@ -7507,27 +8338,28 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
               continue;
 
+	    if(!connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE())) continue;
+
             mapped_nodes.clear();
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-            //bool found_mem=false;
+            
             if(((int) mapped_nodes.size()) > 0)
             {
+	      bool mem_conflict = false;
               for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
               {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  break;
-                else
-                {
-                  if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                    potential_pos.push_back(indices[ii]);
-                }
+                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() \
+		     || get_Node(mapped_nodes[jj])->is_Store_Address_Generator() \
+		     || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write()){
+		  
+		  mem_conflict = true;
+		  break;
+		}
               }
+	      if(!mem_conflict) potential_pos.push_back(indices[ii]);
             }
             else
-            {
-              if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                potential_pos.push_back(indices[ii]);
-            }
+	      potential_pos.push_back(indices[ii]);
 
           }
         }
@@ -7535,9 +8367,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         {
           int row=-1;
           if(pred[0]->is_Load_Address_Generator())
-            row = TEC.row_find(pred[0]->get_ID()) % SizeX; 
-
-          vector<int> mapped_nodes; 
+            row = TEC.row_find(pred[0]->get_ID()) % SizeX;
 
           for(int ii=0; ii < (int) indices.size(); ii++)
           {
@@ -7545,52 +8375,16 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
               continue;
 
-            mapped_nodes.clear();
-            mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-
-            if((int) mapped_nodes.size() > 0)
-            {
-              for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
-              {
-                if(row==-1)
-                {
-                  if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                  {
-                    if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                      break;
-                    else
-                      potential_pos.push_back(indices[ii]);
-
-                  }
-                }
-                else
-                {
-                  if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                  {
-                    if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                      break;
-                    else
-                      potential_pos.push_back(indices[ii]);
-                  }
-
-                }
-
-              }
-            }
-            else
-            {
-              if(row==-1)
-              {
-                if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                  potential_pos.push_back(indices[ii]);
-              }
-              else
-              {
-                if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                  potential_pos.push_back(indices[ii]);
-              }
-            }
-          }
+	    if(row != -1){
+	      // Since related ld_add is mapped, ld_data should just be on the same row, no need to check for mem conflict
+	      if(mapPairs[indices[ii]]->getPE()->getIndexI() == row){
+		potential_pos.push_back(indices[ii]);
+	      }
+	    }
+	    else {
+	      _FATAL("FATAL: Get_Free_Coordinate:Case1:ld_data node: Cannot find related ld_add row");
+	    }
+	  }
         }
         else if(v->is_Store_Address_Generator())
         {  
@@ -7603,23 +8397,25 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
               continue;
 
-            mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-            for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
+	    mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
+	    
+	    if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
             {
-              if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  break;
-                else
-                  potential_pos.push_back(indices[ii]);
-
-              }
+	      bool mem_conflict = false;
+	      for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
+	      {
+                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){ // No need to check for related st_data (case 1 does not have succ mapped)
+		  mem_conflict = true;
+		  break;
+		}
+	      }
+	      if(!mem_conflict) potential_pos.push_back(indices[ii]);
             }
           }
         }
         else if(v->is_Store_Data_Bus_Write())
         {
-          // check if th eincoming mapped node is a store addr. 
+          // check if the incoming mapped node is a store addr. 
           if(pred[0]->is_Store_Address_Generator())
           {
             int row = -1;
@@ -7630,7 +8426,8 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
               if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
                 continue;
 
-              //since there are no in and out nodes mapped, no need to find connectedPEs                
+              // since there are no in and out nodes mapped, no need to find connectedPEs
+	      // since pred[0] is a st_add, it should already be mapped w/o mem conflict
               if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
                 potential_pos.push_back(indices[ii]);
             }
@@ -7642,14 +8439,27 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
               if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
                 continue;
 
-              //since there are no in and out nodes mapped, no need to find connectedPEs                
-              if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
+	      // Since st_add has not been mapped, have to check for mem conflict
+	      vector<int> mapped_nodes;
+	      mapped_nodes.clear();
+	      mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
+		
+	      bool mem_conflict = false;
+	      for(int jj=0; jj <(int) mapped_nodes.size(); jj++){
+		if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		  mem_conflict = true;
+		  break;
+		}
+	      }
+	      
+              if(!mem_conflict && connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
                 potential_pos.push_back(indices[ii]);
             }
           }
         }
         else
         {
+	  //cout << "Mapping case1 regular node " << v->get_ID() << endl;
           for(int ii=0; ii < (int) indices.size(); ii++)
           {
             // check if the PE is free, if not continue to the next position.
@@ -7663,9 +8473,12 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
 
         retVal.clear();
         //Get the corresponding mappairs for the potential pos
-        for(int ii=0; ii < (int) potential_pos.size(); ii++)
+        for(int ii=0; ii < (int) potential_pos.size(); ii++){
           retVal.push_back(mapPairs[potential_pos[ii]]);
+	  //cout << "  Pushed back: " << mapPairs[potential_pos[ii]]->getPE()->getIndexI() << "-" << mapPairs[potential_pos[ii]]->getPE()->getIndexJ() << endl;
+	}
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);  
       }
 
@@ -7681,30 +8494,32 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
           {
             int row = -1;
             row = TEC.row_find(pred[0]->get_ID()) % SizeX;
-
+	 
             for(int ii=0; ii<(int) indices.size(); ii++)
             {
-              if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
+	      if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
                 continue;
 
-              //since there are no in and out nodes mapped, no need to find connectedPEs                
               if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                potential_pos.push_back(indices[ii]);
+		if(connectedPEs(mp1->getPE(), mapPairs[indices[ii]]->getPE()))
+		  potential_pos.push_back(indices[ii]);
+	      
             }
           }
           else if(pred[1]->is_Store_Address_Generator())
           {
             int row = -1;
             row = TEC.row_find(pred[1]->get_ID()) % SizeX;
-
+	    
             for(int ii=0; ii<(int) indices.size(); ii++)
             {
               if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
                 continue;
 
-              //since there are no in and out nodes mapped, no need to find connectedPEs                
               if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                potential_pos.push_back(indices[ii]);
+		if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
+		  potential_pos.push_back(indices[ii]);
+	      
             }
           }
           else
@@ -7734,13 +8549,13 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         }
         retVal.clear();
         //Get the corresponding mappairs for the potential pos
-        for(int ii=0; ii < (int) potential_pos.size(); ii++)
+        for(int ii=0; ii < (int) potential_pos.size(); ii++){
           retVal.push_back(mapPairs[potential_pos[ii]]);
+	  //cout << "  Pushed back: " << mapPairs[potential_pos[ii]]->getPE()->getIndexI() << "-" << mapPairs[potential_pos[ii]]->getPE()->getIndexJ() << endl;
+	}
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
-
-        _FATAL("2 pred mapped with 0 succs\n"); 
-        return make_tuple(retVal, potential_pos, map_case); 
       }  
     case 3:
       {
@@ -7762,6 +8577,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
         _FATAL("3 pred mapped with 0 succs\n");
         return make_tuple(retVal, potential_pos, map_case);
@@ -7780,29 +8596,23 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
           {
             if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
               continue;
+	    if(mapPairs[indices[ii]]->getPE()->getIndexI() != mp->getPE()->getIndexI())
+	      continue;
 
             mapped_nodes.clear();
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-            //bool found_mem=false;
-            if(((int) mapped_nodes.size()) > 0)
+            bool mem_conflict = false;
+	    
+	    for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
             {
-              for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  break;
-                else
-                {
-                  if(connectedPEs(mapPairs[indices[ii]]->getPE(), mp->getPE()))
-                    potential_pos.push_back(indices[ii]);
-                }
-              }
-            }
-            else
-            {
-              if(connectedPEs(mapPairs[indices[ii]]->getPE(), mp->getPE()))
-                potential_pos.push_back(indices[ii]);
-            }
+	      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write()){
+		mem_conflict = true;
+		break;
+	      }
+	    }
 
+	    if(!mem_conflict)
+	      potential_pos.push_back(indices[ii]);
           }
         }
         /*else if(v->is_Load_Data_Bus_Read())
@@ -7877,20 +8687,22 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
               continue;
 
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
+	    bool memory_conflict = false;
             for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
             {
-              if(connectedPEs(mapPairs[indices[ii]]->getPE(), mp->getPE()))
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
+	      if(mp->getNode()->is_Store_Data_Bus_Write() && get_Node(mapped_nodes[jj])->get_ID() == mp->getNode()->get_ID())
+		 continue;
+	      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+	 	  memory_conflict = true;
                   break;
-                else
-                  potential_pos.push_back(indices[ii]);
+	      }
+	    }
 
-              }
-            }
+	    if(!memory_conflict && mp->getPE()->getIndexI() == mapPairs[indices[ii]]->getPE()->getIndexI()) // ensure store_addr_gen is on the same row and not same PE as store_db_write
+		    potential_pos.push_back(indices[ii]);
           }
         }
-        else if(v->is_Store_Data_Bus_Write())
+        /*else if(v->is_Store_Data_Bus_Write())  // st_data does not have succ!!
         {
           // check if th eincoming mapped node is a store addr. 
           if(succ[0]->is_Store_Address_Generator())
@@ -7920,7 +8732,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
                 potential_pos.push_back(indices[ii]);
             }
           }
-        }
+	  } */
         else
         {
           for(int ii=0; ii < (int) indices.size(); ii++)
@@ -7934,16 +8746,14 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
           }
         }
 
-        /*if((int) potential_pos.size() == 0)
-          {
-          TEC.print_matrix(); 
-          _FATAL("Hey quit from 4 for node: %d with succ %d", v->get_ID(), succ[0]->get_ID()); 
-          }*/ 
         retVal.clear();
         //Get the corresponding mappairs for the potential pos
-        for(int ii=0; ii < (int) potential_pos.size(); ii++)
+        for(int ii=0; ii < (int) potential_pos.size(); ii++){
           retVal.push_back(mapPairs[potential_pos[ii]]);
+	  //cout << "  Pushed back: " << mapPairs[potential_pos[ii]]->getPE()->getIndexI() << "-" << mapPairs[potential_pos[ii]]->getPE()->getIndexJ() << endl;
+	}
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);  
 
       }
@@ -7973,16 +8783,18 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
             // check the row_idx to find the row in this cycle that has been occupied, and select a different row.
 
-            bool found_mem=false;
+	    bool mem_conflict = false;
+	    for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
+	    {
+	      if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator() || \
+		   get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || \
+		   get_Node(mapped_nodes[jj])->is_Store_Address_Generator()){
+		  mem_conflict = true;
+		  break;
+	      }
+	    }
 
-            if(mapped_nodes.size() > 0)
-              for(int jj=0; jj < nodeSize; jj++)
-                for(int kk=0; kk < (int) mapped_nodes.size(); kk++)
-                  if(_node_Set[jj]->get_ID() == mapped_nodes[kk])
-                    if(_node_Set[jj]->is_Store_Address_Generator() || _node_Set[jj]->is_Load_Address_Generator())
-                      found_mem=true;
-
-            if(!found_mem)
+            if(!mem_conflict)
             {
               if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
                 if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
@@ -7990,7 +8802,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             }
           }
         }
-        else if(v->is_Load_Data_Bus_Read())
+        else if(v->is_Load_Data_Bus_Read())  // ld_add is mapped -> just check for same row and connectedPE
         {
           vector<int> mapped_nodes;
           int row=-1;
@@ -8003,53 +8815,51 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
               continue;
 
-            if((int) mapped_nodes.size() > 0)
-            {
-              for(int jj=0; jj <(int) mapped_nodes.size(); jj++)
-              {
-                if(row==-1)
-                {
-                  if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()))
-                  {
-                    if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                      break;
-                    else
-                      potential_pos.push_back(indices[ii]);
-
-                  }
-                }
-                else
-                {
-                  if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                  {
-                    if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                      break;
-
-                    if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()))
-                      potential_pos.push_back(indices[ii]);
-
-                  }
-
-                }
-
-              }
-            }
-            else
-            {
-              if(row==-1)
-              {
-                if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()))
-                  potential_pos.push_back(indices[ii]);
-              }
-              else
-              {
-                if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                  if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()))
-                    potential_pos.push_back(indices[ii]);
-              }
-            }
+	    if(row != -1){
+	      if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
+		if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()))
+		  potential_pos.push_back(indices[ii]);
+	    } else
+	      _FATAL("Get_Free_Coordinate:Case5:ld_data: cannot find ld_add row!\n");
           }
-        } 
+        }
+	// Added by Vinh TA
+	// Update: To handle case 5 for st_add_gen, without this, Falcon maps st_add_gen nodes on different row than st_data
+	else if(v->is_Store_Address_Generator())
+	{
+	  vector<int> mapped_nodes;
+	  int row = TEC.row_find(out_mp->getNode()->get_ID()) % SizeX;
+	  
+	  for(int ii=0; ii < (int) indices.size(); ii++){
+	    if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
+	      continue;
+
+	    if(mapPairs[indices[ii]]->getPE()->getIndexI() != row) continue;
+	    
+	    if(connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE())){
+	      mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
+	      bool mem_conflict = false;
+	      for(int jj=0; jj < (int) mapped_nodes.size(); jj++){
+		if(get_Node(mapped_nodes[jj])->is_Load_Address_Generator()){
+		  mem_conflict = true;
+		  break;
+		}
+		if(get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() && (v->get_Related_Node()->get_ID() != get_Node(mapped_nodes[jj])->get_ID())){
+		  mem_conflict = true;
+		  break;
+		}
+		if(get_Node(mapped_nodes[jj])->is_Store_Address_Generator() && (get_Node(mapped_nodes[jj])->get_ID() != v->get_ID())){
+		  mem_conflict = true;
+		  break;
+		}
+	      }
+	      
+	      if(!mem_conflict)
+		potential_pos.push_back(indices[ii]);
+	    }
+	  }
+	  
+	}
         else
         {
           for(int ii=0; ii < (int) indices.size(); ii++)
@@ -8064,9 +8874,12 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         }
         retVal.clear();
         //Get the corresponding mappairs for the potential pos
-        for(int ii=0; ii < (int) potential_pos.size(); ii++)
+        for(int ii=0; ii < (int) potential_pos.size(); ii++){
           retVal.push_back(mapPairs[potential_pos[ii]]);
+	  // cout << "  Pushed back: " << mapPairs[potential_pos[ii]]->getPE()->getIndexI() << "-"	<< mapPairs[potential_pos[ii]]->getPE()->getIndexJ() << endl;
+	}
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
       }
     case 6:
@@ -8090,6 +8903,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
         // _FATAL("2 pred mapped with 1 succs\n");
         // return make_tuple(retVal, potential_pos, map_case);
@@ -8116,6 +8930,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
         //_FATAL("3 pred mapped with 1 succs\n");
         //return make_tuple(retVal, potential_pos, map_case);
@@ -8161,12 +8976,11 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
 
             bool found_mem=false;
 
-            if(mapped_nodes.size() > 0)
-              for(int jj=0; jj < nodeSize; jj++)
-                for(int kk=0; kk < (int) mapped_nodes.size(); kk++)
-                  if(_node_Set[jj]->get_ID() == mapped_nodes[kk])
-                    if(_node_Set[jj]->is_Store_Address_Generator() || _node_Set[jj]->is_Load_Address_Generator())
-                      found_mem=true;
+	    for(int kk=0; kk < (int) mapped_nodes.size(); kk++)
+	      if(get_Node(mapped_nodes[kk])->is_Store_Address_Generator() || get_Node(mapped_nodes[kk])->is_Load_Address_Generator() || get_Node(mapped_nodes[kk])->is_Store_Data_Bus_Write()){
+		found_mem=true;
+		break;
+	      }
 
             if(!found_mem)
             {
@@ -8175,36 +8989,6 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
                   potential_pos.push_back(indices[ii]);
             }
           }
-        }
-        else if(v->is_Load_Data_Bus_Read())
-        {
-          vector<int> mapped_nodes;
-          for(int ii=0; ii<(int) indices.size(); ii++)
-          {
-            if(!isTECfree(mapPairs[indices[ii]]->getPE()->getIndexI(), mapPairs[indices[ii]]->getPE()->getIndexJ(), mapPairs[indices[ii]]->getPE()->getIndexT()))
-              continue;
-
-            mapped_nodes.clear();
-            mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
-
-            if((int)mapped_nodes.size() > 0)
-            {
-              for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  continue; 
-
-                if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()))         
-                  potential_pos.push_back(indices[ii]);
-              }
-            }
-            else
-            {
-              if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()))
-                potential_pos.push_back(indices[ii]);
-            }
-          }
-
         }
         else
         {
@@ -8223,6 +9007,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
       }
     case 9:
@@ -8236,18 +9021,20 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         MappingPair* out_mp1 = succ[1]->GetCurrentPosition();
 
         vector<int> potential_pos; 
-        //_FATAL("1 pred mapped with 2 succs\n");
         if(v->is_Load_Address_Generator())
         {
           int row=-2, index=-1;
 
-          for(int jj=0; jj < (int) succ.size(); jj++)
-          {
-            if(succ[0]->is_Load_Data_Bus_Read())
-              row = TEC.row_find(succ[0]->get_ID()) % SizeX;
-            else
-              index = jj;
-          }
+	  if(succ[0]->is_Load_Data_Bus_Read()){
+	    row = TEC.row_find(succ[0]->get_ID()) % SizeX;
+	    index = 1;
+	  }
+	  else{
+	    row = TEC.row_find(succ[1]->get_ID()) % SizeX;
+	    index = 0;
+	  }
+	  
+          
 
           vector<int> mapped_nodes;
           for(int ii=0; ii<(int) indices.size(); ii++)
@@ -8263,10 +9050,8 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             bool found_mem=false;
 
             if(mapped_nodes.size() > 0)
-              for(int jj=0; jj < nodeSize; jj++)
-                for(int kk=0; kk < (int) mapped_nodes.size(); kk++)
-                  if(_node_Set[jj]->get_ID() == mapped_nodes[kk])
-                    if(_node_Set[jj]->is_Store_Address_Generator() || _node_Set[jj]->is_Load_Address_Generator())
+	      for(int kk=0; kk < (int) mapped_nodes.size(); kk++)
+		if(get_Node(mapped_nodes[kk])->is_Store_Address_Generator() || get_Node(mapped_nodes[kk])->is_Load_Address_Generator() || get_Node(mapped_nodes[kk])->is_Store_Data_Bus_Write())
                       found_mem=true;
 
             if(!found_mem)
@@ -8284,6 +9069,8 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
           int row=-1;
           if(pred[0]->is_Load_Address_Generator())
             row = TEC.row_find(pred[0]->get_ID()) % SizeX;
+	  if(row == -1)
+	    _FATAL("ERROR:Get_Free_Coordinate:case 9:ld_data: cannot find ld_add row!\n");
           vector<int> mapped_nodes;
 
           for(int ii=0; ii < (int) indices.size(); ii++)
@@ -8295,47 +9082,22 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
             mapped_nodes.clear();
             mapped_nodes = get_nodes_mapped_to_row((mapPairs[indices[ii]]->getPE()->getIndexT()*SizeX)+mapPairs[indices[ii]]->getPE()->getIndexI());
 
-
-            if((int)mapped_nodes.size() > 0)
+	    bool mem_conflict = false;
+	    for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
             {
-              for(int jj=0; jj < (int) mapped_nodes.size(); jj++)
-              {
-                if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read() || get_Node(mapped_nodes[jj])->is_Store_Data_Bus_Write() || get_Node(mapped_nodes[jj])->is_Store_Address_Generator())
-                  continue;
+	      if(get_Node(mapped_nodes[jj])->is_Load_Data_Bus_Read()){
+		mem_conflict = true;
+		break;
+	      }
+	    }
 
-                if(row == -1)
-                {
-                  if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()) && connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                    potential_pos.push_back(indices[ii]);
-                }
-                else
-                {
-                  if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()))
-                    if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                      potential_pos.push_back(indices[ii]);
-                }
-              }
-            }
-            else
-            {
-              if(row == -1)
-              {
-                if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()) && connectedPEs(mp->getPE(), mapPairs[indices[ii]]->getPE()))
-                  potential_pos.push_back(indices[ii]);
-              }
-              else
-              {
-
-                if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()))
-                  if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
-                    potential_pos.push_back(indices[ii]);
-              }
-            }
+	    if(connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp->getPE()) && connectedPEs(mapPairs[indices[ii]]->getPE(), out_mp1->getPE()))
+	      if(mapPairs[indices[ii]]->getPE()->getIndexI() == row)
+		potential_pos.push_back(indices[ii]);
           }
-        }   
+        }
         else
         {
-
           for(int ii=0; ii < (int) indices.size(); ii++)
           {
             // check if the PE is free, if not continue to the next position.
@@ -8348,9 +9110,12 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         }
         retVal.clear();
         //Get the corresponding mappairs for the potential pos
-        for(int ii=0; ii < (int) potential_pos.size(); ii++)
+        for(int ii=0; ii < (int) potential_pos.size(); ii++){
           retVal.push_back(mapPairs[potential_pos[ii]]);
+	  // cout << "  Pushed back: " << mapPairs[potential_pos[ii]]->getPE()->getIndexI() << "-" << mapPairs[potential_pos[ii]]->getPE()->getIndexJ() << endl;
+	}
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
       }
     case 10:
@@ -8375,6 +9140,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
 
         //_FATAL("2 pred mapped with 2 succs\n");
@@ -8403,6 +9169,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
         //_FATAL("3 pred mapped with 2 succs\n");
         //return make_tuple(retVal, potential_pos, map_case);
@@ -8467,6 +9234,7 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
         for(int ii=0; ii < (int) potential_pos.size(); ii++)
           retVal.push_back(mapPairs[potential_pos[ii]]);
 
+	cout << "  Returning " << potential_pos.size() << " pos\n";
         return make_tuple(retVal, potential_pos, map_case);
       }
     case 13:
@@ -8551,7 +9319,9 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
 
         return make_tuple(retVal, potential_pos, map_case);
 
-        TEC.print_matrix(); 
+#ifdef PRINT_TEC
+	TEC.print_matrix();
+#endif
         _FATAL("1 pred mapped with 3 succs for %d\n", v->get_ID());
         return make_tuple(retVal, potential_pos, map_case);
       }
@@ -9054,6 +9824,8 @@ tuple<vector<MappingPair*>, vector<int>, int> CGRA::Get_Free_Coordinates(Node* v
 
 void CGRA::BFS_refine_impl(DFG* myDFG, int s)
 {
+  cout << "BFS Map: root node " << s << endl;
+
   // Create a queue for BFS 
   list<int> queue;
 
@@ -9073,9 +9845,11 @@ void CGRA::BFS_refine_impl(DFG* myDFG, int s)
     queue.pop_front();
 
     Node* v = _node_Set[s];
+    cout << "\n*****************\nBFS Map: mapping node " << v->get_ID() << endl;
 
     if(is_already_mapped(v))
     {
+      cout << "  " << v->get_ID() << " already mapped\n";
       continue;
     }
 
@@ -9100,20 +9874,30 @@ void CGRA::BFS_refine_impl(DFG* myDFG, int s)
       //TEC.print_matrix(); 
       //_FATAL("Cannot find a mapping for %d with map case: %d", v->get_ID(), map_case);
       cout << "Cannot find a mapping for node: " << v->get_ID() << " with map case: " << map_case << endl;
+#ifdef PRINT_TEC
       TEC.print_matrix();
+#endif
       //_FATAL("Cannot find a mapping for %d with map case: %d", v->get_ID(), map_case);
       // implement the diagnostic function and from that analyze the map_case and call recovery. 
       int success = Map_Failure_Diagnostic(v, P, S, map_case); 
 
-      if(!success)
-        return;
+      if(!success){
+	while(!queue.empty()){
+	  visited[queue.front()] = false;
+	  queue.pop_front();
+	}
+	cout << "No possible mapping for node: " << v->get_ID() << endl;
+	return;
+      }
       else
       {
         // if success update the pred succ mappable indices list.
         //TEC.print_matrix();
         //_FATAL("Found mapping for %d\n", v->get_ID()); 
         //Update_Pred_Succ_Indices(P, S, v);
-        continue; 
+	cout << "BFS Map: node: " << v->get_ID() << " - chosen PE: " << v->GetCurrentPosition()->getPE()->getIndexI() << ":" << v->GetCurrentPosition()->getPE()->getIndexJ() << "T" << v->GetCurrentPosition()->getPE()->getIndexT() << endl;
+	goto label;
+	//continue;
       }
     }
     //M.set_row_zero(s);
@@ -9123,7 +9907,13 @@ void CGRA::BFS_refine_impl(DFG* myDFG, int s)
     BestIndices.push_back(Tau[sel]); 
     AssignTEC(Tau[sel]->getPE()->getIndexI(), Tau[sel]->getPE()->getIndexJ(), Tau[sel]->getPE()->getIndexT(), v->get_ID());
 
+    cout << "BFS Map: chosen PE: " << v->GetCurrentPosition()->getPE()->getIndexI() << ":" << v->GetCurrentPosition()->getPE()->getIndexJ() << "T" << v->GetCurrentPosition()->getPE()->getIndexT() << endl;
+    cout << "TEC:\n";
+    TEC.print_matrix();
+    
+
     // update predecessor's and successor's Mappable Indices based on the sel value.
+  label:
     Update_Pred_Succ_Indices(v);     
 
 
@@ -9146,7 +9936,7 @@ void CGRA::BFS_refine_impl(DFG* myDFG, int s)
       {
         visited[*i] = true;
         queue.push_back(*i);
-
+	cout << "BFS Map: Enqueueing " << _node_Set[(*i)]->get_ID() << endl;
       }
     }
   }
@@ -12926,18 +13716,13 @@ bool CGRA::FALCON(DFG* myDFG, vector<Node*> &leftNotMapped)
   cout << "Generate Adj matrix" << endl;
 
   print_adj(nodeSize);
-  print_node_id(myDFG);  
-  //print_adj_node(nodeSize); 
-  //exit(1);
+  print_node_id(myDFG);
 
   copy_M.reshape(M.rows(), M.cols()); 
   copy_M = M; 
 
   //bool mapping_found = false;
   TEC.reshape(II * SizeX, SizeY);
-
-  //TEC.print_matrix();
-  //exit(1);
 
   //cout << "inside while" << endl;
   bool refine_success = refine_M(myDFG);
@@ -13087,6 +13872,7 @@ void CGRA::Prolog(DFG* myDFG, int highest_distance, int node_with_highest_distan
     unrolled_time = myDFG->get_Node(node_with_highest_distance)->get_Sched_Info()->get_Current() + highest_distance*II;
 
   cout << "\n*********************************Prolog Start*********************************\n";
+  debugfile << "\n*********************************Prolog Start*********************************\n";
   while (true)
   {
     toBreak = true;
@@ -13096,6 +13882,7 @@ void CGRA::Prolog(DFG* myDFG, int highest_distance, int node_with_highest_distan
       TimeCGRA* cgraTime = timeCGRAList[timeIndex];
       PE* candidatePE;
       cout << "Time:" << t << endl;
+      debugfile << "Time: " << t << endl;
       for (int i = 0; i < SizeX; i++)
       {
         for (int j = 0; j < SizeY; j++)
@@ -13106,12 +13893,15 @@ void CGRA::Prolog(DFG* myDFG, int highest_distance, int node_with_highest_distan
             if (candidatePE->getNode()->get_Sched_Info()->get_Current() <= t)
             {
               printf("%10d", candidatePE->getNode()->get_ID());
+              debugfile << std::setw(10) << candidatePE->getNode()->get_ID();
               prologFile << candidatePE->getNode()->get_ID() << "\n";
               total++;
             }
             else
             {
               printf("         F");
+              debugfile << "         F";
+	      //debugfile << "\tF";
               prologFile << "-1" << "\n";
               toBreak = false;
               total++;
@@ -13120,12 +13910,16 @@ void CGRA::Prolog(DFG* myDFG, int highest_distance, int node_with_highest_distan
           else
           {
             printf("         F");
+            debugfile << "         F";
+	    //debugfile << "\tF";
             prologFile << "-1" << "\n";
             total++;
           }
           printf("\t");
+	  debugfile << "\t";
         }
         printf("\n");
+        debugfile << "\n";
       }
     }
     if((toBreak) && (t >= unrolled_time))
@@ -13134,6 +13928,7 @@ void CGRA::Prolog(DFG* myDFG, int highest_distance, int node_with_highest_distan
     }
   }
   cout << "\n*********************************Prolog End*********************************\n";
+  debugfile << "\n*********************************Prolog End*********************************\n";
   prologFile << total << "\n";
   prologFile.close();
 }
@@ -13151,6 +13946,8 @@ void CGRA::EPIlog(DFG* myDFG)
   bool toBreak = false;
   bool nextBreak = true;
   cout << "\n*********************************Epilog Start*********************************\n";
+  debugfile << "\n*********************************Epilog Start*********************************\n";
+  
   while (nextBreak)
   {
     for (int timeIndex = 0; timeIndex < II; timeIndex++)
@@ -13160,6 +13957,8 @@ void CGRA::EPIlog(DFG* myDFG)
       TimeCGRA* cgraTime = timeCGRAList[timeIndex];
       PE* candidatePE;
       cout << "Time:" << t << endl;
+      debugfile << "Time: " << t << endl;
+      
       for (int i = 0; i < SizeX; i++)
       {
         for (int j = 0; j < SizeY; j++)
@@ -13189,12 +13988,14 @@ void CGRA::EPIlog(DFG* myDFG)
             if (candidatePE->getNode()->get_Sched_Info()->get_Current() > t)
             {
               printf("%10d", candidatePE->getNode()->get_ID());
+	      debugfile << std::setw(10) << candidatePE->getNode()->get_ID();
               epilogFile << candidatePE->getNode()->get_ID() << "\n";
               total++;
             }
             else
             {
               printf("         F");
+	      debugfile << "         F";
               epilogFile << "-1" << "\n";
               total++;
               toBreak = false;
@@ -13203,16 +14004,20 @@ void CGRA::EPIlog(DFG* myDFG)
           else
           {
             printf("         F");
+	    debugfile << "         F";
             epilogFile << "-1" << "\n";
             total++;
           }
           printf("\t");
+	  debugfile << "\t";
         }
         printf("\n");
+	debugfile << "\n";
       }
     }
    }
   cout << "\n*********************************Epilog End*********************************\n";
+  debugfile << "\n*********************************Epilog End*********************************\n";
   epilogFile << total << "\n";
   epilogFile.close();
 }
