@@ -6,6 +6,10 @@
  *
  * Last edited: 1 June 2017
  * Author: Shail Dave
+ *
+ * Last edited: 5 April 2022
+ * Author: Vinh TA
+ * Update: Added new field (LoopExit) to instruction word
  */
 
 #ifndef INSTRUCTION_H_
@@ -22,7 +26,7 @@ public:
 	CGRA_Instruction(unsigned long InstructionWord);
 
 	CGRA_Instruction(Datatype DType, OPCode opc,int predic,PEInputMux LMuxSel,PEInputMux RMuxSel,\
-			int RRegAdd1,int RRegAdd2, int WAdd, bool WE, int ImmVal, bool EDMAdd, bool DMData);
+			int RRegAdd1,int RRegAdd2, int WAdd, bool WE, long ImmVal, bool EDMAdd, bool DMData);
 
 	virtual ~CGRA_Instruction();
 
@@ -60,13 +64,14 @@ private:
   Datatype DType; 
 	OPCode opCode;
 	int Predicator;
+        int LE;
 	PEInputMux LeftMuxSelector;
 	PEInputMux RightMuxSelector;
 	int ReadRegAddress1;
 	int ReadRegAddress2;
 	int WriteRegAddress;
 	bool WriteRegisterEnable;
-	int ImmediateValue;
+	long ImmediateValue;
 	bool SelectDataMemoryAddressBus;
 	bool SelectDataMemoryDataBus;
 	unsigned long InsWord;
@@ -80,7 +85,7 @@ public:
 	Pred_Instruction(unsigned long InstructionWord);
 
 	Pred_Instruction(Datatype DType, PredOPCode popc,PEInputMux LMuxSel,PEInputMux RMuxSel,PEInputMux PMuxSel,\
-			int RRegAdd1,int RRegAdd2, int RRegAddP, int ImmVal);
+			int RRegAdd1,int RRegAdd2, int RRegAddP, long ImmVal);
 
 	virtual ~Pred_Instruction();
 
@@ -112,13 +117,14 @@ private:
   Datatype DType; 
 	PredOPCode popCode;
 	int Predicator;
+        int LE;
 	PEInputMux LeftMuxSelector;
 	PEInputMux RightMuxSelector;
 	PEInputMux PredMuxSelector;
 	int ReadRegAddress1;
 	int ReadRegAddress2;
 	int ReadRegAddressP;
-	int ImmediateValue;
+	long ImmediateValue;
 	unsigned long PredInsWord;
 };
 #endif /* INSTRUCTION_H_ */
