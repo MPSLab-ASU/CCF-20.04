@@ -3,9 +3,12 @@
  *
  * Created on: Jul 24, 2012
  * Author: Mahdi Hamzeh
-
+ *
  * Last edited on: 3 December 2016
  * Author: Shail Dave
+ *
+ * Last edited on: 25 Mar 2022
+ * Author: Vinh TA
  */
 
 #ifndef DFG_H_
@@ -343,6 +346,11 @@ class DFG
 
     //update the number of required registers between node1 and node2
     int get_Required_Register(Node* node1, Node* node2, int II);
+
+    // Added by Vinh TA
+    vector<Node*> get_set_liveOut();
+    vector<Node*> get_set_loopCtrl();
+
     //*************************** Scheduling*********************//
 
     vector<Node*> Get_SortOps(int &MII, int number_of_resources);
