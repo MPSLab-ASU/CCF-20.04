@@ -5,25 +5,26 @@
 #Expected arguments or inputs - .c or .cpp files
 
 #Set Paths
-ccf_root="/home/local/ASUAD/quoclon1/ccf9_27"
-install_path="/home/local/ASUAD/quoclon1/sw"
+ccf_root=""
+install_path=""
 obj="obj"
 objFound=0;
 searchstring=".o"
-src="clang -w -g -O3 -mllvm -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
-srcIR="clang -w -g -O3 -mllvm -force-vector-width=1 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
+src="clang -w -g -O3 -mllvm -force-vector-width=1 -fno-unroll-loops -Wpadded --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include";
+srcIR="clang -w -g -O3 -mllvm -force-vector-width=1 -Wpadded -fno-unroll-loops --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include -S -o - -emit-llvm";
 linkModule="";
 combineObj=0;
 objNum=0;
 MakeType=2;
 LIB="";
 
-zero=0
+zero=0;
+target_arm=0;
 
 #-fno-unroll-loops
 #Check if file exists
 if [ ! -f ./combinedIR.ll ]; then 
-	clang -w -O3 -g --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
+	clang -w -O3 --target=armv7a-none-linux-eabi -isystem /usr/arm-linux-gnueabi/include $ccf_root/scripts/CGRALib/cgra.c -S -o - -emit-llvm -o from_clang.ll
 	opt -loop-simplify -redundant-dbg-inst-elim from_clang.ll -o simplified.bc
 	llvm-dis -f simplified.bc -o combinedIR.ll
 fi
@@ -50,9 +51,13 @@ do
 	    fi
 
 	fi
+	if [[ "$i" == *arm* ]]
+	then
+	  echo "Compiling for ARM!"
+	  target_arm=1;
+	fi
 	((j = j + 1))
 done
-
 
 if [[ $objFound -gt $zero ]]
 then
@@ -83,13 +88,14 @@ else
 		tempString=`echo $i | sed -e 's/\.[^.]*$//'`
 		echo "./$tempString.o" >> tempObjList.txt
             fi
-	done	
+	done
+	#echo "cgracc.87: src = $src - srcIR = $srcIR"
 	$src
 	if [[ $objFound -eq $zero ]]
 	then
 	    srcIR+=" -o temp.ll"
 	fi
-	echo here
+	#echo here
 	$srcIR
 
 	llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
@@ -105,6 +111,7 @@ then
     do 
     	src+=" $i"
     done
+    #echo "cgracc.108: src = $src"
     $src	
     for i in "$@"
     do 
@@ -128,6 +135,7 @@ then
 	    srcNew="$srcIR";
 	    srcNew+=" $i"
             srcNew+=" -o temp.ll"
+	    #echo "cgracc.132: srcNew = $srcNew"
 	    $srcNew
       
 	    llvm-link temp.ll combinedIR.ll -S -o combinedIR.ll
@@ -157,13 +165,25 @@ else
     done	
 fi
 
+if [[ $target_arm == 1 ]]; then
+  $ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
+fi
 
-$ccf_root/scripts/opt.sh combinedIR.ll ${install_path} ${ccf_root}
+if [[ $target_arm == 1 ]] || ([[ ! -f "CGRAGen.bc" ]] && [[ ! -d "CGRAExec" ]]); then
+    echo "Accelerating loop not found! Compiling for CPU"
+    llvm-dis CondDDGGen.bc -o CondDDGGen.ll
+    llc -march="arm" CondDDGGen.ll
+    clang -w -O3 -mllvm -force-vector-width=1 -Wpadded -static --target=armv7a-none-linux-eabi CondDDGGen.s -o $obj -lm
+    rm *.s *.bc *.ll
+    exit
+fi
+
 
 llvm-dis CGRAGen.bc -o CGRAGen.ll
 
 if [ ! -f "CGRAGen.ll" ]; then
-	exit 1
+    echo "ERROR: CGRAGen.ll not found!"
+    exit 1
 fi
 
 llvm-dis CGRAGen.bc -o CGRAGen.ll
@@ -171,10 +191,10 @@ llvm-dis CGRAGen.bc -o CGRAGen.ll
 llc -march="arm" CGRAGen.ll
 
 #apply remaining optimizations here such as vectoirize
-clang  -w -O3 -static -target armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
+clang -w -O3 -mllvm -force-vector-width=1 -Wpadded -static --target=armv7a-none-linux-eabi CGRAGen.s -o $obj -lm 
 
 #Delete temporary files
-rm *.s *.bc *.ll
+rm *.bc *.s #*.ll
 
 # Check if CGRAExec exists.
 if [ -d "CGRAExec" ]; then
