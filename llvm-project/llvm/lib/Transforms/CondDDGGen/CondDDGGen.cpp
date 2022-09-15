@@ -3,6 +3,12 @@
 // Last Modified on: April 15, 2018
 //		   : Apri  15, 2019
 //
+// Author: Vinh Ta
+// Last Modified on: March 25, 2022
+// Update: Added awareness of loop control and live out nodes for scheduling constraint.
+// Update: Added support for struct in C
+//   NOTE: currently only support packed structs and up to 5 indices in GEP insts
+//   TODO: Add support for non-packed structs (find padding information) and generalize indices in GEP
 //===----------------------------------------------------------------------===//
 //
 // This file detects critical loops with conditionals annoted with label CGRA and generates
@@ -46,9 +52,9 @@
 #include <iostream>
 #include <fstream>
 
-#define DEBUG   0
+#define DEBUG   1 
 //DEBUG flag for update store
-#define DEBUG1  0
+#define DEBUG1  1
 using namespace llvm;
 
 unsigned int NodeID = 0;
@@ -89,9 +95,24 @@ std::map<std::string, unsigned> map_liveout_to_alignment;
 std::map< BasicBlock*, BasicBlock* > map_liveout_destnBB_newBB;
 std::map< Instruction*, Instruction*> map_replace_liveout_use;
 
+std::vector<BasicBlock *> ifBlocks;
+std::vector<BasicBlock *> elseBlocks;
+std::vector<BasicBlock *> condBlocks;
+std::vector<BranchInst *> condSet;
+std::vector<BasicBlock *> succBlocks;
+
 //Map containing idxprom nodes and predecessor
 std::map<int,int> idxprom_nodeID_pred_map;
 std::map<Instruction*,unsigned> idxprom_nodeID_load_alignment_map;
+
+// Added by Vinh TA
+// Support for struct, mainly used by getelementptr
+// Map containing struct name and its size
+std::map<std::string, unsigned> map_struct_size;
+// Map containing struct name and its member sizes in declaration order
+std::map<std::string, std::vector<int>> map_struct_member_size;
+// Map from operand ID to node holding its address
+std::map<int, NODE*> map_operand_node;
 
 // Returns the loop hint metadata node with the given name (for example,
 // "llvm.loop.CGRA.enable").  If no such metadata node exists, then nullptr is
@@ -230,6 +251,16 @@ namespace llvm
       map_replace_liveout_use.clear();
       idxprom_nodeID_pred_map.clear();
       idxprom_nodeID_load_alignment_map.clear();
+
+      map_struct_size.clear();
+      map_struct_member_size.clear();
+      map_operand_node.clear();
+
+      ifBlocks.clear();
+      elseBlocks.clear();
+      condBlocks.clear();
+      condSet.clear();
+      succBlocks.clear();
     }
 
     bool isTCknownAtLoopEntry(std::vector<BasicBlock *> bbs)
@@ -245,7 +276,7 @@ namespace llvm
       //if(DEBUG) exit(1);
       if((Op1) && (Op2))
       {
-        if(( std::find(bbs.begin(), bbs.end(), Op1->getParent()) != bbs.end()) &&
+	if(( std::find(bbs.begin(), bbs.end(), Op1->getParent()) != bbs.end()) &&
             ( std::find(bbs.begin(), bbs.end(), Op2->getParent()) != bbs.end()))
           return false;
       }
@@ -277,6 +308,7 @@ namespace llvm
 
     void calculateTCDynamically(PHINode *IV, std::vector<BasicBlock *> bbs, BasicBlock *Preheader)
     {
+      if(DEBUG) errs() << "Calculating trip count\n";
       // get initial value of loop IV
       Value *startValue;
       Instruction *incOp;
@@ -412,9 +444,14 @@ Default:
       // If there are multiple exiting blocks but one of them is the latch, use the
       // latch for the trip count estimation. Otherwise insist on a single exiting
       // block for the trip count estimation.
+
+      // Vinh's COMSAT technique does not require TC!
+      errs() << "calculateLoopTC bypassed!\n";
+      return 1;
+      
       unsigned TripCount = 0;
       BasicBlock *ExitingBlockTemp = L->getLoopLatch();
-      if (!ExitingBlockTemp || !L->isLoopExiting(ExitingBlockTemp))
+      if (!ExitingBlockTemp || (ExitingBlockTemp && !L->isLoopExiting(ExitingBlockTemp)))
         ExitingBlockTemp = L->getExitingBlock();
       if (ExitingBlockTemp) {
         TripCount = SE->getSmallConstantTripCount(L, ExitingBlockTemp);
@@ -430,7 +467,7 @@ Default:
     int getDistance(Instruction *ins1, BasicBlock* bb1, Instruction *ins2, BasicBlock* bb2, std::vector<BasicBlock *> bbs, BasicBlock* loopLatch)
     {
       //both within the same basic blocks, find the order in BB
-      if (bb1->getName() == bb2->getName())
+      if (bb1 == bb2)
       {
         for (BasicBlock::iterator BI = bb1->begin(); BI != bb1->end(); ++BI)
         {
@@ -452,7 +489,7 @@ Default:
       else
       {
         //if bb1 is looplatch, because looplatch is the last basic block, dependency is loopcarried dependency and distance = 1
-        if (bb1->getName()==loopLatch->getName())
+        if (bb1 == loopLatch)
         {
           return 1;
         }
@@ -478,13 +515,13 @@ Default:
               continue;
             }
             //if we have reached bb2, it is dependency inside 1 iteration
-            if (bb2->getName() == (*pblocks)->getName())
+            if (bb2 == (*pblocks))
             {
               return 0;
             }
             //we do not traverse beyond loop latch, if we dont reach the second block, it is inter iteration
             //we should not stop here though because there might be more blocks in to_visit set that has not traversed yet
-            if ((*pblocks)->getName() == loopLatch->getName())
+            if ((*pblocks) == loopLatch)
             {
               continue;
             }
@@ -800,15 +837,11 @@ Default:
         }
       }
 
-      //errs() << "passed usedoutside true\n";
       if (!usedOutside) return IRChanged; 
       std::map<Instruction *, std::string>::iterator it;
-      //errs() << "before find(BI)\n";
       it = map_instn_defn_liveout_to_load.find(BI);
-      //errs() << "passed find (BI)\n";
       if (it != map_instn_defn_liveout_to_load.end() )
       {
-        //errs() << "inside IR\n";
         return IRChanged;
       }
 
@@ -824,7 +857,6 @@ Default:
       //errs() << "after get liveout store\n"; 
       if(newStore == NULL)
       {
-        //errs() << "Inside store in null\n";
         std::string gPtrName;
         Value *v = dyn_cast<Value>(BI);
         Type* T = v->getType();
@@ -857,10 +889,7 @@ Default:
           //PointerType* PointerTy_0 = dyn_cast<PointerType>(T);// PointerType::get(T, 0);
           // find the element type
           PointerType* PT = dyn_cast<PointerType>(T);
-
-          if(DEBUG)
-            errs() << "after get seq ptr\n";
-
+	  
           int bit_width;
           if(PT != nullptr)
           { 
@@ -868,9 +897,8 @@ Default:
               bit_width = (PT->getElementType()->getPrimitiveSizeInBits())/8;
             else
               bit_width = PT->getElementType()->getPrimitiveSizeInBits() %8;
-            if(DEBUG)
-              errs() << "passed bit width\n"; 
-            if(bit_width == 4)
+
+	    if(bit_width == 4)
             {
               if(PT->getElementType()->isFloatingPointTy())
                 dt = float32;
@@ -899,7 +927,8 @@ Default:
               dt = float64;
             else if(bit_width < 4)
               dt = character;
-          } 
+          }
+
           gPtr = new GlobalVariable(*M, T, false, GlobalValue::CommonLinkage, 0, gPtrName);
           ConstantPointerNull* const_ptr_2 = ConstantPointerNull::get(PT);
           gPtr->setInitializer(const_ptr_2);
@@ -907,7 +936,8 @@ Default:
           if(alignment < 4) alignment = 4;
         }
         if(alignment == 0)
-          errs() << "Cannot find size of the memory access for live-out variable\n";
+          errs() << "WARNING: Update_LiveOut_Variable: Cannot find size of the memory access for live-out variable\n";
+	if(DEBUG) errs() << "  Aligment: " << alignment << "\n";
         gPtr->setUnnamedAddr(GlobalValue::UnnamedAddr::Local);
         node = new NODE(constant, 1, ((NodeID++)+100), gPtrName, gPtr);
         node->setAlignment(alignment);
@@ -953,7 +983,18 @@ Default:
       map_instn_defn_liveout_to_load[BI] = storeVariable;
       map_liveout_to_alignment[storeVariable] = alignment;
       NODE *outputNode = myDFG->get_Node(BI);
+      if(outputNode->get_Instruction() == ld_add) outputNode = outputNode->get_Related_Node();
 
+      // Hardware model does not support pred insts (cond_select nodes) to store data to register and hence cannot be used for liveout, following statements add a routing node from such nodes to support liveout data
+      if(outputNode->get_Instruction() == cond_select){ 
+	NODE* route_node = new NODE(add, 1, NodeID++, "route", NULL);
+	route_node->setDatatype(outputNode->getDatatype());
+	myDFG->insert_Node(route_node);
+	myDFG->make_Arc(outputNode, route_node, EdgeID++, 0, TrueDep, 0);
+	outputNode = route_node;
+      }
+      
+      if(DEBUG) errs() << "  outputNode: " << outputNode->get_Name() << "\n";
       if(dynamicTC)
       {
         NODE *exitCond = myDFG->get_Node(dyn_cast<Instruction>(loopExitBranch->getCondition()));
@@ -969,7 +1010,7 @@ Default:
         outputNode = padUnsafeLiveOutOperationsWithSelects(myDFG, outputNode, exitCond, bbs);
       }
 
-      //errs() << "Passed dynamic\n";
+      if(DEBUG) errs() << "  Make_arc: outputNode: " << outputNode->get_Name() << " -> node: " <<  node->get_Name() << "\n";
       myDFG->make_Arc(outputNode, node, EdgeID++, 0, LiveOutDataDep, 0);
 
       unsigned int CGRA_ConstantID = node->get_ID();
@@ -1302,9 +1343,12 @@ Default:
       return IRChanged;
     }
 
+    unsigned tempStructSize = 0;
+    unsigned tempArraySize = 0;
     Datatype get_Datatype(Type* T, int bit_width)
     {
-      llvm::Datatype dt; 
+      llvm::Datatype dt;
+      bool is_primitive = false;
       if(T->isIntegerTy())
       {
         if(bit_width == 1)
@@ -1313,6 +1357,7 @@ Default:
           dt = int16;
         else
           dt = int32;
+	is_primitive = true;
       }
       else if(T->isFloatingPointTy())
       {
@@ -1322,16 +1367,79 @@ Default:
           dt = float16;
         else
           dt = float32;
+	is_primitive = true;
       }
       else if(T->isVectorTy()){
-        Type* element_type = T->getScalarType();
-        while(element_type->isVectorTy())
-          element_type = element_type->getScalarType();
-	  
-	return get_Datatype(element_type, bit_width);
+	errs() << "ERROR: Vectorization detected! Exitting.\n";
+	exit(1);
       }
-      else return int32;
+      else if(T->isArrayTy()){
+	Type* element_type = T->getArrayElementType();
+	Datatype element_dt = get_Datatype(element_type, element_type->getPrimitiveSizeInBits()/8);
+	tempArraySize = DT_Size[element_dt] * T->getArrayNumElements();
+	if(DEBUG) errs() << "\t    Current node is of type array - numElements: " << T->getArrayNumElements() << " - element size: " << DT_Size[element_dt] << "\n";
+	dt = _array;
+	is_primitive = true;
+      }
+      else if(T->isPointerTy()){
+	if(DEBUG) errs() << "\t    Current node is of type pointer -> finding element type\n";
+	Type* element_type = T->getPointerElementType();
+	get_Datatype(element_type, element_type->getPrimitiveSizeInBits()/8);
+	dt = int32;
+	is_primitive = true;
+      }
 
+      // Added by Vinh TA: add support for struct
+      // Populate maps:
+      //   (struct name -> struct size)
+      //   (struct name -> struct member sizes)
+      
+      if(T->isStructTy()){
+	StructType* temp = dyn_cast<StructType>(T);
+	if(!temp->isPacked())
+	  errs() << "\nERROR: " << temp->getName().str() << " is not packed, make sure padding is disabled by adding #pragma pack(push, 1) before declaration\n";
+
+	std::string structName = T->getStructName().str();
+	unsigned structElements = T->getStructNumElements();
+	errs() << "\tStruct type - name: " << structName << " - number of elements: " << structElements << "\n";
+
+	for(std::map<std::string, unsigned>::iterator it = map_struct_size.begin(); it != map_struct_size.end(); ++it){
+	  if(it->first.compare(structName) == 0){
+	    errs() << "\t  Struct already added\n";
+	    return int32;
+	  }
+	}
+	
+	unsigned structSize = 0;
+	map_struct_size[structName] = structSize;
+	
+	for(int i=0; i<structElements; i++){
+	  Type* structMember = T->getStructElementType(i);
+	  Datatype memberDT = get_Datatype(structMember, structMember->getPrimitiveSizeInBits()/8);
+	  unsigned memberSize;
+	  if(memberDT == _struct){
+	    memberSize = tempStructSize;
+	    memberDT = int32;
+	  } else if(memberDT == _array){
+	    memberSize = tempArraySize;
+	    memberDT = get_Datatype(structMember->getArrayElementType(), structMember->getArrayElementType()->getPrimitiveSizeInBits()/8);
+	  } else {
+	    memberSize = DT_Size[memberDT];
+	  }
+	  
+	  errs() << "\t  Member " << i << " - dt: " << memberDT << " - size: " << memberSize << "\n";
+	  structSize += memberSize;
+	  map_struct_member_size[structName].push_back(memberSize);
+	}
+	map_struct_size[structName] = structSize;
+	tempStructSize = structSize;
+	return _struct;  // Differentiate struct DT to realize its size
+      }
+
+      if(!is_primitive){
+	errs() << "\t  Cannot find primitive type! Defaulting to int32!\n";
+	dt = int32;
+      }
       return dt; 
     }
 
@@ -1346,6 +1454,15 @@ Default:
       Type* T = v->getType();
       int bit_width = T->getPrimitiveSizeInBits()/8; 
       llvm::Datatype dt = get_Datatype(T, bit_width);
+      if(dt == _struct){
+	errs() << "DT returned _struct\n";
+	dt = int32;
+      }
+      else if(dt == _array){
+	errs() << "DT returned _array\n";
+	dt = get_Datatype(T->getArrayElementType(), T->getArrayElementType()->getPrimitiveSizeInBits()/8);
+      }
+      
 
       switch (BI->getOpcode())
       {
@@ -1512,6 +1629,29 @@ Default:
           LoadInst *tempLoadInst;
           tempLoadInst = dyn_cast<LoadInst>(BI);
           alignment = tempLoadInst->getAlignment();
+
+	  // Check if loading node targets a struct then adjust alignment to struct size
+	  if(dyn_cast<Value>(BI)->getType()->isPointerTy()){
+	    Type* BI_type = dyn_cast<Value>(BI)->getType();
+	    Type* element_type = BI_type->getPointerElementType();
+	    if(element_type->isStructTy()){
+	      BI_type = element_type;
+	      std::string struct_name = BI_type->getStructName().str();
+	      if(map_struct_size.find(struct_name) == map_struct_size.end())
+	        get_Datatype(BI_type, BI_type->getPrimitiveSizeInBits()/8);
+	      alignment = map_struct_size[struct_name];
+	      if(DEBUG) errs() << "\t  Loading struct - name: " << struct_name << " - alignment: " << alignment << "\n";
+	    }
+	  }
+	  else if(dyn_cast<Value>(BI)->getType()->isStructTy()){
+	    Type* BI_type = dyn_cast<Value>(BI)->getType();
+	    std::string struct_name = BI_type->getStructName().str();
+	    if(map_struct_size.find(struct_name) == map_struct_size.end())
+	      get_Datatype(BI_type, BI_type->getPrimitiveSizeInBits()/8);
+	    alignment = map_struct_size[struct_name];
+	    if(DEBUG) errs() << "\t  Loading struct - name: " << struct_name << " - alignment: " << alignment << "\n";
+	  }
+	  
           node->setAlignment(alignment);
           myDFG->insert_Node(node);
           myDFG->insert_Node(node2);
@@ -1526,6 +1666,7 @@ Default:
           }
           retVal = true;
           return retVal;
+	  break;
         case Instruction::Store:
           {
             node = new NODE(st_add, 1, NodeID++, BI->getName().str(), BI);
@@ -1781,7 +1922,7 @@ Default:
     {
       for (std::vector<BasicBlock*>::const_iterator it = set.begin() ; it != set.end(); ++it)
       {
-        if (current->getName().str() == (*it)->getName().str())
+        if (current == (*it))
           return true;
       }
       return false;
@@ -1925,11 +2066,7 @@ Default:
       return tempBrInst;
     }
 
-    std::vector<BasicBlock *> ifBlocks;
-    std::vector<BasicBlock *> elseBlocks;
-    std::vector<BasicBlock *> condBlocks;
-    std::vector<BranchInst *> condSet;
-    std::vector<BasicBlock *> succBlocks;
+    
 
     void collectAllBranchInfo(std::vector<BasicBlock *> bbs, BasicBlock* loopLatch)
     {
@@ -2033,7 +2170,7 @@ Default:
       //std::vector<std::string> storeVarNames;
       //std::vector<int> varFound;
 
-      if(DEBUG1) errs() << "condsize: " << condBlocks.size() << "\n";
+      if(DEBUG1) errs() << "\nupdateStoresInConditionalBBs\ncondsize: " << condBlocks.size() << "\n";
 
 
       /*for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
@@ -2077,6 +2214,19 @@ Default:
       }
       }*/
 
+      std::vector<BasicBlock*> unconditional_blocks;
+      for(unsigned ii = 0; ii < condBlocks.size(); ii++){
+	BasicBlock* current = ifBlocks[ii];
+	for(auto block_it = current->begin(); block_it != current->end(); ++block_it){
+	  if(block_it->getOpcode() == Instruction::Br){
+	    BranchInst* BrInst = (dyn_cast<llvm::BranchInst>(block_it));
+	    if(BrInst->isUnconditional()){
+	      unconditional_blocks.push_back(current->getSingleSuccessor());
+	      if(DEBUG1) errs() << "  Unconditional block pushed back: " << *(current->getSingleSuccessor()) << "\n";
+	    }
+	  }
+	}
+      }
 
       for(unsigned int ii = 0; ii < condBlocks.size(); ii++)
       {
@@ -2136,37 +2286,45 @@ Default:
                 if(DEBUG1) errs() << "varName: " << varName << "\n";
 
                 NODE* node4 = myDFG->get_Node(ptrOperand);
-                if(DEBUG1) errs() << "passed node 4: " << node4->get_ID() << "\n";
+                if(DEBUG1) errs() << "passed node 4: " << node4->get_Name() << "\n";
                 NODE* node5 = myDFG->get_Node(valOperand);
-                if(DEBUG1) errs() << "passed node 5: " << node5->get_ID() << "\n";
-                std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
+                if(DEBUG1) errs() << "passed node 5: " << node5->get_Name() << "\n";
+                std::vector<NODE*> outGoingNodes = node4->Get_Next_Nodes();
+		//std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
 
 
                 NODE* node_ld; 
                 NODE* in_node;
                 bool found=false;
-                for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+                for(unsigned int out_i = 0; out_i < outGoingNodes.size(); out_i++)
                 {
-                  if(outGoingArcs[ii]->get_From_Node() == node4 && outGoingArcs[ii]->get_To_Node()->get_Instruction() == ld_add) 
+                  //if(outGoingArcs[ii]->get_From_Node()->get_ID() == node4->get_ID() && outGoingArcs[ii]->get_To_Node()->get_Instruction() == ld_add)
+		  if(outGoingNodes[out_i]->is_Load_Address_Generator()) 
                   {
-                    found = true; 
-                    node_ld = outGoingArcs[ii]->get_To_Node(); 
+                    found = true;
+                    node_ld = outGoingNodes[out_i]; 
                   }
                 }
-                if(DEBUG1) errs() << "passed outgoing found:" << found << "\n";
+                if(DEBUG1) errs() << "passed outgoing found: " << found << "\n";
 
+		NODE* node3, *node_ld_data;
+		
                 if(!found)
                 {
                   NODE* node = myDFG->get_Node_Mem_Data(cast<Instruction>(BBI));
-                  for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
+		  std::vector<NODE*> from_node = node->Get_Prev_Nodes();
+                  for(unsigned int ii = 0; ii < from_node.size(); ii++)
                   {
-                    if(outGoingArcs[ii]->get_To_Node() == node && outGoingArcs[ii]->get_From_Node()->get_Instruction() != st_add)
+                    if(!from_node[ii]->is_Store_Address_Generator())
                     {
-
-                      in_node = outGoingArcs[ii]->get_From_Node();
+		      in_node = from_node[ii];
+		      break;
                     }
                   }
-                  if(DEBUG1) errs() << "mnode: " << node->get_ID() << "\n";
+		  assert((in_node != NULL) && "Fatal: store data node not found!\n");
+		  if(DEBUG1) errs() << "in node: " << in_node->get_Name() << "\n";
+                  if(DEBUG1) errs() << "dest node: " << node->get_Name() << "\n";
+		  
                   NODE* node1 = new NODE(ld_add, 1, NodeID++, "", NULL);
                   NODE* node2 = new NODE(ld_data, 1, NodeID++, "", NULL);
                   node1->setDatatype(node->getDatatype());
@@ -2177,8 +2335,9 @@ Default:
                   node2->set_Load_Address_Generator(node1);
                   myDFG->insert_Node(node1);
                   myDFG->insert_Node(node2);
+		  node_ld_data = node2;
 
-                  NODE* node3 = new NODE(cond_select, 1, NodeID++, "", NULL); 
+                  node3 = new NODE(cond_select, 1, NodeID++, "", NULL); 
                   myDFG->insert_Node(node3);
 
                   if(DEBUG1) errs() << " not found inserting nodes: node1: " << node1->get_ID() << "\tnode2: " << node2->get_ID() << "\tnode3:" << node3->get_ID() << "\n";
@@ -2187,7 +2346,8 @@ Default:
                   {
                     arc = myDFG->get_Arc(in_node, node);
                     if(arc != NULL)
-                      myDFG->Remove_Arc(arc); 
+                      myDFG->Remove_Arc(arc);
+		    else errs() << "WARNING: in_node -> node arc not found!\n";
                   }
                   myDFG->make_Arc(node4, node1, EdgeID++, 0, TrueDep, 0);
                   //myDFG->make_Arc(node1, node2, EdgeID++, 0, TrueDep, 0);
@@ -2203,6 +2363,7 @@ Default:
                   if(DEBUG1) errs() << "if node6: " << node6->get_ID() << "\n"; 
                   if(it == 0) 
                   {
+		    if(DEBUG1) errs() << "it = 0\n";
                     myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 0);
                     if(in_node!=NULL)
                       myDFG->make_Arc(in_node, node3, EdgeID++, 0, TrueDep, 1);      
@@ -2211,36 +2372,57 @@ Default:
                     myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
                   else
-                  {    
+                  {
+		    if(DEBUG1) errs() << "it != 0\n";
                     myDFG->make_Arc(node5, node3, EdgeID++, 0, TrueDep, 0);
                     myDFG->make_Arc(node2, node3, EdgeID++, 0, TrueDep, 1); 
                     myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
-                  node3->setDatatype(node6->getDatatype()); 
+                  node3->setDatatype(node->getDatatype()); 
                   myDFG->make_Arc(node3, node, EdgeID++, 0, TrueDep, 0);
                 }
                 else
                 {
-                  if(node5->get_Instruction() == ld_add) node5 = node5->get_Related_Node();
-                  NODE* node3 = new NODE(cond_select, 1, NodeID++, "", NULL);
-                  if(DEBUG1) errs() << "inserting nodes: node3: " << node3->get_ID() << "\n";
+                  if(node5->is_Load_Address_Generator()) node5 = node5->get_Related_Node();
+                  node3 = new NODE(cond_select, 1, NodeID++, "", NULL);
+                  if(DEBUG1) errs() << "inserting nodes: node3: " << node3->get_Name() << "\n";
                   myDFG->insert_Node(node3);
-                  NODE* node_ld_data = node_ld->get_Related_Node(); 
-                  if(DEBUG1) errs() << "node ld data: " << node_ld_data->get_ID() << "\n";
+                  node_ld_data = node_ld->get_Related_Node(); 
+                  if(DEBUG1) errs() << "node_ld_data: " << node_ld_data->get_Name() << "\n";
                   NODE* node = myDFG->get_Node_Mem_Data(cast<Instruction>(BBI));
-                  if(DEBUG1) errs() << "mnode: " << node->get_ID() << "\n";
+                  if(DEBUG1) errs() << "dest node: " << node->get_Name() << "\n";
                   ARC* arc = myDFG->get_Arc(node5, node);
                   if(arc != NULL)
                     myDFG->Remove_Arc(arc); 
-                  if(DEBUG1) errs() << "else: " << it << "\n";
+                  if(DEBUG1) errs() << "else it: " << it << "\n";
                   if(DEBUG1) errs() << "else ii: " << ii << "\n";
+
+		  std::vector<NODE*> from_node = node->Get_Prev_Nodes();
+                  for(unsigned int ii = 0; ii < from_node.size(); ii++)
+                  {
+                    if(!from_node[ii]->is_Store_Address_Generator())
+                    {
+		      in_node = from_node[ii];
+		      node5 = in_node;
+		      break;
+                    }
+                  }
+                  if(in_node != NULL)
+                  {
+		    if(DEBUG1) errs() << "in_node: " << in_node->get_Name() << "\n";
+		    ARC* arc;
+                    arc = myDFG->get_Arc(in_node, node);
+                    if(arc != NULL)
+                      myDFG->Remove_Arc(arc);
+                  }
+		  
                   Instruction* cond;
                   //if(it == 0)
                     cond = dyn_cast<llvm::Instruction>(condSet[ii]->getCondition());
                   //else
                   //  cond = dyn_cast<llvm::Instruction>(condSet[0]->getCondition());
                   NODE* node6 = myDFG->get_Node(cond);
-                  if(DEBUG1) errs() << "else node6: " << node6->get_ID() << "\n";
+                  if(DEBUG1) errs() << "else node6: " << node6->get_Name() << "\n";
                   if(it == 0)
                   {
                     myDFG->make_Arc(node_ld_data, node3, EdgeID++, 0, TrueDep, 0);
@@ -2253,8 +2435,390 @@ Default:
                     myDFG->make_Arc(node_ld_data, node3, EdgeID++, 0, TrueDep, 1);
                     myDFG->make_Arc(node6, node3, EdgeID++, 0, PredDep, 2);
                   }
-                  node3->setDatatype(node6->getDatatype()); 
+                  node3->setDatatype(node->getDatatype()); 
                   myDFG->make_Arc(node3, node, EdgeID++, 0, TrueDep, 0);
+		}
+
+		// Find predicating level by traversing from current st inst block to the first unconditional/loop latch/loop head block
+		// First find bbs containing current store inst
+		int level = 0;
+		bool curr_if_block = false;
+	        Instruction* current_block_ins = dyn_cast<llvm::Instruction>(ifBlocks[ii]->begin());
+		{
+		for(auto block_it = ifBlocks[ii]->begin(); block_it != ifBlocks[ii]->end(); ++block_it){
+		  Instruction* block_ins = dyn_cast<llvm::Instruction>(block_it);
+		  Instruction* curr_inst = dyn_cast<llvm::Instruction>(BBI);
+		  if(block_ins == curr_inst) curr_if_block = true;
+		}
+		}
+		if(!curr_if_block){
+		  current_block_ins = dyn_cast<llvm::Instruction>(elseBlocks[ii]->begin());
+		  bool block_found = false;
+		  for(auto block_it = elseBlocks[ii]->begin(); block_it != elseBlocks[ii]->end(); ++block_it){
+		    Instruction* block_ins = dyn_cast<llvm::Instruction>(block_it);
+		    Instruction* curr_inst = dyn_cast<llvm::Instruction>(BBI);
+		    if(block_ins == curr_inst) block_found = true;
+		  }
+		  if(!block_found){
+		    errs() << "ERROR: failed to find current inst block!\n";
+		    exit(1);
+		  }
+		}
+		
+		if(ii >= 1){ // current inst is in if block
+		  // Find upper-level block (if or else) that points to current block using current_block_ins and if/elseBlocks[ii-1]
+		  // Iterate until reaching unconditional/latch/head block
+		  int block_i = ii;
+		  bool stop = false;
+		  do{
+		    BasicBlock* parent_block_if = ifBlocks[block_i-1];
+		    bool if_block_found = false;
+		    for(auto if_BBI = parent_block_if->begin(); if_BBI != parent_block_if->end(); ++if_BBI){
+		      BranchInst* brIns = dyn_cast<llvm::BranchInst>(if_BBI);
+		      if(brIns != NULL){
+			if(brIns->isUnconditional()) continue;
+			Instruction* parent_br_succ;
+			if(curr_if_block)
+			  parent_br_succ = dyn_cast<llvm::Instruction>(brIns->getSuccessor(0)->begin());
+			else
+			  parent_br_succ = dyn_cast<llvm::Instruction>(brIns->getSuccessor(1)->begin());
+
+			errs() << "  brins: " << *((Instruction*)brIns) << "\n";
+			errs() << "  parent_br_succ: " << *parent_br_succ << " - current_block_ins: " << *current_block_ins << "\n";
+			
+			if(parent_br_succ == current_block_ins){
+			  level++;
+			  block_i--;
+			  curr_if_block = true;
+			  if_block_found = true;
+			  current_block_ins = dyn_cast<llvm::Instruction>(parent_block_if->begin());
+
+			  if(std::find(unconditional_blocks.begin(), unconditional_blocks.end(), parent_block_if) != unconditional_blocks.end() || \
+			     parent_block_if == loopLatch)
+			    stop = true;
+			  
+			  errs() << "    Found block in if! Level = " << level << " - block_i: " << block_i << " - stop: " << stop << "\n";
+			  break;
+			}
+		      }
+		    }
+		    bool else_block_found = false;
+		    if(!if_block_found){
+		      BasicBlock* parent_block_else = elseBlocks[block_i-1];
+		      for(auto else_BBI = parent_block_else->begin(); else_BBI != parent_block_else->end(); ++else_BBI){
+			BranchInst* brIns = dyn_cast<llvm::BranchInst>(else_BBI);
+			if(brIns != NULL){
+			  if(brIns->isUnconditional()) continue;
+			  Instruction* parent_br_succ;
+			  if(curr_if_block)
+			    parent_br_succ = dyn_cast<llvm::Instruction>(brIns->getSuccessor(0)->begin());
+			  else
+			    parent_br_succ = dyn_cast<llvm::Instruction>(brIns->getSuccessor(1)->begin());
+
+			  errs() << "  brins: " << *((Instruction*)brIns) << "\n";
+			  errs() << "  parent_br_succ: " << *parent_br_succ << " - current_block_ins: " << *current_block_ins << "\n";
+			  
+			  if(parent_br_succ == current_block_ins){
+			    level++;
+			    block_i--;
+			    curr_if_block = false;
+			    else_block_found = true;
+			    current_block_ins = dyn_cast<llvm::Instruction>(parent_block_else->begin());
+
+			    if(std::find(unconditional_blocks.begin(), unconditional_blocks.end(), parent_block_else) != unconditional_blocks.end() || \
+			       parent_block_else == loopLatch)
+			      stop = true;
+			    
+			    errs() << "    Found block in else! Level = " << level << " - block_i: " << block_i << " - stop: " << stop << "\n";
+			    break;
+			  }
+			}
+		      }
+		    }
+		    if(!if_block_found && !else_block_found){
+		      errs() << "WARNING: parent block of current inst block: " << *current_block_ins << " not found!\n";
+		      break;
+		    }
+		  } while(block_i > 0);
+		}
+
+		  if(DEBUG1) errs() << "Predicating level: " << level << "\n";
+		
+		if(level >= 1){
+		  if(DEBUG1) errs() << "  ii = 1\n";
+		  // First find the parent predicating node
+		  //BasicBlock* pred_inst = condSet[ii-1];
+		  BranchInst* pred_BrInst = condSet[ii-1]; // (dyn_cast<llvm::BranchInst>(pred_inst));
+		  if(DEBUG1)
+		    errs() << "  pred_inst: " << (*pred_BrInst) << "\n";
+		    
+
+		  // BasicBlock* curr_pred = condSet[ii];
+		  BranchInst* curr_BrInst = condSet[ii]; // (dyn_cast<llvm::BranchInst>(curr_pred));
+		  if(DEBUG1)
+		    errs() <<	"  curr_inst: " << (*curr_BrInst) << "\n";
+
+		  bool block_with_current_pred = false;   // if or else parent block containing next level pred - 1 for if, 0 for else
+		  for(auto if_BBI = ifBlocks[ii-1]->begin(); if_BBI != ifBlocks[ii-1]->end(); ++if_BBI){
+		    Instruction* block_ins = dyn_cast<llvm::Instruction>(if_BBI);
+		    Instruction* cond_ins = (Instruction*) condSet[ii];
+		    if(block_ins == cond_ins) block_with_current_pred = true;
+		  }
+		    
+		  bool block_with_current_inst = false;  // if or else current block containing store inst - 1 for if, 0 for else
+		  for(auto if_BBI = ifBlocks[ii]->begin(); if_BBI != ifBlocks[ii]->end(); ++if_BBI)
+		    if(if_BBI == BBI) block_with_current_inst = true;
+
+		  bool common_successor = false;
+		  if(block_with_current_pred){
+		    BasicBlock* pred_else = elseBlocks[ii-1];
+		    if(block_with_current_inst){
+		      BasicBlock* curr_else = elseBlocks[ii];
+		      if(pred_else == curr_else) common_successor = true;
+		    } else {
+		      BasicBlock* curr_if = ifBlocks[ii];
+		      if(pred_else == curr_if) common_successor = true;
+		    }
+		  } else {
+		    BasicBlock* pred_if = ifBlocks[ii-1];
+		    if(block_with_current_inst){
+		      BasicBlock* curr_else = elseBlocks[ii];
+		      if(pred_if == curr_else) common_successor = true;
+		    } else {
+		      BasicBlock* curr_if = ifBlocks[ii];
+		      if(pred_if == curr_if) common_successor = true;
+		    }
+		  }
+
+		  if(DEBUG1) errs() << "  current pred if block: " << block_with_current_pred << " - current inst if block: " << block_with_current_inst << "\n  common successor: " << common_successor << "\n";
+
+		  if(common_successor){
+		    Instruction* cond  = dyn_cast<llvm::Instruction>(pred_BrInst->getCondition());
+		    NODE* parent_node = myDFG->get_Node(cond);
+		    cond  = dyn_cast<llvm::Instruction>(curr_BrInst->getCondition());
+		    NODE* current_node = myDFG->get_Node(cond);
+
+		    if(DEBUG1) errs() << "  parent node: " << parent_node->get_Name() << " - current node: " << current_node->get_Name() << " - node3: " << node3->get_Name() << " - node5: " << node5->get_Name() << " - node_ld_data: " << node_ld_data->get_Name() << "\n";
+
+		    if(block_with_current_pred){
+		      ARC* temp = myDFG->get_Arc(current_node, node3);
+		      if(temp != NULL)
+			myDFG->Remove_Arc(temp);
+		      
+		      if(block_with_current_inst){
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+			
+			myDFG->make_Arc(current_node, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_node, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, node3, EdgeID++, 0, PredDep, 2);
+
+		      } else {
+			NODE* curr_pred_neg = new NODE(xorop, 1, NodeID++, "", NULL);
+			curr_pred_neg->setDatatype(int32);
+			myDFG->insert_Node(curr_pred_neg);
+			NODE* const1 = myDFG->get_Node("ConstInt1");
+			if(const1 == NULL){
+			  const1 = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+			  myDFG->insert_Node(const1);
+			}
+			
+			myDFG->make_Arc(current_node, curr_pred_neg, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(const1, curr_pred_neg, EdgeID++, 0, TrueDep, 1);
+
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+			myDFG->make_Arc(curr_pred_neg, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_node, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, node3, EdgeID++, 0, PredDep, 2);
+		      }
+		    } else {
+		      ARC* temp = myDFG->get_Arc(current_node, node3);
+		      if(temp != NULL)
+			myDFG->Remove_Arc(temp);
+
+		      NODE* parent_pred_neg = new NODE(xorop, 1, NodeID++, "", NULL);
+		      parent_pred_neg->setDatatype(int32);
+		      myDFG->insert_Node(parent_pred_neg);
+		      NODE* const1 = myDFG->get_Node("ConstInt1");
+		      if(const1 == NULL){
+			const1 = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+			myDFG->insert_Node(const1);
+		      }
+		      myDFG->make_Arc(parent_node, parent_pred_neg, EdgeID++, 0, TrueDep, 0);
+		      myDFG->make_Arc(const1, parent_pred_neg, EdgeID++, 0, TrueDep, 1);
+
+		      if(block_with_current_inst){
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+
+			myDFG->make_Arc(current_node, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_pred_neg, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, node3, EdgeID++, 0, PredDep, 2);
+		      } else {
+			NODE* curr_pred_neg = new NODE(xorop, 1, NodeID++, "", NULL);
+			curr_pred_neg->setDatatype(int32);
+			myDFG->insert_Node(curr_pred_neg);
+			myDFG->make_Arc(current_node, curr_pred_neg, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(const1, curr_pred_neg, EdgeID++, 0, TrueDep, 1);
+
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+			  
+			myDFG->make_Arc(curr_pred_neg, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_pred_neg, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, node3, EdgeID++, 0, PredDep, 2);
+		      }	
+		    }
+
+		    if(myDFG->get_Arc(node5, node3) != NULL && myDFG->get_Arc(node5, node3)->GetOperandOrder() == 0){
+		      myDFG->get_Arc(node5, node3)->SetOperandOrder(1);
+		      myDFG->get_Arc(node_ld_data, node3)->SetOperandOrder(0);
+		    }
+		  } else {
+		    errs() << "Incommon successor! Implement me!\n";
+		    exit(0);
+		  }
+
+		  // Second level of predication
+		  if(level >= 2){
+		    if(DEBUG1) errs() << "  ii = 2\n";
+		    //BasicBlock* pred_inst = condSet[ii-2];
+		    BranchInst* pred_BrInst = condSet[ii-2]; // (dyn_cast<llvm::BranchInst>(pred_inst));
+		    if(DEBUG1)
+		      errs() << "  pred_inst: " << (*pred_BrInst) << "\n";
+		      
+		    //BasicBlock* curr_pred = condSet[ii-1];
+		    BranchInst* curr_BrInst = condSet[ii-1]; // (dyn_cast<llvm::BranchInst>(curr_pred));
+		    if(DEBUG1)
+		      errs() << "  curr_inst: " << (*curr_BrInst) << "\n";
+
+		    bool block_with_current_pred = false;   // if or else parent block containing next level pred - 1 for if, 0 for else
+		    for(auto if_BBI = ifBlocks[ii-2]->begin(); if_BBI != ifBlocks[ii-2]->end(); ++if_BBI){
+		      Instruction* block_ins = dyn_cast<llvm::Instruction>(if_BBI);
+		      Instruction* cond_ins = (Instruction*) condSet[ii-1];
+		      if(block_ins == cond_ins) block_with_current_pred = true;
+		    }
+
+		    bool block_with_next_pred = false;   // if or else current block containing next level pred - 1 for if, 0 for else
+		    for(auto if_BBI = ifBlocks[ii-1]->begin(); if_BBI != ifBlocks[ii-1]->end(); ++if_BBI){
+		      Instruction* block_ins = dyn_cast<llvm::Instruction>(if_BBI);
+		      Instruction* cond_ins = (Instruction*) condSet[ii];
+		      if(block_ins == cond_ins) block_with_next_pred = true;
+		    }
+
+		    bool common_successor = false;
+		    if(block_with_current_pred){
+		      BasicBlock* pred_else = elseBlocks[ii-2];
+		      if(block_with_next_pred){
+			BasicBlock* curr_else = elseBlocks[ii-1];
+			if(pred_else == curr_else) common_successor = true;
+		      } else {
+			BasicBlock* curr_if = ifBlocks[ii-1];
+			if(pred_else == curr_if) common_successor = true;
+		      }
+		    } else {
+		      BasicBlock* pred_if = ifBlocks[ii-2];
+		      if(block_with_next_pred){
+			BasicBlock* curr_else = elseBlocks[ii-1];
+			if(pred_if == curr_else) common_successor = true;
+		      } else {
+			BasicBlock* curr_if = ifBlocks[ii-1];
+			if(pred_if == curr_if) common_successor = true;
+		      }
+		    }
+		    if(DEBUG1) errs() << "  current pred if block: " << block_with_current_pred << " - next pred if block: " << block_with_next_pred << "\n";
+		    if(DEBUG1) errs() << "  Common successor: " << common_successor << "\n";
+		    if(common_successor){
+		      Instruction* cond  = dyn_cast<llvm::Instruction>(pred_BrInst->getCondition());
+		      NODE* parent_node = myDFG->get_Node(cond);
+		      cond  = dyn_cast<llvm::Instruction>(curr_BrInst->getCondition());
+		      NODE* current_node = myDFG->get_Node(cond);
+		      NODE* combine_node;
+		      if((current_node->Get_Next_Nodes()).size() > 1){
+			for(auto curr_it = current_node->Get_Next_Nodes().begin(); curr_it != current_node->Get_Next_Nodes().end(); ++curr_it)
+			  if((*curr_it)->Get_Next_Nodes()[0] == node3) combine_node = (*curr_it);
+		      } else 
+			combine_node = current_node->Get_Next_Nodes()[0];
+			  
+		      if(DEBUG1) errs() << "  parent node: " << parent_node->get_ID() << " - current node: " << current_node->get_ID() << " - combine node: " << combine_node->get_ID() << "\n";
+
+		      if(block_with_current_pred && block_with_next_pred){
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+			myDFG->Remove_Arc(myDFG->get_Arc(current_node, combine_node));
+			myDFG->make_Arc(current_node, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_node, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, combine_node, EdgeID++, 0, TrueDep, 1);
+
+		      } else if(!block_with_current_pred && block_with_next_pred) {
+			NODE* parent_pred_neg = new NODE(xorop, 1, NodeID++, "", NULL);
+			parent_pred_neg->setDatatype(int32);
+			myDFG->insert_Node(parent_pred_neg);
+			NODE* const1 = myDFG->get_Node("ConstInt1");
+			if(const1 == NULL) {
+			  const1 = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+			  myDFG->insert_Node(const1);
+			}
+			myDFG->make_Arc(parent_node, parent_pred_neg, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(const1, parent_pred_neg, EdgeID++, 0, TrueDep, 1);
+
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+
+			myDFG->Remove_Arc(myDFG->get_Arc(current_node, combine_node));
+			myDFG->make_Arc(current_node, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_pred_neg, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, combine_node, EdgeID++, 0, TrueDep, 1);
+			  
+		      } else if(block_with_current_pred && !block_with_next_pred){
+			NODE* curr_pred_neg = current_node->Get_Next_Nodes()[0];
+			if(DEBUG1) errs() << "  curr_pred_neg: " << curr_pred_neg->get_ID() << "\n";
+			  
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+
+			myDFG->Remove_Arc(myDFG->get_Arc(curr_pred_neg, combine_node));
+			myDFG->make_Arc(curr_pred_neg, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_node, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, combine_node, EdgeID++, 0, TrueDep, 1);
+			  
+		      } else {
+			NODE* parent_pred_neg = new NODE(xorop, 1, NodeID++, "", NULL);
+			parent_pred_neg->setDatatype(int32);
+			myDFG->insert_Node(parent_pred_neg);
+			NODE* const1 = myDFG->get_Node("ConstInt1");
+			if(const1 == NULL) {
+			  const1 = new NODE(constant, 1, NodeID++, "ConstInt1", NULL);
+			  myDFG->insert_Node(const1);
+			}
+			myDFG->make_Arc(parent_node, parent_pred_neg, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(const1, parent_pred_neg, EdgeID++, 0, TrueDep, 1);
+			  
+			NODE* curr_pred_neg = current_node->Get_Next_Nodes()[0];
+			if(DEBUG1) errs() << "  curr_pred_neg: " << curr_pred_neg->get_ID() << "\n";
+			  
+			NODE* new_combine = new NODE(andop, 1, NodeID++, "", NULL);
+			new_combine->setDatatype(int32);
+			myDFG->insert_Node(new_combine);
+			  
+			myDFG->Remove_Arc(myDFG->get_Arc(curr_pred_neg, combine_node));
+			myDFG->make_Arc(curr_pred_neg, new_combine, EdgeID++, 0, TrueDep, 0);
+			myDFG->make_Arc(parent_pred_neg, new_combine, EdgeID++, 0, TrueDep, 1);
+			myDFG->make_Arc(new_combine, combine_node, EdgeID++, 0, TrueDep, 1);
+		      }
+		    } else {
+		      errs() << "*** Incommon successor -> Implement me! ***\n";
+		      exit(1);
+		    }
+		  }
                 }
               }
               else
@@ -2691,7 +3255,7 @@ Default:
 
       if(DEBUG) {
         errs() << "Instruction: " << *BI << "\n";
-        errs() << "before trun\n";
+        errs() << " before trun\n";
       }
 
       if(BI->getOpcode() == Instruction::FPToUI || BI->getOpcode() == Instruction::FPToSI)
@@ -2719,7 +3283,11 @@ Default:
           T = (dyn_cast<TruncInst>(BI))->getDestTy();
         else
           T = (dyn_cast<FPTruncInst>(BI))->getDestTy();
-        unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1; 
+        unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1;
+
+	if(mask == 0 || mask > (0xffffffffUL))
+	  mask = (1 << 32) - 1; // cap to 32 bits
+	
         node1 = myDFG->get_Node(BI);
         if(BI->getOpcode() == Instruction::Trunc)
           node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
@@ -2746,25 +3314,29 @@ Default:
         }
       }
       if(DEBUG)
-        errs() << "before sext\n";
+        errs() << " before sext\n";
       if((BI->getOpcode() == Instruction::SExt))
       {
         node1 = myDFG->get_Node(BI);
         Value *v = dyn_cast<Value>(BI->getOperand(0));
         Type* T = v->getType();
         unsigned mask = T->getPrimitiveSizeInBits();
+	errs () << "  Mask: " << mask << "\n";
         node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
         node2->setDatatype(node1->getDatatype());
         myDFG->insert_Node(node2);
         myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
       }
       if(DEBUG)
-        errs() << "before ZExt\n"; 
+        errs() << " before ZExt\n"; 
       if (BI->getOpcode() == Instruction::ZExt || BI->getOpcode() == Instruction::FPExt)
       {
         Value *v = dyn_cast<Value>(BI->getOperand(0));
         Type* T = v->getType();
         unsigned mask = (1 << T->getPrimitiveSizeInBits()) - 1;
+
+	if(mask == 0 || mask > (0xffffffffUL)) mask = (1 << 32) - 1;
+	
         node1 = myDFG->get_Node(BI);
         if(BI->getOpcode() == Instruction::ZExt)
           node2 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(mask), NULL);
@@ -2775,13 +3347,15 @@ Default:
         myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 1);
       }
       if(DEBUG)
-        errs() << "after zext\n";
+        errs() << " after zext\n";
+
+      
       for (unsigned int j = 0; j < BI->getNumOperands(); j++)
       {
         if(DEBUG) {
-          errs() << "BI: " << *BI << "\n";
-          errs() << "j: " << j << "\n";
-          errs() << "valid: " << BI->getOperand(j)->getValueID() << "\n";
+          errs() << " BI: " << *BI << "\n";
+          errs() << " j: " << j << "\n";
+          errs() << " val_id: " << BI->getOperand(j)->getValueID() << "\n";
         }
 
         dep = TrueDep;
@@ -2790,7 +3364,7 @@ Default:
         if (BI->getOperand(j)->getValueID() == llvm::Value::ConstantIntVal)
         {
           if(DEBUG)
-            errs() << "before constintval\n";
+            errs() << "  before constintval\n";
           std::ostringstream os;
           int constVal = 0;
           if(dyn_cast<llvm::ConstantInt>((BI)->getOperand(j))->getBitWidth() > 1)
@@ -2799,6 +3373,7 @@ Default:
             constVal = dyn_cast<llvm::ConstantInt>((BI)->getOperand(j))->getZExtValue();
           os << constVal;
           std::string name = "ConstInt" + os.str();
+	  errs() << "  Node name: " << name << "\n";
           Datatype dt;
           //errs() << "before dyncast\n";
           Value *v = dyn_cast<Value>(BI);
@@ -2827,7 +3402,7 @@ Default:
         else if (BI->getOperand(j)->getValueID() == llvm::Value::ConstantFPVal)
         {
           if(DEBUG)
-            errs() << "before constFPval\n";
+            errs() << "  before constFPval\n";
           //We support only single precision fp. But sometimes IR converts the float to doubles.
           // SO we need to get the appropriate FP val.
           std::ostringstream os;
@@ -2865,8 +3440,9 @@ Default:
         else if (BI->getOperand(j)->getValueID() == llvm::Value::BasicBlockVal)
         {
           if(DEBUG) {
-            errs() << "intr: " << *BI << "\n";
-            errs() << "val: " <<  BI->getOperand(j) << "\n"; 
+	    errs() << "  !!BasicBlockVal Detected!!\n";
+            errs() << "  intr: " << *BI << "\n";
+            errs() << "  val: " <<  BI->getOperand(j) << "\n"; 
           }
           BasicBlock *bb = dyn_cast<llvm::BasicBlock>(BI->getOperand(j)); 
 
@@ -2875,7 +3451,6 @@ Default:
           //errs() << "instr inside : " << *it << "\n" ;
           //}
 
-          errs() << "\n\nBasicBlockVal Detected!\n\n";
           continue;
         }
         else if ((BI->getOperand(j)->getValueID() >= llvm::Value::InstructionVal) ||
@@ -2883,7 +3458,7 @@ Default:
             (BI->getOperand(j)->getValueID() == llvm::Value::ArgumentVal))
         {
           if(DEBUG)
-            errs() << "in globalvariable\n";
+            errs() << "  Inside globalvariable\n";
           if(BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal)
           {
             if(BI->getOpcode() != Instruction::Load && BI->getOpcode() != Instruction::Store)
@@ -2895,15 +3470,15 @@ Default:
           int distance = 0;
           Datatype dt; 
           if(DEBUG)
-            errs() << "name: " << name << "\n"; 
+            errs() << "   name: " << name << "\n"; 
           //if the node has not been created, create it, else get distance
           if (myDFG->get_Node((BI)->getOperand(j)) == NULL)
           {
             if(DEBUG) {
-              errs() << "inside getoperand null\n";
-              errs() << "BI: " << *BI << "\n"; 
-              errs() << "operand: " << BI->getOperand(j)->getValueID() << "\n";
-              errs() << "value name: " << BI->getOperand(j)->getName().str() << "\n";
+              errs() << "   inside getoperand null\n";
+              errs() << "    BI: " << *BI << "\n"; 
+              errs() << "    operand: " << BI->getOperand(j)->getValueID() << "\n";
+              errs() << "    value name: " << BI->getOperand(j)->getName().str() << "\n";
             }
             Value *defInst = BI->getOperand(j);
             std::map<Value *,std::string>::iterator it;
@@ -2912,15 +3487,15 @@ Default:
                 (BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal))
             {
               if(DEBUG)
-                errs() << "inside the if function\n";
+                errs() << "    inside the if function\n";
               std::string ptrName;
               unsigned alignment = 4;
               if (it != map_instn_defn_livein_to_load.end())
               {
                 if(DEBUG)
                 {
-                  errs() << "inside if ptr name: " << it->second << "\n";
-                  errs() << "dt: " << map_livein_to_datatype[ptrName] << "\n";
+                  errs() << "     inside if ptr name: " << it->second << "\n";
+                  errs() << "     dt: " << map_livein_to_datatype[ptrName] << "\n";
                 }
                 ptrName = it->second;
                 alignment = map_livein_to_alignment[ptrName];
@@ -2929,12 +3504,12 @@ Default:
               else
               {
                 if(DEBUG)
-                  errs() << "inside else to get gptr name livein\n";
+                  errs() << "    inside else to get gptr name livein: " << name << "\n";
                 ptrName = name;
               }
 
               if(DEBUG)
-                errs() << "passed ifelse\n";
+                errs() << "   passed ifelse\n";
               node1 = new NODE(constant, 1, NodeID++, ptrName, (BI)->getOperand(j));
               node1->setAlignment(alignment);
               node2 = myDFG->get_Node(BI);  
@@ -2957,22 +3532,49 @@ Default:
             }
             else
             {
-              std::cout << "Cannot detect defining instruction for the live-in\n\n";
+              std::cout << "   !Cannot detect defining instruction for the live-in\n\n";
             }
           }
           else
           {
-            if(DEBUG)
-              errs() << "else getoperand null\n";
-            distance = getDistance(cast<Instruction>((BI)->getOperand(j)),
-                cast<Instruction>((BI)->getOperand(j))->getParent(), BI, BI->getParent(), bbs,loopLatch);
+	    if(DEBUG)
+              errs() << "   else getoperand null\n";
+	    
+	    Value *defInst = BI->getOperand(j);
+            std::map<Value *,std::string>::iterator it;
+	    
+            it = map_instn_defn_livein_to_load.find(defInst);
+            if ((it != map_instn_defn_livein_to_load.end()) ||
+                (BI->getOperand(j)->getValueID() == llvm::Value::GlobalVariableVal)){
+	      errs() << "    inside if for livein or globalvariable\n";
+	      node1 = myDFG->get_Node(BI->getOperand(j));
+	      node2 = myDFG->get_Node(BI);
+	      std::string ptrName = node1->get_Name();
+	      unsigned int livein_datatype = (unsigned int)(node2->getDatatype());
+              dep = LiveInDataDep;
+	      distance = 0;
+              unsigned int CGRA_loadAddID = ((NodeID++)+100);
+              unsigned int CGRA_loadDataID = ((NodeID++)+100);
+
+	      liveInNodefile << node2->get_ID() << "\t" << node2->get_Instruction() << "\t" << node2->get_Name() << "\t" << livein_datatype << "\n";
+              liveInNodefile << node1->get_ID() << "\t" << constant << "\t" << ptrName << "\t" << livein_datatype << "\n";
+              liveInNodefile << CGRA_loadAddID << "\t" << ld_add << "\t" << "ld_add_" + ptrName << "\t" << livein_datatype << "\n";
+              liveInNodefile << CGRA_loadDataID << "\t" << ld_data << "\t" << "ld_data_" + ptrName << "\t" << livein_datatype <<"\n";
+
+	      liveInEdgefile << CGRA_loadAddID << "\t" << CGRA_loadDataID << "\t0\tLRE\t0\n";
+              liveInEdgefile << CGRA_loadDataID << "\t" << node2->get_ID() << "\t0\tTRU\t" << j << "\n";
+              liveInEdgefile << node1->get_ID() << "\t" << CGRA_loadAddID << "\t0\tTRU\t0\n";
+	    }
+	    else
+	      distance = getDistance(cast<Instruction>((BI)->getOperand(j)),
+                                   cast<Instruction>((BI)->getOperand(j))->getParent(), BI, BI->getParent(), bbs,loopLatch);
           }
 
           //if the operand instruction corresponds to a load operation
           if (cast<Instruction>((BI)->getOperand(j))->getOpcode() == Instruction::Load)
           {
             if(DEBUG)
-              errs() << "if load\n"; 
+              errs() << "  if load\n"; 
             node1 = myDFG->get_Node_Mem_Data(cast<Instruction>((BI)->getOperand(j)));
             if (node1 == NULL)
             {
@@ -2982,7 +3584,7 @@ Default:
           else
           { 
             if(DEBUG)
-              errs() << "else load\n";
+              errs() << "  else load\n";
             node1 = myDFG->get_Node((BI)->getOperand(j));
           }
 
@@ -2990,35 +3592,30 @@ Default:
           if (BI->getOpcode() == Instruction::Store)
           {
             if(DEBUG)
-              errs() << "in opcode store\n";
+              errs() << "  in opcode store\n";
             if((dyn_cast<StoreInst>(BI))->getPointerOperand() == BI->getOperand(j))
             {
               if(DEBUG) {
-                errs() << "in if\n";
-                errs() << "BI: " << *BI << "\n";
+                errs() << "   in if\n";
+                errs() << "   BI: " << *BI << "\n";
               }
               node2 = myDFG->get_Node_Mem_Add(BI);
               if(DEBUG) {
-                errs() << "passed node2: " << node2->get_Name() << "\n";
-                errs() << "value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n"; 
+                errs() << "   passed node2: " << node2->get_Name() << "\n";
+                errs() << "   value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n"; 
               }
 
               if(((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantIntVal) || ((dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() == llvm::Value::ConstantFPVal)) {
                 if(DEBUG)
-                  errs() << "before get node\n";
+                  errs() << "    before get node\n";
                 node3 = myDFG->get_Node((dyn_cast<StoreInst>(BI))->getValueOperand());
                 //Datatype dt1 = node2->getDatatype();
-                if(DEBUG)
-                {
-                  errs() << "get node3: " << node3->get_ID() << "\n";   
-                  //exit(1);
-                }
                 node4 = myDFG->get_Node_Mem_Data(BI);
-                if(DEBUG)
-                  errs() << "get node4\n";
+		
+                if(DEBUG){
+                  errs() << "    node3: " << node3->get_Name() << " -> node4: " << node4->get_Name() << "\n";
+		}
                 myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep,0);
-                if(DEBUG)
-                  errs() << "passed make arc\n";
                 //node3->setDatatype(dt1);
                 //node4->setDatatype(dt1); 
               }
@@ -3026,25 +3623,25 @@ Default:
               {
                 node3 = myDFG->get_Node(BI->getOperand(j));
                 if(DEBUG)
-                  errs() << "get the other incoming to store: " << node3->get_ID() << "\n";
+                  errs() << "   get the other incoming to store: " << node3->get_ID() << "\n";
                 node4 = myDFG->get_Node_Mem_Data(BI);
                 //Datatype dt1 = node3->getDatatype();
                 //node2->setDatatype(dt1);
                 //node4->setDatatype(dt1);
               }
               if(DEBUG)
-                errs() << "exiting if\n";
+                errs() << "   exiting if\n";
             }
             else
             {
               if(DEBUG)
-                errs() << "in else\n";
+                errs() << "   in else\n";
 
               node2 = myDFG->get_Node_Mem_Data(BI);
               if(DEBUG) {
-                errs() << "passed node2: " << node2->get_Name() << "\n";
-                errs() << "value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n";
-                errs() << "node2 dt: " << node2->getDatatype() << "\n";
+                errs() << "    passed node2: " << node2->get_Name() << "\n";
+                errs() << "    value id for store:" << (dyn_cast<StoreInst>(BI))->getValueOperand()->getValueID() << "\n";
+                errs() << "    node2 dt: " << node2->getDatatype() << "\n";
               }
 
               if(((dyn_cast<StoreInst>(BI))->getPointerOperand()->getValueID() == llvm::Value::ConstantIntVal) || ((dyn_cast<StoreInst>(BI))->getPointerOperand()->getValueID() == llvm::Value::ConstantFPVal)) {
@@ -3052,9 +3649,9 @@ Default:
                 node4 = myDFG->get_Node_Mem_Add(BI);
                 if(DEBUG)
                 {
-                  errs() << "node4: " << node4->get_ID() << "\n";
-                  errs() << "node 2 dt: " << node2->getDatatype() << "\n";
-                  errs() << "dt: " << node2->getDatatype() << "\n";
+                  errs() << "    node4: " << node4->get_ID() << "\n";
+                  errs() << "    node 2 dt: " << node2->getDatatype() << "\n";
+                  errs() << "    dt: " << node2->getDatatype() << "\n";
                   exit(1);
                 }
                 //Datatype dt1 = node2->getDatatype();
@@ -3066,30 +3663,30 @@ Default:
           else if (BI->getOpcode() == Instruction::Load)
           {
             if(DEBUG)
-              errs() << "else load2\n"; 
+              errs() << "  else load2\n"; 
             node2 = myDFG->get_Node_Mem_Add(BI);
           }
           else
           {
             if(DEBUG) {
-              errs() << "else else load\n";
-              errs() << "BI: " << *BI << "\n"; 
+              errs() << "  else else load\n";
+              errs() << "   BI: " << *BI << "\n"; 
             }
             node2 = myDFG->get_Node(BI);
             if(DEBUG)
-              errs() << "after get node\n";
+              errs() << "   after get node\n";
           }
+	  if(DEBUG) errs() << "  node1: " << node1->get_Name() << " - node2: " << node2->get_Name() << "\n";
           myDFG->make_Arc(node1, node2, EdgeID++, distance,dep,j);
         }
       }
       if(DEBUG)
-        errs() << "before select\n";
+        errs() << " before select\n";
       if(BI->getOpcode() == Instruction::Select)
       {
         if(DEBUG) {
-          errs() << "Select BI: " << *BI << "\n"; 
-          errs() << "Select node: " << myDFG->get_Node(BI)->get_ID() << "\n";
-
+          errs() << " Select BI: " << *BI << "\n"; 
+          errs() << "  Select node: " << myDFG->get_Node(BI)->get_ID() << "\n";
         }
         
         //change OperandOrder To 1
@@ -3110,40 +3707,69 @@ Default:
         arc1->SetOperandOrder(0);
       }
 
-      /* Shail says:
-         It is assumed that array address calculation should be independent of indvars or i, in general.
-         getelementptr in IR shows how we can obtain base address and offsets. (LLVM Reference Manual)
-         In obtained IR, it is always seen that 1st operand is the base address, 2nd is constant 0 (i.e. offset)
-         And 3rd operand is the offset variable i.e. indsvars or i.
-         Thus, we should eliminate constant0  and do 1st operand + (4 * 3rd Operand)
-       */
+      
       if(DEBUG)
-        errs() << "Before getelementPtr\n"; 
+        errs() << " Before getelementPtr\n"; 
       if(BI->getOpcode() == Instruction::GetElementPtr)
       {
+	if(DEBUG) errs() << " Inside getelementptr\n";
         ArrID++;
         std::ostringstream arrid;
         arrid << ArrID;
+
+	// Check if GEP inst contains a struct
+	bool isStructInst = false;
+	std::string struct_name;
+	Type* op0_type = dyn_cast<Value>(BI->getOperand(0))->getType();
+	if(op0_type->isPointerTy()){
+	  Type* element_type = op0_type->getPointerElementType();
+	  while(element_type->isPointerTy())
+	    element_type = element_type->getPointerElementType();  // Iterate until element type found
+	  if(element_type->isStructTy()){
+	    isStructInst = true;
+	    struct_name = element_type->getStructName().str();
+	    op0_type = element_type;
+	  }
+	}
+	else if(op0_type->isStructTy()){
+	  isStructInst = true;
+	  struct_name = op0_type->getStructName().str();
+	}
+
+	if(isStructInst){
+	  if(DEBUG) errs() << "Getelementptr with struct name: " << struct_name << " - bitwidth: " << op0_type->getPrimitiveSizeInBits()/8 << "\n";
+	  if(map_struct_size.find(struct_name) == map_struct_size.end())
+	    get_Datatype(op0_type, op0_type->getPrimitiveSizeInBits()/8);
+	  
+	  if(DEBUG) errs() << "  Struct size: " << map_struct_size.find(struct_name)->second << "\n";
+	}
+	
         for(unsigned int i=0; i< BI->getNumOperands(); ++i)
         {
           //Fix Predecessor Nodes With idxprom
           node1 = myDFG->get_Node(BI);
           std::string operandname = BI->getOperand(i)->getName().str();
-          Datatype dt = node1->getDatatype(); 
+          Datatype dt = node1->getDatatype();
+	  if(DEBUG) errs() << "  Operand " << i << " - " << BI->getOperand(i) << " - name: " << operandname << "\n";
           //Add Node If Unnamed Private
           if(!operandname.empty())
           {
             std::string str = BI->getOperand(i)->getName().str();
-            node2 = new NODE(constant, 1, NodeID++, str , NULL);
-            node2->setDatatype(dt);
-            myDFG->insert_Node(node2);
-            myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 0);
+	    node2 = myDFG->get_Node(str);
+	    if(node2 == NULL){
+	      node2 = new NODE(constant, 1, NodeID++, str, NULL);
+	      node2->setDatatype(dt);
+	      myDFG->insert_Node(node2);
+	      myDFG->make_Arc(node2, node1, EdgeID++, 0, TrueDep, 0);
+	    }
+	    if(DEBUG) errs() << "  Uncertain behavior: adding node2: " << str << " - node1: " << node1->get_Name() << "\n";
           }
           else
           {
             node2 = myDFG->get_Node(BI->getOperand(i));
           }
-
+	  if(DEBUG) errs() << "  node2: " << node2->get_Name() << "\n";
+	  
           if(node2->is_Load_Address_Generator())
             node2 = node2->get_Related_Node();
 
@@ -3167,7 +3793,393 @@ Default:
             }
           }
 
-          //Fix Insertion Of idxprom, if not there
+	  if(isStructInst){
+	  if(i == 0){
+	    map_operand_node[0] = node2;
+	  }
+	  else if(i == 1){
+	    if(node2->get_Name().compare("ConstInt0") != 0){
+	      if(DEBUG) errs() << "    Operand1 is non zero -> accessing struct array element\n";
+	      if(node2->get_Name().find("ConstInt") != std::string::npos){  // Exclude global variable
+		std::string node2_name = node2->get_Name();
+		char* temp_str = new char[node2_name.length()+1];
+		strcpy(temp_str,node2_name.c_str());
+		unsigned int constVal = 0;  // extra constant from node2 name
+		sscanf(temp_str, "%*[^-0123456789]%d",&constVal);
+		if(DEBUG) errs() << "    Operand0 is a constant " << constVal << "\n";
+
+		constVal *= map_struct_size[struct_name];
+		std::string new_name = "ConstInt" + std::to_string(constVal);
+		NODE* temp_node = myDFG->get_Node(new_name);
+		if(temp_node == NULL){
+		  temp_node = new NODE(constant, 1, NodeID++, new_name, NULL);
+		  temp_node->setDatatype(int32);
+		  myDFG->insert_Node(temp_node);
+		}
+		if(DEBUG) errs() << "    New node2: " << temp_node->get_Name() << "\n";
+		myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+		myDFG->make_Arc(temp_node, node1, EdgeID++, 0, TrueDep, 1);
+		
+		map_operand_node[1] = node2;
+	      }
+	      else {
+		node3 = myDFG->get_Node("ConstInt" + std::to_string(map_struct_size[struct_name]));
+		node4 = NULL;
+		if(node3 == NULL){
+		  node3 = new NODE(constant, 1, NodeID++, "ConstInt" + std::to_string(map_struct_size[struct_name]), NULL);  // holds size of the target struct
+		  myDFG->insert_Node(node3);
+		} else {
+		  std::vector<NODE*> node3_out = node3->Get_Next_Nodes();
+		  for(int out_it=0; out_it < node3_out.size(); out_it++)
+		    if(node3_out[out_it]->get_Instruction() == mult){
+		      std::vector<NODE*> mult_prev = node3_out[out_it]->Get_Prev_Nodes();
+		      if(mult_prev[0] == node2){
+			node4 = node3_out[out_it];
+			break;
+		      } else if(mult_prev[1] == node2){
+			node4 = node3_out[out_it];
+			break;
+		      }
+		    }
+		}
+		if(node4 == NULL){
+		  node4 = new NODE(mult, 1, NodeID++, std::to_string(NodeID-1), NULL);
+		  node4->setDatatype(int32);
+		  myDFG->insert_Node(node4);
+		}
+		if(DEBUG) errs() << "    node3: " << node3->get_Name() << " - node4: " << node4->get_Name() << "\n";
+	        
+		myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+
+		myDFG->make_Arc(node2, node4, EdgeID++, 0, TrueDep, 0);
+		myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep, 1);
+		myDFG->make_Arc(node4, node1, EdgeID++, 0, TrueDep, 1);
+		
+		map_operand_node[1] = node4;
+	      }
+	    }
+	    else {
+	      myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+	      map_operand_node[1] = NULL;
+	    }
+	  }
+	  
+	  else if(i == 2) {  // Operand2 is used to access struct member -> must be constant
+	    unsigned offset = 0;
+	    if(node2->get_Instruction() != constant){
+	      errs() << "ERROR: Accessing struct element should be constant! Exitting.\n";
+	      exit(1);
+	    }
+	    std::string node2_name = node2->get_Name();
+	    
+	    errs() << "Operand 2 node 2 name: " << node2_name << "\n";
+	    
+	    char* temp_str = new char[node2_name.length()+1];
+	    strcpy(temp_str,node2_name.c_str());
+	    unsigned int constVal = 0;
+	    sscanf(temp_str, "%*[^-0123456789]%d",&constVal);
+	    
+	    for(int struct_member_i = 0; struct_member_i < constVal; struct_member_i++)
+	      offset += map_struct_member_size[struct_name][struct_member_i];
+	    
+	    std::string new_name = "ConstInt" + std::to_string(offset);
+	    NODE* temp_node = myDFG->get_Node(new_name);
+	    if(temp_node == NULL){
+	      temp_node = new NODE(constant, 1, NodeID++, new_name, NULL);
+	      temp_node->setDatatype(int32);
+	      myDFG->insert_Node(temp_node);
+	    }
+	    if(DEBUG) errs() << "    New node2: " << temp_node->get_Name() << "\n";
+
+	    NODE* op1_node = map_operand_node[1];
+	    if(!op1_node){
+	      myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+	      myDFG->make_Arc(temp_node, node1, EdgeID++, 0, TrueDep, 1);
+	      map_operand_node[2] = temp_node;
+	    }
+	    else {
+	      myDFG->Remove_Arc(myDFG->get_Arc(op1_node, node1));
+	      myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+
+	      node3 = NULL;
+	      std::vector<NODE*> node2_out = temp_node->Get_Next_Nodes();
+	      for(int out_it=0; out_it < node2_out.size(); out_it++)
+		if(node2_out[out_it]->get_Instruction() == add){
+		  std::vector<NODE*> add_prev = node2_out[out_it]->Get_Prev_Nodes();
+		  if(add_prev[0] == op1_node){
+		    node3 = node2_out[out_it];
+		    break;
+		  } else if(add_prev[1] == op1_node){
+		    node3 = node2_out[out_it];
+		    break;
+		  }
+		}
+	      if(node3 == NULL){
+		node3 = new NODE(add, 1, NodeID++, "", NULL);
+		node3->setDatatype(int32);
+		myDFG->insert_Node(node3);
+	      }
+	      if(DEBUG) errs() << "    node3: " << node3->get_Name() << " - op1_node: " << op1_node->get_Name() << "\n";
+	      
+	      myDFG->make_Arc(temp_node, node3, EdgeID++, 0, TrueDep, 0);  // operand order matters! op0 should be for const
+	      myDFG->make_Arc(op1_node, node3, EdgeID++, 0, TrueDep, 1);
+	      myDFG->make_Arc(node3, node1, EdgeID++, 0, TrueDep, 1);
+	      map_operand_node[2] = node3;
+	    }
+	  }
+	  else if(i == 3) {  // Operand2 is assumed to always be a constant for struct
+	    int struct_index = 0;  // Access index of struct element
+	    if(dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getBitWidth() > 1)
+	      struct_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getSExtValue();
+	    else
+	      struct_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getZExtValue();
+
+	    
+	    NODE* op2_node = map_operand_node[2];
+	    NODE* op2_const;
+	    if(op2_node->get_Instruction() != constant){
+	      std::vector<NODE*> op2_prev = op2_node->Get_Prev_Nodes();
+	      if(op2_prev[0]->get_Name()[0] == 'C') op2_const = op2_prev[0];
+	      else op2_const = op2_prev[1]; // Assumes only 1 of 2 operand is a constant
+	    } else op2_const = op2_node;
+	    
+	    std::string op2_name = op2_const->get_Name();
+            char* temp_str = new char[op2_name.length()+1];
+            strcpy(temp_str,op2_name.c_str());
+            unsigned int constVal = 0;   // Memory offset at struct index
+            sscanf(temp_str, "%*[^-0123456789]%d",&constVal);
+
+	    Type* op2_type = op0_type->getStructElementType(struct_index);
+
+	    if(op2_type->isArrayTy()) {
+	      Datatype elementDT = get_Datatype(op2_type->getArrayElementType(), op2_type->getPrimitiveSizeInBits()/8);
+	      unsigned element_size = 0;
+	      if(elementDT == _struct){
+		// Very odd situation: an array of struct inside a bigger struct -> inspect more
+		auto op2_size = map_struct_size.find(op2_type->getArrayElementType()->getStructName().str());
+	        element_size = op2_size->second;  // Could cause seg fault if struct not discovered
+	      } else if(elementDT == _array) {
+		errs() << "HELP: Array inside array, what should I do?\n";
+		exit(1);
+	      } else
+		element_size = DT_Size[elementDT];
+	      
+	      if(node2->get_Instruction() == constant){
+		std::string op3_name = node2->get_Name();
+		char* temp_str = new char[op3_name.length()+1];
+		strcpy(temp_str,op3_name.c_str());
+		unsigned int offset = 0;
+		sscanf(temp_str, "%*[^-0123456789]%d",&offset);
+
+		offset *= element_size;
+		offset += constVal;
+		std::string new_name = "ConstInt" + std::to_string(offset);  // Since op2 and op3 are const, add them directly into 1 node
+		op2_const->set_Name(new_name);
+		NODE* temp_const = myDFG->get_Node(new_name);
+		
+		// Delete op3 node and edge (node2, node1) since op3 node const is added to op2 const
+		myDFG->delete_Node(node2); // delete_Node should also remove arc
+		map_operand_node[3] = temp_const;
+		
+	      } else {
+		// Accesing array inside struct -> Similar behavior to outside struct, w/o idxprom since address should be static
+		node3 = myDFG->get_Node("ConstInt" + std::to_string(element_size));
+		node4 = NULL;
+		if(node3 == NULL){
+		  node3 = new NODE(constant, 1, NodeID++, "ConstInt" + std::to_string(element_size), NULL);
+		  myDFG->insert_Node(node3);
+		} else {
+		  std::vector<NODE*> node3_out = node3->Get_Next_Nodes();
+		  for(int out_it=0; out_it < node3_out.size(); out_it++)
+		    if(node3_out[out_it]->get_Instruction() == mult){
+		      std::vector<NODE*> mult_prev = node3_out[out_it]->Get_Prev_Nodes();
+		      if(mult_prev[0] == node2){
+			node4 = node3_out[out_it];
+			break;
+		      } else if(mult_prev[1] == node2){
+			node4 = node3_out[out_it];
+			break;
+		      }
+		    }
+		}
+		if(node4 == NULL){
+		  node4 = new NODE(mult, 1, NodeID++, "", NULL);
+		  node4->setDatatype(int32);
+		  myDFG->insert_Node(node4);
+		}
+		if(DEBUG) errs() << "    node3: " << node3->get_Name() << " - node4: " << node4->get_Name() << "\n";
+
+		NODE* node5 = NULL;
+		std::vector<NODE*> op2_succ = op2_node->Get_Next_Nodes(), node4_succ = node4->Get_Next_Nodes();
+		for(int op2_it = 0; op2_it < op2_succ.size(); op2_it++)
+		  for(int node4_it = 0; node4_it < node4_succ.size(); node4_it++)
+		    if(op2_succ[op2_it] == node4_succ[node4_it]) node5 = op2_succ[op2_it];
+		if(node5 == NULL){
+		  node5 = new NODE(add, 1, NodeID++, "", NULL);
+		  node5->setDatatype(int32);
+		  myDFG->insert_Node(node5);
+		}
+		
+		myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+		myDFG->Remove_Arc(myDFG->get_Arc(op2_node, node1));
+		
+		myDFG->make_Arc(node2, node4, EdgeID++, 0, TrueDep, 1);
+		myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep, 0);
+		
+		myDFG->make_Arc(op2_node, node5, EdgeID++, 0, TrueDep, 0);
+		myDFG->make_Arc(node4, node5, EdgeID++, 0, TrueDep, 1);
+		myDFG->make_Arc(node5, node1, EdgeID++, 0, TrueDep, 1);
+
+		map_operand_node[3] = node5;
+	      }
+	    } else if(op2_type->isStructTy()) {
+	      // If op2 points to another struct, op3 should be constant since accessing struct member is const
+	      // Add memory offset from op3 directly to op2
+	      std::string op2_struct_name = op2_type->getStructName().str();
+	      if(map_struct_size.find(op2_struct_name) == map_struct_size.end())
+		get_Datatype(op2_type, op2_type->getPrimitiveSizeInBits()/8);  // Discover new struct
+	      
+	      std::string op3_name = node2->get_Name();
+	      char* temp_str = new char[op3_name.length()+1];
+	      strcpy(temp_str,op3_name.c_str());
+	      unsigned int offset = 0;
+	      sscanf(temp_str, "%*[^-0123456789]%d",&offset);
+
+	      for(int j=0; j<offset; j++)
+		offset += map_struct_member_size[op2_struct_name][j];
+	      offset += constVal;
+
+	      std::string new_name = "ConstInt" + std::to_string(offset);
+	      op2_const->set_Name(new_name);
+	      myDFG->delete_Node(node2);
+	      map_operand_node[3] = op2_node;
+	      
+	    } else if(op2_type->isPointerTy()) {
+	      errs() << "ERROR: Operand2 points to a pointer! What should I do in operand3?\n";
+	      exit(1);
+	    } else {
+	      errs() << "ERROR: Operand2 points to primitive type! What should I do in operand3?\n";
+	      exit(1);
+	    }
+	  }
+	  else if(i == 4){  // Accessing struct of struct of struct or array of struct of struct!
+	    int op2_index = 0;  // Access index of struct element
+	    if(dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getBitWidth() > 1)
+	      op2_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getSExtValue();
+	    else
+	      op2_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(2))->getZExtValue();
+
+	    int op3_index = 0;
+	    if(dyn_cast<llvm::ConstantInt>((BI)->getOperand(3))->getBitWidth() > 1)
+              op3_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(3))->getSExtValue();
+            else
+              op3_index = dyn_cast<llvm::ConstantInt>((BI)->getOperand(3))->getZExtValue();
+
+	    
+	    NODE* op3_node = map_operand_node[3];
+	    NODE* op3_const;
+	    if(op3_node->get_Instruction() != constant){
+              std::vector<NODE*> op3_prev = op3_node->Get_Prev_Nodes();
+              if(op3_prev[0]->get_Name()[0] == 'C') op3_const = op3_prev[0];
+              else op3_const = op3_prev[1]; // Assumes only 1 of 2 operand is a constant
+            } else op3_const = op3_node;
+	    
+	    std::string op3_name = op3_const->get_Name();
+            char* temp_str = new char[op3_name.length()+1];
+            strcpy(temp_str,op3_name.c_str());
+            unsigned int constVal = 0;   // Memory offset at struct index
+            sscanf(temp_str, "%*[^-0123456789]%d",&constVal);
+
+	    Type* op2_type = op0_type->getStructElementType(op2_index);
+	    Type* op3_type = op2_type->getStructElementType(op3_index);
+	    
+	    if(op3_type->isArrayTy()) {
+	      Datatype elementDT = get_Datatype(op3_type->getArrayElementType(), op3_type->getPrimitiveSizeInBits()/8);
+	      unsigned element_size = 0;
+	      if(elementDT == _struct){
+		// Very odd situation: array of struct inside a bigger struct of a struct -> inspect more
+		auto op3_size = map_struct_size.find(op3_type->getArrayElementType()->getStructName().str());
+	        element_size = op3_size->second;  // May cause seg fault if struct is not discovered yet
+	      } else if(elementDT == _array) {
+		errs() << "HELP: Array inside array, what should I do?\n";
+		exit(1);
+	      } else
+		element_size = DT_Size[elementDT];
+
+	      if(node2->get_Instruction() == constant){
+		std::string op4_name = node2->get_Name();
+		char* temp_str = new char[op4_name.length()+1];
+		strcpy(temp_str,op4_name.c_str());
+		unsigned int offset = 0;
+		sscanf(temp_str, "%*[^-0123456789]%d",&offset);
+
+		offset *= element_size;
+		offset += constVal;
+		std::string new_name = "ConstInt" + std::to_string(offset);
+		op3_const->set_Name(new_name);
+
+		myDFG->delete_Node(node2); // delete_Node should also remove arc
+		
+	      } else {
+		// Accesing array inside struct -> Similar behavior to outside struct, w/o idxprom since address should be static
+		node3 = new NODE(constant, 1, NodeID++, "ConstInt" + std::to_string(element_size), NULL);
+		node4 = new NODE(mult, 1, NodeID++, std::to_string(NodeID-1), NULL);
+		node4->setDatatype(int32);
+		NODE* node5 = new NODE(add, 1, NodeID++, std::to_string(NodeID-1), NULL);
+		node5->setDatatype(int32);
+		
+		myDFG->insert_Node(node3);
+		myDFG->insert_Node(node4);
+		myDFG->insert_Node(node5);
+		
+		myDFG->Remove_Arc(myDFG->get_Arc(node2, node1));
+		myDFG->Remove_Arc(myDFG->get_Arc(op3_node, node1));
+		
+		myDFG->make_Arc(node2, node4, EdgeID++, 0, TrueDep, 1);
+		myDFG->make_Arc(node3, node4, EdgeID++, 0, TrueDep, 0);
+		
+		myDFG->make_Arc(op3_node, node5, EdgeID++, 0, TrueDep, 0);
+		myDFG->make_Arc(node4, node5, EdgeID++, 0, TrueDep, 1);
+		myDFG->make_Arc(node5, node1, EdgeID++, 0, TrueDep, 1);
+	      }
+	    } else if(op3_type->isStructTy()) {
+	      // If op3 points to another struct, op4 should be constant since accessing struct member is const
+	      // Add memory offset from op4 directly to op3
+	      std::string op3_struct_name = op3_type->getStructName().str();
+	      if(map_struct_size.find(op3_struct_name) == map_struct_size.end())
+		get_Datatype(op3_type, op3_type->getPrimitiveSizeInBits()/8);  // Discover new struct
+	      
+	      std::string op4_name = node2->get_Name();
+	      char* temp_str = new char[op4_name.length()+1];
+	      strcpy(temp_str,op4_name.c_str());
+	      unsigned int offset = 0;
+	      sscanf(temp_str, "%*[^-0123456789]%d",&offset);
+
+	      for(int j=0; j<offset; j++)
+		offset += map_struct_member_size[op3_struct_name][j];
+	      offset += constVal;
+
+	      std::string new_name = "ConstInt" + std::to_string(offset);
+	      op3_const->set_Name(new_name);
+	      myDFG->delete_Node(node2);
+	      
+	    } else if(op3_type->isPointerTy()) {
+	      errs() << "ERROR: Operand2 points to a pointer! What should I do in operand3?\n";
+	      exit(1);
+	    } else {
+	      errs() << "ERROR: Operand2 points to primitive type! What should I do in operand3?\n";
+	      exit(1);
+	    }
+	  }
+	  else {
+	    errs() << "ERROR: Currently only support accessing struct up to 3 indices -> Parameterize me!\n";
+	    exit(1);
+	  }
+	  } // End struct GEP
+
+
+	  else {
+          //FIX Insertion Of idxprom, if not there
           if((BI->getNumOperands()==3 && i==2) || (BI->getNumOperands()==2 && i==1))
           {
             node1 = myDFG->get_Node(BI);
@@ -3183,46 +4195,51 @@ Default:
               break;
             }
 
-            if(idxprom_nodeID_pred_map.find(node->get_ID()) != idxprom_nodeID_pred_map.end())
-            {
-              arc1 = myDFG->get_Arc(node, node1);
-              myDFG->Remove_Arc(arc1);
-              node3 = myDFG->get_Node(idxprom_nodeID_pred_map[node->get_ID()]);
-              myDFG->make_Arc(node, node3, EdgeID++, 0, TrueDep, 0);
-              myDFG->make_Arc(node3, node1, EdgeID++, 0, TrueDep, 1);
-            }
-            else
-            {
-              node3 = new NODE(mult, 1, NodeID++, "idxprom"+arrid.str() , NULL);
-              unsigned alignment = idxprom_nodeID_load_alignment_map[BI];
-              node4 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(alignment), NULL);
-              Datatype dt = int32; 
-              node3->setDatatype(dt); 
-              node4->setDatatype(dt);
-              myDFG->insert_Node(node3);
-              myDFG->insert_Node(node4);
-              arc1 = myDFG->get_Arc(node, node1);
-              myDFG->Remove_Arc(arc1);
-              myDFG->make_Arc(node, node3, EdgeID++, 0, TrueDep, 0);
-              myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 1);
-              myDFG->make_Arc(node3, node1, EdgeID++, 0, TrueDep, 1);
-              idxprom_nodeID_pred_map.insert(std::pair<int,int>(node->get_ID(),node3->get_ID()));
-            }
-          }
-
-          //Remove Unnecessary ConstInt0 Node
+	    if(DEBUG) errs() << "Before idxprom insertion\n";
+	    if(idxprom_nodeID_pred_map.find(node->get_ID()) != idxprom_nodeID_pred_map.end())
+	    {
+	      if(DEBUG) errs() << "   idxprom with node created\n";
+	      arc1 = myDFG->get_Arc(node, node1);
+	      myDFG->Remove_Arc(arc1);
+	      node3 = myDFG->get_Node(idxprom_nodeID_pred_map[node->get_ID()]);
+	      myDFG->make_Arc(node, node3, EdgeID++, 0, TrueDep, 0);
+	      myDFG->make_Arc(node3, node1, EdgeID++, 0, TrueDep, 1);
+	    }
+	    else if(node->get_Instruction() != constant && node->get_Name()[0] != 'g')
+	    {
+	      if(DEBUG) errs() << "   idxprom with new nodes\n";
+	      node3 = new NODE(mult, 1, NodeID++, "idxprom"+arrid.str() , NULL);
+	      unsigned alignment = idxprom_nodeID_load_alignment_map[BI];
+	      node4 = new NODE(constant, 1, NodeID++, "ConstInt"+std::to_string(alignment), NULL);
+	      Datatype dt = int32; 
+	      node3->setDatatype(dt); 
+	      node4->setDatatype(dt);
+	      myDFG->insert_Node(node3);
+	      myDFG->insert_Node(node4);
+	      errs() << "      Node: " << node->get_Name() << " - Node1: " << node1->get_Name() << "\n";
+	      arc1 = myDFG->get_Arc(node, node1);
+	      myDFG->Remove_Arc(arc1);
+	      myDFG->make_Arc(node, node3, EdgeID++, 0, TrueDep, 0);
+	      myDFG->make_Arc(node4, node3, EdgeID++, 0, TrueDep, 1);
+	      myDFG->make_Arc(node3, node1, EdgeID++, 0, TrueDep, 1);
+	      idxprom_nodeID_pred_map.insert(std::pair<int,int>(node->get_ID(),node3->get_ID()));
+	    }
+	  }
+	  //Remove Unnecessary ConstInt0 Node
           if (node2->get_Name() == "ConstInt0")
-          {
+	  {
             node1 = myDFG->get_Node(BI);
             arc1 = myDFG->get_Arc(node2, node1);
             myDFG->Remove_Arc(arc1);
           }
+          }
         }
       }
-
+      
       //Fix Successor Operand Order`
       if((BI->getOpcode() == Instruction::Load) || (BI->getOpcode() == Instruction::Store))
       {
+	if(DEBUG) errs() << " Inside Load or Store\n";
         node1 = myDFG->get_Node(BI);
         for(unsigned int i=0; i< BI->getNumOperands(); ++i)
         {
@@ -3268,13 +4285,14 @@ Default:
       //}
       //}
       if(DEBUG)
-        errs() << "before phi\n"; 
+        errs() << " before phi\n"; 
       if(BI->getOpcode() == Instruction::PHI)
       {
 
         if(DEBUG)
-          errs() << "inside phi: " << *BI << "\n";
+          errs() << " inside phi: " << *BI << "\n";
         node1 = myDFG->get_Node(BI);
+	
         //If phi node is at top of the loop - it's not due to if-then-else
         //so avoid acting on phi node to supply predicate
         //This is because phi and selects have separate opcodes in backend
@@ -3286,8 +4304,9 @@ Default:
           //errs() << "top brinst: " << myDFG->get_Node(brInst)->get_Name() << "\n";
 
           if(DEBUG) {
-            errs() << "INstr: " << *(BI) << "\n" ;
-            errs() << "node: " << myDFG->get_Node(BI)->get_ID() << "\n";     
+	    errs() << "  Phi not in loopheader\n";
+            errs() << "  Instr: " << *(BI) << "\n" ;
+            errs() << "  node: " << myDFG->get_Node(BI)->get_ID() << "\n";     
           }
 
           std::vector<BasicBlock*> bbList;
@@ -3303,20 +4322,20 @@ Default:
           if(DEBUG)
           {
             for(unsigned int ii=0; ii < (int) operandList.size(); ii++)
-              errs() << "op nodes: " << myDFG->get_Node(operandList[ii])->get_ID() << "\n";
+              errs() << "  op nodes: " << myDFG->get_Node(operandList[ii])->get_ID() << "\n";
 
-            errs() << "BBLIST:\n\n"; 
+            errs() << "  BBLIST:\n\n"; 
             for(unsigned int ii=0; ii < (int) bbList.size(); ii++)
             {
-              errs() << "ii: " << ii << "\n"; 
+              errs() << "   ii: " << ii << "\n"; 
               for(BasicBlock::iterator BBBI = bbList[ii]->begin(); BBBI!= bbList[ii]->end(); ++BBBI)
-                errs() << *BBBI << "\n";
+                errs() << "    " << *BBBI << "\n";
               errs() << "\n"; 
             }
             //exit(1);
           }
 
-          if(DEBUG) errs() << "passed operands" << "\n";
+          if(DEBUG) errs() << "  passed operands" << "\n";
 
           std::vector<NODE*> succofPhi;
           std::vector<Instruction*> condNodes;
@@ -3353,13 +4372,13 @@ Default:
           if(DEBUG)
             for(unsigned int ii=0; ii < (int)succofPhi.size(); ii++)
             {
-              errs() << "succ nodes: " << succofPhi[ii]->get_ID() << "\n";
+              errs() << "  succ nodes: " << succofPhi[ii]->get_ID() << "\n";
             }
 
 
           if(bbList.size() > 1)
           {
-            if(bbList.size() > 2) {errs() << "bbList has more than two basicblocks. Check!\n"; exit(1);}
+            if(bbList.size() > 2) {errs() << "Fatal: bbList has more than two basicblocks\n"; exit(1);}
 
             BasicBlock* succ1 = bbList[0]->getSingleSuccessor(); 
             BasicBlock* succ2 = bbList[1]->getSingleSuccessor();
@@ -3369,15 +4388,15 @@ Default:
 
             if((succ1 == NULL) && (succ2 == NULL))
             {
-              if(DEBUG) errs() << "in new function if1 : " << *BI << "\n";
+              if(DEBUG) errs() << "   in new function if1 : " << *BI << "\n";
               // this function is to update brInst and condInst
               //tempBr = getConditionalBranch(bbList[0]);
-              if(DEBUG) errs() << "both succ are null" << "\n";  
+              if(DEBUG) errs() << "   both succ are null" << "\n";  
               commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
             }
             else if((succ1 != NULL) && (succ2 == NULL))
             {
-              if(DEBUG) errs() << "in new function if2 : " << *BI << "\n";
+              if(DEBUG) errs() << "   in new function if2 : " << *BI << "\n";
               // this function is to update brInst and condInst
               if(current != loopLatch)
               commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
@@ -3388,7 +4407,7 @@ Default:
             }
             else
             {
-              if(DEBUG) errs() << "in new function else : " << *BI << "\n";
+              if(DEBUG) errs() << "   in new function else : " << *BI << "\n";
               if((bbList[0]->getSinglePredecessor() == bbList[1]) ||
                   (bbList[1]->getSinglePredecessor() == bbList[0]))
                 commonParent = SearchCommonParentForBranching(bbList[0],bbList[1],bbs);
@@ -3398,7 +4417,7 @@ Default:
             {
               node2 = myDFG->get_Node(BI->getOperand(ii));
               if(DEBUG) {
-                errs() << "we are removing the arc for: " << node1->get_ID() << "\t" << node2->get_ID() << "\n";
+                errs() << "  we are removing the arc for: " << node1->get_ID() << "\t" << node2->get_ID() << "\n";
               }
               arc1 = myDFG->get_Arc(node2,node1);
               if(arc1 != NULL)
@@ -3406,12 +4425,12 @@ Default:
             }
 
             std::vector<ARC*> outGoingArcs = myDFG->getSetOfArcs();
-            if(DEBUG) errs() << "total arcs: " << (int) outGoingArcs.size() << "\n";
+            if(DEBUG) errs() << "  total arcs: " << (int) outGoingArcs.size() << "\n";
             for(unsigned int ii = 0; ii < outGoingArcs.size(); ii++)
             {
               if(outGoingArcs[ii]->get_From_Node() == node1)
               {
-                if(DEBUG) errs() << "outgoing nodes: " << outGoingArcs[ii]->get_To_Node()->get_ID() << "\n";
+                if(DEBUG) errs() << "   outgoing nodes: " << outGoingArcs[ii]->get_To_Node()->get_ID() << "\n";
                 succofPhi.push_back(outGoingArcs[ii]->get_To_Node());
                 succofPhiDistance.push_back(outGoingArcs[ii]->Get_Inter_Iteration_Distance());
                 succofPhiDepType.push_back(outGoingArcs[ii]->Get_Dependency_Type());
@@ -3425,7 +4444,7 @@ Default:
               node3 = new NODE(cond_select, 1, NodeID++, brInst->getName().str(), BI);
             node3->setDatatype(node2->getDatatype()); 
             myDFG->insert_Node(node3);
-            if(DEBUG) errs() << "New node no: " << node3->get_ID() << "\n";
+            if(DEBUG) errs() << "  New node no: " << node3->get_ID() << "\n";
             // update operands of the phi-->select
             for(int ii=0; ii<(int) operandList.size(); ii++)
             {
@@ -3435,12 +4454,12 @@ Default:
               {
                 if(operandList[ii] != NULL) 
                 {
-                  if(DEBUG) errs() << "node 2 in operand list: " << myDFG->get_Node(operandList[ii])->get_ID() << "\tInstruction: " << myDFG->get_Node(operandList[ii])->get_Instruction() << "\n";
+                  if(DEBUG) errs() << "   node 2 in operand list: " << myDFG->get_Node(operandList[ii])->get_ID() << "\tInstruction: " << myDFG->get_Node(operandList[ii])->get_Instruction() << "\n";
                   node2 = myDFG->get_Node(operandList[ii]);
                 }
                 else
                 {
-                  if(DEBUG) errs() << "node 2 NOT in operand list: " << myDFG->get_Node(BI->getOperand(ii))->get_ID() << "\n";
+                  if(DEBUG) errs() << "   node 2 NOT in operand list: " << myDFG->get_Node(BI->getOperand(ii))->get_ID() << "\n";
                   node2 = myDFG->get_Node(BI->getOperand(ii)); 
                 }
 
@@ -3492,14 +4511,14 @@ Default:
 
             //BasicBlock *commonParent = 
             // update condInst
-            if(DEBUG) errs() << "passed making arc condinst: " << condInst << "\n";              
+            if(DEBUG) errs() << "  passed making arc condinst: " << condInst << "\n";              
             node2 = myDFG->get_Node(condInst);
-            if(DEBUG) errs() << "passed get node\n";
-            if(DEBUG) errs() << "condinst node2: " << node2->get_ID() << "\n";
+            if(DEBUG) errs() << "  passed get node\n";
+            if(DEBUG) errs() << "  condinst node2: " << node2->get_ID() << "\n";
             node3->setDatatype(node2->getDatatype());
-            if(DEBUG) errs() << "passed getDatatype\n";
+            if(DEBUG) errs() << "  passed getDatatype\n";
             myDFG->make_Arc(node2, node3, EdgeID++, 0, PredDep, 2); 
-            if(DEBUG) errs() << "passed making pred  arc\n";
+            if(DEBUG) errs() << "  passed making pred  arc\n";
 
             // update outgoing arcs
             for(unsigned int kk = 0; kk < succofPhi.size(); kk++)
@@ -3736,25 +4755,25 @@ Default:
           // In that case this routine is a hack. It deletes the edge without recurrent and adds a recurrent edge. 
           ARC* arc2, *arc3; 
           if(DEBUG) 
-            errs() << "We are here! just check if the incoming nodes other than a const should be from next iterations. If not, make it into interiteration dependent\n";
+            errs() << "  We are here! just check if the incoming nodes other than a const should be from next iterations. If not, make it into interiteration dependent\n";
           node1 = myDFG->get_Node(BI);
           if(DEBUG)
-            errs() << "Node:" << node1->get_Name() << "\n";
+            errs() << "  Node: " << node1->get_Name() << " - type: " << node1->get_Instruction() << "\n";
           std::vector<NODE*> incoming;
           incoming = node1->Get_Prev_Nodes(); 
           if(DEBUG)   
-            errs() << "incoming size: " << (int)incoming.size() << "\n";
+            errs() << "  incoming size: " << (int)incoming.size() << "\n";
           for(int i=0; i<(int) incoming.size(); i++)
           {
             if(DEBUG)
-              errs() << "incoming node: " << incoming[i]->get_ID() << "\tname: " << incoming[i]->get_Name() << "\n"; 
+              errs() << "   incoming node: " << incoming[i]->get_ID() << "\tname: " << incoming[i]->get_Name() << "\n"; 
 
             arc2 = myDFG->get_Arc(incoming[i], node1); 
 
             if(arc2->Get_Inter_Iteration_Distance() == 0 && incoming[i]->get_Instruction() != constant)
             {
               if(DEBUG)
-                errs() << "incoming node if: " << incoming[i]->get_ID() << "\n";
+                errs() << "    incoming node if: " << incoming[i]->get_ID() << "\n";
               int inter_dep=1;
               arc2->Set_Inter_Iteration_Distance(inter_dep); 
               //myDFG->Remove_Arc(arc2); 
@@ -3769,8 +4788,148 @@ Default:
       return true;
     }
 
-    bool 
-      Update_Control_Dependencies(DFG* myDFG, std::vector<BasicBlock *> bbs, BasicBlock* loopLatch, BasicBlock* loopHeader)
+    /* Added by Vinh TA
+       This function makes edges from a unique loop control node to liveOut nodes to be later used by mapping algos to enforce mapping constraints
+     */
+    NODE* Update_Loop_Control(std::vector<BasicBlock *> bbs, BasicBlock* ExitBlock, DFG* myDFG){
+      if(DEBUG)	errs() << "Inside update_loop_control\n";
+      
+      
+      BasicBlock::reverse_iterator branchinst = bbs[(int)bbs.size()-1]->rbegin();
+      if(DEBUG) errs() << " loop_branch_inst: " << *branchinst << "\n";
+      
+      Instruction* op0_inst = cast<Instruction>(branchinst->getOperand(0));
+      if(op0_inst == NULL) return NULL;
+      
+      if(DEBUG) errs() << " branch_inst_pred: " << *op0_inst << "\n";
+      NODE* loopCtrlNode;
+      if(myDFG->get_Node(op0_inst) != NULL){
+	loopCtrlNode = myDFG->get_Node(op0_inst);
+	if(DEBUG) errs() << "  branch_inst_pred node found: " << loopCtrlNode->get_Name() << "\n";
+      }else{
+	if(DEBUG) errs() << "  branch_inst_pred node not found!\n";
+	return NULL;
+      }
+
+      std::vector<llvm::NODE*> LiveOutNodes;
+      for(std::map<Instruction*, std::string>::iterator it = map_instn_defn_liveout_to_load.begin(); it != map_instn_defn_liveout_to_load.end(); ++it){
+	NODE* temp = myDFG->get_Node(it->first);
+	/*if(temp->get_Instruction() == cond_select){
+	  if(loopCtrlNode->is_Connected_To(temp))
+	    continue;
+	}*/
+	if(temp->get_Instruction() == ld_data) temp = temp->get_Related_Node();
+	std::vector<NODE*> temp_prev = temp->Get_Prev_Nodes();
+	
+	if(temp_prev.size() > 0 && temp_prev[0]->get_Instruction() == cond_select) continue;
+	if(temp_prev.size() > 1 && temp_prev[1]->get_Instruction() == cond_select) continue;
+	if(temp_prev.size() > 2 && temp_prev[2]->get_Instruction() == cond_select) continue;
+	
+	LiveOutNodes.push_back(myDFG->get_Node(it->first));
+	if(DEBUG) errs() << "  Added: " << myDFG->get_Node(it->first)->get_Name() << "\n";
+      }
+      
+      std::vector<NODE*> allNodes = myDFG->getSetOfVertices();
+      for(std::vector<NODE*>::iterator it = allNodes.begin(); it != allNodes.end(); ++it)
+	if((*it)->is_Store_Data_Bus_Write()){
+	  // Filter out predicated stores
+	  //std::vector<NODE*> liveout_prev = (*it)->Get_Prev_Nodes();
+	  //if(liveout_prev[0]->is_Store_Address_Generator() && liveout_prev[1]->get_Instruction() == cond_select) continue;
+	  //if(liveout_prev[1]->is_Store_Address_Generator() && liveout_prev[0]->get_Instruction() == cond_select) continue;
+
+	  LiveOutNodes.push_back(*it);
+	  if(DEBUG) errs() << "  Added from stores: " << (*it)->get_Name() << "\n";
+	}
+
+      if(DEBUG){
+	errs() << " Collected LiveOut nodes:\n";
+	for(std::vector<NODE*>::iterator it = LiveOutNodes.begin(); it != LiveOutNodes.end(); ++it)
+	  errs() << "  " << (*it)->get_Name() << " - #pred: "  << (*it)->get_Number_of_Pred() << "\n";
+      }
+
+      // Detect circular graph when adding LCE
+      // Cannot be completed
+      // TODO: update_liveout_variables was called before this function and it writes to liveout_node.txt and liveout_edge.txt files. This function has to find and replace that liveout node with a route node to break the circle, but replacing a node/edge requires modifying the written file -> have to go to the file and replace just the needed node with the route node.
+
+      /*NODE* route1 = new NODE(add, 1, NodeID++, "route", NULL);
+      //NODE* route2 = new NODE(add, 1, NodeID++, "route", NULL);
+      NODE* node1 = LiveOutNodes[0];
+      //NODE* node2 = LiveOutNodes[1];
+      myDFG->insert_Node(route1);
+      //myDFG->insert_Node(route2);
+      std::vector<NODE*> out1 = node1->Get_Next_Nodes();
+      //std::vector<NODE*> out2 = node2->Get_Next_Nodes();
+
+      for(auto it = out1.begin(); it != out1.end(); ++it)
+	if((*it)->get_Name()[0] == 'g'){
+	  route1->setDatatype((*it)->getDatatype());
+	  ARC* arc_old = myDFG->get_Arc(node1, *it);
+	  myDFG->Remove_Arc(arc_old);
+	  myDFG->make_Arc(node1, route1, EdgeID++, 0, TrueDep, 0);
+	  myDFG->make_Arc(route1, *it, EdgeID++, 0, TrueDep, 0);
+	  LiveOutNodes[0] = route1;
+	}
+
+      for(auto it = out2.begin(); it != out2.end(); ++it)
+	if((*it)->get_Name()[0] == 'g'){
+	  ARC* arc_old = myDFG->get_Arc(node2, *it);
+	  myDFG->Remove_Arc(arc_old);
+	  myDFG->make_Arc(node2, route2, EdgeID++, 0, TrueDep, 0);
+	  myDFG->make_Arc(route2, *it, EdgeID++, 0, TrueDep, 0);
+	  LiveOutNodes[1] = route2;
+	}
+      
+      std::vector<NODE*> loopCtrl_pred = loopCtrlNode->Get_Prev_Nodes();
+      for(std::vector<NODE*>::iterator it = LiveOutNodes.begin(); it != LiveOutNodes.end(); ++it){
+	std::vector<NODE*> succ_nodes = (*it)->Get_Next_Nodes();
+	bool circular = false;
+	for(auto succ_it = succ_nodes.begin(); succ_it != succ_nodes.end(); ++succ_it){
+	  if((*succ_it)->get_ID() == loopCtrlNode->get_ID()){
+	    circular = true;
+	    break;
+	  }
+	  else{
+	    for(auto pred_it = loopCtrl_pred.begin(); pred_it != loopCtrl_pred.end(); ++pred_it){
+	      if((*succ_it)->get_ID() == (*pred_it)->get_ID()){
+		circular = true;
+		break;
+	      }
+	    }
+	  }
+	}
+	if(circular){
+	  if(DEBUG) errs() << "  ! Circular graph detected for loop control edge !\n";
+	  NODE* const0 = NULL;
+	  for(auto node_it = allNodes.begin(); node_it != allNodes.end(); ++node_it){
+	    if((*node_it)->get_Name().find("ConstInt0") != std::string::npos){
+	      const0 = *node_it;
+	      break;
+	    }
+	  }
+
+	  if(const0 == NULL){
+	    const0 = new NODE(constant, 1, NodeID++, "ConstInt0", NULL);
+	    myDFG->insert_Node(const0);
+	  }
+	  
+	  NODE* temp = new NODE(add, 1, NodeID++, "DE_CIRCULAR" , NULL);
+	  myDFG->insert_Node(temp);
+	  myDFG->make_Arc((*it), temp, EdgeID++, 0, TrueDep, 0);
+	  myDFG->make_Arc(const0, temp, EdgeID++, 0, TrueDep, 1);
+	  LiveOutNodes.erase(it);
+	  LiveOutNodes.push_back(temp);
+	}
+	}*/
+
+      for(std::vector<NODE*>::iterator it = LiveOutNodes.begin(); it != LiveOutNodes.end(); ++it){
+	myDFG->make_Arc(loopCtrlNode, (*it), EdgeID++, 0, LoopControlDep, (*it)->get_Number_of_Pred());
+      }
+    
+      return loopCtrlNode;
+    }
+
+    
+    bool Update_Control_Dependencies(DFG* myDFG, std::vector<BasicBlock *> bbs, BasicBlock* loopLatch, BasicBlock* loopHeader)
       {
 
         NODE* node, *node1, *node2, *node3, *node4;
@@ -3897,7 +5056,7 @@ Default:
             (BI->getOpcode() == Instruction::InsertElement) ||
             (BI->getOpcode() == Instruction::ShuffleVector))
         {
-          vectorInstructions++;
+          //vectorInstructions++;
         }
       }
 
@@ -3907,7 +5066,7 @@ Default:
             (BI->getOpcode() == Instruction::InsertElement) ||
             (BI->getOpcode() == Instruction::ShuffleVector))
         {
-          vectorInstructions++;
+          //vectorInstructions++;
         }
       }
 
@@ -4045,13 +5204,24 @@ Default:
 
       for (int i = 0; i < (int) bbs.size(); i++)
       {
+	errs() << "runOnLoop::4041: instructions @ bbs[" << i << "]:\n";
         for (BasicBlock::iterator BI = bbs[i]->begin(); BI != bbs[i]->end(); ++BI)
         {
-          //errs() << "Ins: " << *BI << "\n";
+          errs() << "\tAdding " << *BI << "\n";
           if (!Add_Node(&(*BI), myDFG, L->getHeader()))
             return false;
         }
-      } 
+      }
+
+      if(DEBUG){
+	errs() << "Done adding node\nAdded structs:\n";
+	for(auto struct_it = map_struct_size.begin(); struct_it != map_struct_size.end(); ++struct_it){
+	  errs() << "Name: " << struct_it->first << " - size: " << struct_it->second << " - member sizes: {";
+	  for(auto member_it = map_struct_member_size[struct_it->first].begin(); member_it != map_struct_member_size[struct_it->first].end(); ++member_it)
+	    errs() << *member_it << ", ";
+	  errs() << "}\n";
+	}
+      }
 
       if(DEBUG) 
       {
@@ -4111,6 +5281,7 @@ Default:
       liveoutEdgefile.open(newPath.c_str());
 
       unsigned TripCount = calculateLoopTC(L, SE);
+      if(DEBUG) errs() << "Calculated trip count: " << TripCount << "\n";
       if(TripCount != 0)
         dynamicTC = false;
 
@@ -4122,9 +5293,9 @@ Default:
       lpTCfile.close();
 
       if(DEBUG) {
-      errs() << "closed all files\n";
-      errs() << "Trip Count: " << TripCount << "\n"; 
-      errs() << "dynamicTC: " << dynamicTC << "\n";
+	errs() << "closed all files\n";
+	errs() << "updated TC: " << TripCount << "\n";
+	errs() << "dynamicTC: " << dynamicTC << "\n";
       }
       if(dynamicTC)
       {
@@ -4132,18 +5303,19 @@ Default:
         // May be a hierarchy of select operations can help
         // In such case, need to exit even if a single condition is true, ensuring we exit from loop
 	if(DEBUG)
-	errs() << "before getLoopExitBranch\n";
+	  errs() << "before getLoopExitBranch\n";
         getLoopExitBranch(ExitBlocks[0]);
 
         // Need to determine if trip-count is known at run-time
         // If yes, generate corresponding variables and calculate TC
         // If not, pad unsafe operations with selection instructions
-        if(isTCknownAtLoopEntry(bbs))
+        if(isTCknownAtLoopEntry(bbs))  // New version does not need to predicate result for dynamicTC
         {
           PHINode *indsvar = getInductionVariable(L,SE,DT);
-          calculateTCDynamically(indsvar, bbs, Preheader);
+          //calculateTCDynamically(indsvar, bbs, Preheader);
           dynamicTC = false;
         }
+	dynamicTC = false;
       }  
 
       // NOTE: Comparison and testing for dynamicTCVal. Debug calculateTCDynamically.
@@ -4165,14 +5337,26 @@ Default:
             } 
             retVal |= Update_LiveOut_Variables(&(*BI), myDFG, bbs, LoopExitBlks);
           }
+	  else errs() << "Node for " << (*BI) << " not found!\n";
         }
       } 
 
       errs() << "completed update liveout\n";
+
       liveoutNodefile.close();
       liveoutEdgefile.close();
       collectAllBranchInfo(bbs,L->getLoopLatch());
       updateStoresInConditionalBBs(L->getLoopLatch(),L->getHeader(),bbs, myDFG);
+
+      // Added by: Vinh TA
+      NODE* loopCtrl_node = Update_Loop_Control(bbs, ExitBlk, myDFG);
+      std::ofstream LoopCtrlNodeFile;
+      std::string filename = "./CGRAExec/L" + osLoopID.str() + "/Control_Node.txt";
+      LoopCtrlNodeFile.open(filename.c_str());
+      if(loopCtrl_node) LoopCtrlNodeFile << loopCtrl_node->get_Name() << "\n";
+      else LoopCtrlNodeFile << "-1\n";
+      LoopCtrlNodeFile.close();
+      
       std::ostringstream osNodeID;
       osNodeID << NodeID;
       myDFG->Dump_Loop("./CGRAExec/L" + osLoopID.str() + "/loop" + osNodeID.str());

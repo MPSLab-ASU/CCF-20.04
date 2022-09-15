@@ -35,7 +35,8 @@ namespace llvm
         BranchDep, 
         PredDep, 
         LiveInDataDep, 
-        LiveOutDataDep
+        LiveOutDataDep,
+	LoopControlDep
 	};
 
 	enum Instruction_Operation
@@ -86,8 +87,12 @@ namespace llvm
         int16,   //2
         float32,        //3
         float64,        //4
-        float16     //5
+        float16,     //5
+	_struct,    //6
+	_array
     };
+
+  const unsigned DT_Size[6] = {1,4,2,4,8,2};
 
 	class NODE
 	{
@@ -125,6 +130,7 @@ namespace llvm
 			int get_ID();
 			int get_Latency();
 			std::string get_Name();
+  	                void set_Name(std::string);
 			Value* get_LLVM_Instruction();
 			void set_Latency(int laten);
 			Instruction_Operation get_Instruction();
@@ -250,10 +256,13 @@ namespace llvm
 			//return a node with given ID number
 			NODE* get_Node(int number);
 
+	                //return a node in the DFG with a given name
+	                NODE* get_Node(std::string name);
+
 			//return true if DFG contains a node with given name
 			NODE* get_Node(Value* ins);
 
-            NODE* get_Node_1(Value* ins);
+                        NODE* get_Node_1(Value* ins);
 
 			NODE* get_Node_Mem_Add(Value* ins);
 			NODE* get_Node_Mem_Data(Value* ins);

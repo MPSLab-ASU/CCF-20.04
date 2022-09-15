@@ -152,6 +152,10 @@ std::string NODE::get_Name()
   return name;
 }
 
+void NODE::set_Name(std::string new_name){
+  name = new_name;
+}
+
 Value* NODE::get_LLVM_Instruction()
 {
   return Node_Ins;
@@ -447,6 +451,14 @@ NODE* DFG::get_Node(int number)
   return NULL;
 }
 
+NODE* DFG::get_Node(std::string name){
+  std::vector<NODE*>::iterator iNode1;
+  for (iNode1 = _node_Set.begin(); iNode1 != _node_Set.end(); iNode1++)
+    if((*iNode1)->get_Name().compare(name) == 0)
+      return (*iNode1);
+  return NULL;
+}
+
 NODE* DFG::get_Node(Value* ins)
 {
   std::vector<NODE*>::iterator iNode1;
@@ -636,6 +648,10 @@ std::vector<ARC*> DFG::getSetOfArcs()
   return _ARC_Set;
 }
 
+std::vector<NODE*> DFG::getSetOfVertices(){
+  return _node_Set;
+}
+
 void DFG::Dot_Print_DFG(std::string filename)
 {
   std::ofstream dotFile;
@@ -704,6 +720,9 @@ void DFG::Dot_Print_DFG(std::string filename)
       else
         alignment = _ARC_Set[i]->get_To_Node()->getAlignment();
       dotFile << _ARC_Set[i]->get_From_Node()->get_ID() << " -> " << _ARC_Set[i]->get_To_Node()->get_ID() << " [color=orange, label=" << alignment << "] \n";
+    }
+    else if(_ARC_Set[i]->Get_Dependency_Type() == LoopControlDep){
+      dotFile << _ARC_Set[i]->get_From_Node()->get_ID() << " -> " << _ARC_Set[i]->get_To_Node()->get_ID() << " [color=blueviolet]\n";
     }
     else if(_ARC_Set[i]->get_From_Node()->get_Instruction() == constant)
     {
@@ -794,7 +813,7 @@ void DFG::Dump_Loop(std::string filename)
     if((_node_Set[i]->get_Instruction() == constant) && (_node_Set[i]->get_Number_of_Pred() > 0) && (_node_Set[i]->get_Number_of_Succ() <= 0))
       continue;
 
-    if((_node_Set[i]->get_Instruction() == cgra_select) && (_node_Set[i]->get_Number_of_Pred() > 2))
+    if((_node_Set[i]->get_Instruction() == cgra_select) && (_node_Set[i]->get_Number_of_Pred() > 3))
     {
       if(debug) errs() << "nodefile node: " << _node_Set[i]->get_ID() << "\tpred:" << _node_Set[i]->get_Number_of_Pred() << "\n";
       nodeFile << _node_Set[i]->get_ID() << "\t" << cond_select << "\t" << _node_Set[i]->get_Name() << "\t" << alignment << "\t" << _node_Set[i]->getDatatype() << "\n";
@@ -822,6 +841,8 @@ void DFG::Dump_Loop(std::string filename)
     {
       edgeFile << _ARC_Set[i]->get_From_Node()->get_ID() << "\t" << _ARC_Set[i]->get_To_Node()->get_ID() << "\t" << _ARC_Set[i]->Get_Inter_Iteration_Distance() << "\t" << "LIE"<<"\t" <<_ARC_Set[i]->GetOperandOrder() << "\n";
     }
+    else if(_ARC_Set[i]->Get_Dependency_Type() == LoopControlDep)
+      edgeFile << _ARC_Set[i]->get_From_Node()->get_ID() << "\t" << _ARC_Set[i]->get_To_Node()->get_ID() << "\t" << _ARC_Set[i]->Get_Inter_Iteration_Distance() << "\t" << "LCE"<<"\t" <<_ARC_Set[i]->GetOperandOrder() << "\n";
     else
     {
       edgeFile << _ARC_Set[i]->get_From_Node()->get_ID() << "\t" << _ARC_Set[i]->get_To_Node()->get_ID() << "\t" << _ARC_Set[i]->Get_Inter_Iteration_Distance() << "\t" << "TRU"<<"\t"<< _ARC_Set[i]->GetOperandOrder() << "\n";
