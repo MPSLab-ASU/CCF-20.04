@@ -8,6 +8,9 @@
  * Date  : Sept 13, 2019
  * Note  : All the functions are implemented in header file. 
  * This file includes support for 2 scheduling algorithms 
+ *
+ * Last edit: Mar 25 2022
+ * Author: Vinh TA
  */        
 
 
@@ -94,8 +97,10 @@ class Falcon
       bool status = myParser.ParseDFG(original_DFG);
 
       if (!status) //if there is an error in input files, exit
-        return false;
+        _FATAL("Error parsing DFG!");
 
+      cout << "Done parsing DFG\n";
+      
       original_DFG->CGRA_X_Dim=cgra_info.X_Dim;
       original_DFG->CGRA_Y_Dim=cgra_info.Y_Dim;
 
@@ -103,7 +108,8 @@ class Falcon
       // Moreover, recomputation can be better than routing.
       // TODO: This may be better decided during (re)mapping and rescheduling of operations.
       original_DFG->PreProcess();
-
+      cout << "Done preprocess DFG\n";
+      
       //if(original_DFG->has_FPConstant())
       //{
       // Load the FP constants from memory. This is to maintain the precision.
@@ -115,10 +121,12 @@ class Falcon
       original_DFG->collectRegReq(cgra_info.R_Size);
       original_DFG->loadAllLargeConstants(cgra_info.R_Size);
 
+      cout << "After load all large constants\n";
+      
       //Make a copy of the original DFG
       DFG* copy_DFG_1; //  *tempDFG;
       copy_DFG_1 = original_DFG->Copy();
-
+      cout << "After DFG copy\n";
       int CGRASize = cgra_info.X_Dim*cgra_info.Y_Dim;
 
       int height = copy_DFG_1->set_height_based_priority(); 
@@ -139,6 +147,9 @@ class Falcon
       int current_number_resources = CGRASize;
       int current_II = low_II;  //start from the lowest II 
 
+      //current_II = (low_II < 6)? 6:low_II;  
+      //cout << "\n*** WARNING: II forced to start from 6! ***\n";
+      
       debugfile<<"Starting II: "<<current_II<<"\trec_MII: "<< recMII <<endl;
 
       int current_II_1=-1;
@@ -231,6 +242,7 @@ class Falcon
 
           while(cnt < lambda)
           {
+	    cout << " II schedule trial: " << cnt << "/" << lambda << endl;
             cnt++; 
             DFG* copy_DFG_2 = copy_DFG_1->Copy();
             current_II_1 = -1;
@@ -254,6 +266,7 @@ class Falcon
               mappingCounter++;
               if(current_II > MAPPING_POLICY.MAX_II)
                 break;
+	      copy_DFG_1->SetII(current_II);
               continue;
             }
             //if II obtained after scheduling > current II, increase II
@@ -262,6 +275,7 @@ class Falcon
               //reset the number of available PEs to the size of CGRA
               current_number_resources = CGRASize;
               current_II++;
+	      copy_DFG_1->SetII(current_II);
               continue;
             }
             copy_DFG_2->Dot_Print_DFG_With_Schedule("schedule", 0);

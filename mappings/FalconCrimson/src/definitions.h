@@ -6,6 +6,9 @@
 *
 *  Last Edited on: Jan 14, 2017
 *  Author: Shail Dave
+*
+*  Last edited: Mar 25 2022
+*  Author: Vinh TA
 */
 
 #include <vector>
@@ -63,7 +66,8 @@ enum DataDepType
   LoadDep,   //an arc between load address assertion node and load bus read node should impose 1 cycle delay between nodes
   StoreDep,  //an arc between store address assertion node and store bus assertion node, should impose 0 cycle
   MemoryDep, //not implemented yet
-  PredDep
+  PredDep,
+  LoopControlDep
 };
 
 enum Datatype
